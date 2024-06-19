@@ -143,7 +143,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
     items = List.generate(
       20,
       (index) => HousingItem(
-        imageUrl: 'assets/images/maison.png${index % 5 + 1}.jpg',
+        imageUrl: 'assets/images/maison.jpg${index % 5 + 1}.jpg',
         title: '${widget.category} Item ${index + 1}',
         location: 'Location ${index + 1}',
         price: '\$${(index + 1) * 1000}',

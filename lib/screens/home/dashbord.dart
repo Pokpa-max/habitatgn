@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:habitatgn/models/adversting.dart';
 import 'package:habitatgn/screens/home/categories/categories_list.dart';
 import 'package:habitatgn/screens/house/house_detail_screen.dart';
 import 'package:habitatgn/screens/seach/seach_screen.dart';
-import 'package:habitatgn/widgets/dashbord/dashbord.dart';
+import 'package:habitatgn/utils/appColors.dart';
 
 class DashbordScreen extends StatelessWidget {
   const DashbordScreen({super.key});
@@ -15,7 +16,7 @@ class DashbordScreen extends StatelessWidget {
           'HABITATGN',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.cyan,
+        backgroundColor: primary,
         actions: [
           IconButton(
             onPressed: () {},
@@ -27,64 +28,62 @@ class DashbordScreen extends StatelessWidget {
         ],
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSearchField(context),
-              const SizedBox(height: 20),
-              buildSectionTitle('Logements Recommandés'),
-              const SizedBox(height: 10),
-              _buildRecommendedHousingList(context),
-              const SizedBox(height: 20),
-              buildSectionTitle('Catégories'),
-              const SizedBox(height: 10),
-              _buildCategoryGrid(context),
-            ],
-          ),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSearchField(context),
+            const SizedBox(height: 20),
+            // buildSectionTitle('Logements Recommandés'),
+            // const SizedBox(height: 10),
+            // _buildRecommendedHousingList(context),
+            const SizedBox(height: 20),
+            buildSectionTitle('Catégories de Logements'),
+            const SizedBox(height: 10),
+            _buildCategoryGrid(context, 'Logements'),
+            const SizedBox(height: 20),
+            buildSectionTitle('Autres Catégories'),
+            const SizedBox(height: 10),
+            _buildCategoryGrid(context, 'Autres'),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildSearchField(BuildContext context) {
-    return TextFormField(
-      decoration: InputDecoration(
-        hintText: 'Rechercher un logement...',
-        prefixIcon: const Icon(
-          Icons.search,
-          color: Colors.cyan,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.cyan),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.cyan),
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(10),
       ),
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => SearchPage(),
+      child: TextField(
+        decoration: const InputDecoration(
+          hintText: 'Rechercher un logement...',
+          prefixIcon: Icon(
+            Icons.search,
+            color: primary,
           ),
-        );
-      },
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(vertical: 14.0),
+        ),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const SearchPage(),
+            ),
+          );
+        },
+      ),
     );
   }
 
   Widget _buildRecommendedHousingList(BuildContext context) {
     return SizedBox(
-      height: 150,
+      height: 220,
       child: ListView.builder(
-        shrinkWrap: true,
         scrollDirection: Axis.horizontal,
-        itemCount: 3,
+        itemCount: 6,
         itemBuilder: (context, index) {
           return InkWell(
             onTap: () {
@@ -126,55 +125,58 @@ class DashbordScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryGrid(BuildContext context) {
+  Widget _buildCategoryGrid(BuildContext context, String categoryType) {
+    final categories = categoryType == 'Logements'
+        ? [
+            CategoryData(Icons.villa, 'Villas'),
+            CategoryData(Icons.house, 'Maisons'),
+            CategoryData(Icons.home_work, 'Studios'),
+            CategoryData(Icons.hotel, 'Hôtels'),
+          ]
+        : [
+            CategoryData(Icons.store, 'Magasin'),
+            CategoryData(Icons.terrain, 'Terrain'),
+          ];
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final int crossAxisCount = constraints.maxWidth > 600 ? 4 : 3;
-        return SizedBox(
-          height: crossAxisCount * 100.0, // Ajustez cette valeur si nécessaire
-          child: GridView.count(
-            crossAxisCount: crossAxisCount,
-            childAspectRatio: 3 / 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              CategoryCard(
-                icon: Icons.villa,
-                label: 'Villas',
-                onTap: () {},
-              ),
-              CategoryCard(
-                icon: Icons.house,
-                label: 'Maisons',
-                onTap: () {},
-              ),
-              CategoryCard(
-                icon: Icons.home_work,
-                label: 'Studios',
-                onTap: () {},
-              ),
-              CategoryCard(
-                icon: Icons.hotel,
-                label: 'Hôtels',
-                onTap: () {},
-              ),
-              CategoryCard(
-                icon: Icons.store,
-                label: 'Magasin',
-                onTap: () {},
-              ),
-              CategoryCard(
-                icon: Icons.terrain,
-                label: 'Terrain',
-                onTap: () {},
-              ),
-            ],
-          ),
+        final int crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
+        return GridView.count(
+          crossAxisCount: crossAxisCount,
+          shrinkWrap: true,
+          childAspectRatio: 3 / 2,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          physics: const NeverScrollableScrollPhysics(),
+          children: categories.map((category) {
+            return CategoryCard(
+              icon: category.icon,
+              label: category.label,
+              onTap: () {},
+            );
+          }).toList(),
         );
       },
     );
   }
+
+  Widget buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 18,
+        // fontWeight: FontWeight.bold,
+        color: Colors.black87,
+      ),
+    );
+  }
+}
+
+class CategoryData {
+  final IconData icon;
+  final String label;
+
+  CategoryData(this.icon, this.label);
 }
 
 class CategoryCard extends StatelessWidget {
@@ -192,28 +194,22 @@ class CategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => CategoryListPage(
-              category: label,
-              icon: icon,
-            ),
-          ),
-        );
-      },
+      onTap: () => onTap(),
       child: Card(
         elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 30, color: Colors.cyan),
+              Icon(icon, size: 30, color: primary),
               const SizedBox(height: 5),
               Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -242,34 +238,48 @@ class RecommendedHousingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
       margin: const EdgeInsets.symmetric(horizontal: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.asset(
-            imageUrl,
-            width: 150,
-            height: 80,
-            fit: BoxFit.cover,
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+            child: Image.asset(
+              imageUrl,
+              width: 150,
+              height: 120,
+              fit: BoxFit.cover,
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.all(5.0),
+            padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(location),
+                const SizedBox(height: 5),
+                Text(
+                  location,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 5),
                 Text(
                   price,
                   style: const TextStyle(
-                    color: Colors.cyan,
+                    color: primary,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
@@ -278,6 +288,84 @@ class RecommendedHousingCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAdvertisementsList(BuildContext context) {
+    final List<AdvertisementData> advertisements = [
+      AdvertisementData(
+        imageUrl: 'assets/images/advertisement1.jpg',
+        title: 'Promotion spéciale',
+        description: 'Économisez jusqu\'à 50% sur les appartements de luxe !',
+      ),
+      AdvertisementData(
+        imageUrl: 'assets/images/advertisement2.jpg',
+        title: 'Offre exclusive',
+        description: 'Découvrez nos nouvelles maisons à des prix incroyables.',
+      ),
+      // Ajoutez autant d'annonces que nécessaire
+    ];
+
+    return SizedBox(
+      height: 150,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: advertisements.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            child: InkWell(
+              onTap: () {
+                // Action à effectuer lorsque l'utilisateur clique sur une publicité
+              },
+              child: Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(10)),
+                      child: Image.asset(
+                        advertisements[index].imageUrl,
+                        width: 200,
+                        height: 100,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            advertisements[index].title,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            advertisements[index].description,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

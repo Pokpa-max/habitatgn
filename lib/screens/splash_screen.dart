@@ -1,18 +1,18 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 import 'package:habitatgn/screens/home/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  // ignore: use_super_parameters
+  const SplashScreen({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _SplashScreenState createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
+  late final AnimationController _animationController;
 
   @override
   void initState() {
@@ -20,15 +20,11 @@ class _SplashScreenState extends State<SplashScreen>
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
-    );
-    _animationController.forward();
-    _animationController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
+    )..forward().whenComplete(() {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
-      }
-    });
+      });
   }
 
   @override
@@ -44,21 +40,15 @@ class _SplashScreenState extends State<SplashScreen>
       body: Stack(
         children: [
           Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ScaleTransition(
-                  scale: _animationController.drive(
-                    CurveTween(curve: Curves.easeOutBack),
-                  ),
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    width: 250,
-                    height: 250,
-                    // fit: BoxFit.cover,
-                  ),
-                ),
-              ],
+            child: ScaleTransition(
+              scale: _animationController.drive(
+                CurveTween(curve: Curves.easeOutBack),
+              ),
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: 200,
+                height: 200,
+              ),
             ),
           ),
           Align(
@@ -68,12 +58,7 @@ class _SplashScreenState extends State<SplashScreen>
               child: Container(
                 height: 150,
                 width: MediaQuery.of(context).size.width,
-                decoration: const BoxDecoration(
-                  color: Colors.cyan,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(40),
-                  ),
-                ),
+                color: Colors.cyan,
               ),
             ),
           ),
@@ -86,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen>
 class TopRoundedClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    var path = Path();
+    final path = Path();
     path.moveTo(0, size.height);
     path.lineTo(0, 60);
     path.quadraticBezierTo(size.width / 2, 0, size.width, 60);

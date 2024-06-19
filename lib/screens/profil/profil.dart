@@ -1,25 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'package:habitatgn/utils/appColors.dart'; // Assurez-vous d'importer le fichier de couleurs
+
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomSheet: ElevatedButton.icon(
-        style: ButtonStyle(
-          backgroundColor: WidgetStatePropertyAll(Colors.grey[300]),
-        ),
-        icon: const Icon(
-          Icons.logout,
-          color: Colors.red,
-        ),
-        label: const Text(
-          'Se deconnecter',
-          style: TextStyle(color: Colors.black),
-        ),
-        onPressed: () {},
-      ),
       body: ListView(
         padding: const EdgeInsets.all(0),
         children: [
@@ -27,23 +15,28 @@ class ProfilePage extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
               borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30)),
-              color: Colors.cyan,
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+              color: primary,
             ),
             child: const Column(
               children: [
-                Icon(
-                  Icons.person,
-                  size: 100,
-                  color: Colors.white,
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.person,
+                    size: 100,
+                    color: primary,
+                  ),
                 ),
-                SizedBox(height: 5.0),
+                SizedBox(height: 10),
                 Text(
                   'Guilavogui Pokpa',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -59,83 +52,74 @@ class ProfilePage extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               children: [
-                ListTile(
-                  leading: const Icon(Icons.lock, color: Colors.blue),
-                  title: const Text('Changer le mot de passe '),
+                _buildProfileOption(
+                  icon: Icons.lock,
+                  title: 'Changer le mot de passe',
                   onTap: () {},
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 20,
-                  ),
                 ),
-                Divider(
-                  color: Colors.grey[300],
-                ),
-                ListTile(
-                  leading: const Icon(Icons.settings, color: Colors.blue),
-                  title: const Text('Parametres'),
+                _buildProfileOption(
+                  icon: Icons.settings,
+                  title: 'Paramètres',
                   onTap: () {},
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 20,
-                  ),
                 ),
-                Divider(
-                  color: Colors.grey[300],
-                ),
-                ListTile(
-                  leading: const Icon(Icons.privacy_tip, color: Colors.blue),
-                  title: const Text('Privacy Settings'),
+                _buildProfileOption(
+                  icon: Icons.privacy_tip,
+                  title: 'Privacy Settings',
                   onTap: () {},
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 20,
-                  ),
                 ),
-                Divider(
-                  color: Colors.grey[300],
-                ),
-                ListTile(
-                  leading: const Icon(Icons.help, color: Colors.blue),
-                  title: const Text('Aide & Support'),
+                _buildProfileOption(
+                  icon: Icons.help,
+                  title: 'Aide & Support',
                   onTap: () {},
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 20,
-                  ),
                 ),
-                Divider(
-                  color: Colors.grey[300],
-                ),
-                ListTile(
-                  leading: const Icon(Icons.logout, color: Colors.blue),
-                  title: const Text('Se déconnecter'),
+                _buildProfileOption(
+                  icon: Icons.logout,
+                  title: 'Se déconnecter',
                   onTap: () {},
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 20,
-                  ),
+                  color: Colors.red,
                 ),
-                Divider(
-                  color: Colors.grey[300],
-                ),
-                ListTile(
-                  leading: const Icon(Icons.delete, color: Colors.red),
-                  title: const Text('Supprimer son compte'),
+                _buildProfileOption(
+                  icon: Icons.delete,
+                  title: 'Supprimer son compte',
                   onTap: () {},
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 20,
-                  ),
+                  color: Colors.red,
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildProfileOption({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color color = primary,
+  }) {
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(icon, color: color),
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          onTap: onTap,
+          trailing: const Icon(
+            Icons.arrow_forward_ios,
+            size: 20,
+            color: Colors.grey,
+          ),
+        ),
+        Divider(
+          color: Colors.grey[300],
+        ),
+      ],
     );
   }
 }

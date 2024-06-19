@@ -9,7 +9,7 @@ class FavoritesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mes Favoris'),
+        title: const Text('Mes Favoris'),
         backgroundColor: Colors.cyan,
       ),
       body: ListView.builder(
@@ -49,6 +49,7 @@ class FavoriteCard extends StatelessWidget {
   final VoidCallback onRemove;
 
   const FavoriteCard({
+    super.key,
     required this.imageUrl,
     required this.title,
     required this.location,

@@ -30,8 +30,9 @@ class _ImageCarouselState extends State<ImageCarousel> {
       children: [
         CarouselSlider(
           options: CarouselOptions(
-            height: 250.0,
             autoPlay: false,
+            aspectRatio: 16 / 8,
+            // enlargeFactor: 0.2,
             enlargeCenterPage: true,
             enableInfiniteScroll: false,
             viewportFraction: 1.0,
@@ -53,24 +54,40 @@ class _ImageCarouselState extends State<ImageCarousel> {
             );
           }).toList(),
         ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: widget.imageUrls.map((imageUrl) {
-            int index = widget.imageUrls.indexOf(imageUrl);
-            return Container(
-              width: 8.0,
-              height: 8.0,
-              margin:
-                  const EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _currentIndex == index
-                    ? Colors.cyan
-                    : Colors.black.withOpacity(0.4),
-              ),
-            );
-          }).toList(),
+        // const SizedBox(height: 10),
+        Stack(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: widget.imageUrls.map((imageUrl) {
+                int index = widget.imageUrls.indexOf(imageUrl);
+                return Container(
+                  width: 8.0,
+                  height: 8.0,
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 10.0, horizontal: 2.0),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentIndex == index
+                        ? Colors.cyan
+                        : Colors.black.withOpacity(0.4),
+                  ),
+                );
+              }).toList(),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    "A vendre",
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.cyan),
+                  )),
+            )
+          ],
         ),
       ],
     );
