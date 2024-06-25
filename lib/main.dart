@@ -19,7 +19,9 @@ class MyApp extends StatelessWidget {
       title: 'HabitatGN',
       theme: ThemeData(
         primarySwatch: Colors.cyan,
+        fontFamily: 'Poppins',
       ),
+      debugShowCheckedModeBanner: false,
       home: const SplashScreen(),
     );
   }

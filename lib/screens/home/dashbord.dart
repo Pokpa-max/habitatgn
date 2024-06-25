@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:habitatgn/models/adversting.dart';
-import 'package:habitatgn/screens/home/categories/categories_list.dart';
-import 'package:habitatgn/screens/house/house_detail_screen.dart';
+import 'package:habitatgn/models/house_result_model.dart';
+import 'package:habitatgn/screens/adversting/adversting.dart';
+import 'package:habitatgn/screens/house/houseList.dart';
 import 'package:habitatgn/screens/seach/seach_screen.dart';
 import 'package:habitatgn/utils/appColors.dart';
 
@@ -10,11 +10,20 @@ class DashbordScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    void performSearch() {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const SearchPage(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'HABITATGN',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         backgroundColor: primary,
         actions: [
@@ -27,100 +36,37 @@ class DashbordScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSearchField(context),
-            const SizedBox(height: 20),
-            // buildSectionTitle('Logements Recommandés'),
-            // const SizedBox(height: 10),
-            // _buildRecommendedHousingList(context),
-            const SizedBox(height: 20),
-            buildSectionTitle('Catégories de Logements'),
-            const SizedBox(height: 10),
-            _buildCategoryGrid(context, 'Logements'),
-            const SizedBox(height: 20),
-            buildSectionTitle('Autres Catégories'),
-            const SizedBox(height: 10),
-            _buildCategoryGrid(context, 'Autres'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchField(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: TextField(
-        decoration: const InputDecoration(
-          hintText: 'Rechercher un logement...',
-          prefixIcon: Icon(
-            Icons.search,
-            color: primary,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const AdvertisementCarousel(
+            imageUrls: [
+              'assets/images/maison.jpg',
+              'assets/images/maison2.jpg',
+              'assets/images/maison.jpg',
+            ],
+            subtitles: ['Subtitle  1', 'Subtitle 2', 'Subtitle 3'],
           ),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(vertical: 14.0),
-        ),
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const SearchPage(),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  buildSectionTitle('Catégories de Logements'),
+                  const SizedBox(height: 10),
+                  _buildCategoryGrid(context, 'Logements'),
+                  const SizedBox(height: 10),
+                  const SizedBox(height: 10),
+                  buildSectionTitle('Autres Catégories'),
+                  const SizedBox(height: 10),
+                  _buildCategoryGrid(context, 'Autres'),
+                ],
+              ),
             ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildRecommendedHousingList(BuildContext context) {
-    return SizedBox(
-      height: 220,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 6,
-        itemBuilder: (context, index) {
-          return InkWell(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const HousingDetailPage(
-                    imageUrl: 'assets/images/maison.jpg',
-                    imageUrls: [
-                      'assets/images/maison2.jpg',
-                      'assets/images/logo.png',
-                    ],
-                    title: 'Luxurious Apartment',
-                    location: 'Paris, France',
-                    price: '€2,000 / mois',
-                    description:
-                        'Un magnifique appartement situé au cœur de Paris avec une vue imprenable sur la Tour Eiffel. Comprend 2 chambres, 2 salles de bains, un grand salon et une cuisine entièrement équipée.',
-                    amenities: [
-                      'Wi-Fi gratuit',
-                      'Cuisine équipée',
-                      'Piscine',
-                      'Salle de gym',
-                      'Parking gratuit',
-                    ],
-                    latitude: 48.8588443,
-                    longitude: 2.2943506,
-                  ),
-                ),
-              );
-            },
-            child: RecommendedHousingCard(
-              imageUrl: 'assets/images/maison.jpg',
-              title: 'Maison en vente ${index + 1}',
-              location: 'Ville ${index + 1}',
-              price: '\$${(index + 1) * 1000}',
-            ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
@@ -152,7 +98,42 @@ class DashbordScreen extends StatelessWidget {
             return CategoryCard(
               icon: category.icon,
               label: category.label,
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => HouselistScreen(
+                      title: category.label,
+                      iconData: category.icon,
+                      isForSale: false,
+                      results: [
+                        House(
+                            type: 'Villa',
+                            location: 'Paris',
+                            commune: 'Commune1',
+                            quartier: 'Quartier1',
+                            price: 3000,
+                            imageUrl: 'assets/images/maison.jpg',
+                            numRooms: 3),
+                        House(
+                            type: 'Maison',
+                            location: 'Lyon',
+                            commune: 'Commune2',
+                            quartier: 'Quartier2',
+                            price: 2500,
+                            numRooms: 2,
+                            imageUrl: 'assets/images/maison.jpg'),
+                      ],
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const SearchPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
             );
           }).toList(),
         );
@@ -196,7 +177,7 @@ class CategoryCard extends StatelessWidget {
     return InkWell(
       onTap: () => onTap(),
       child: Card(
-        elevation: 2,
+        elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -288,84 +269,6 @@ class RecommendedHousingCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildAdvertisementsList(BuildContext context) {
-    final List<AdvertisementData> advertisements = [
-      AdvertisementData(
-        imageUrl: 'assets/images/advertisement1.jpg',
-        title: 'Promotion spéciale',
-        description: 'Économisez jusqu\'à 50% sur les appartements de luxe !',
-      ),
-      AdvertisementData(
-        imageUrl: 'assets/images/advertisement2.jpg',
-        title: 'Offre exclusive',
-        description: 'Découvrez nos nouvelles maisons à des prix incroyables.',
-      ),
-      // Ajoutez autant d'annonces que nécessaire
-    ];
-
-    return SizedBox(
-      height: 150,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: advertisements.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
-            child: InkWell(
-              onTap: () {
-                // Action à effectuer lorsque l'utilisateur clique sur une publicité
-              },
-              child: Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(10)),
-                      child: Image.asset(
-                        advertisements[index].imageUrl,
-                        width: 200,
-                        height: 100,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            advertisements[index].title,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            advertisements[index].description,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
       ),
     );
   }

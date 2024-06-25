@@ -9,8 +9,12 @@ class HousingDetailPage extends StatefulWidget {
   final String price;
   final String description;
   final List<String> amenities;
+  final int numRooms; // Nombre de pièces
+  final bool hasGarage; // Indicateur de garage
+  final bool hasTerrace; // Indicateur de terrasse
   final double latitude;
   final double longitude;
+  final bool saleOrRent; // Vente ou location
 
   const HousingDetailPage({
     required this.imageUrl,
@@ -20,8 +24,12 @@ class HousingDetailPage extends StatefulWidget {
     required this.price,
     required this.description,
     required this.amenities,
+    required this.numRooms,
+    required this.hasGarage,
+    required this.hasTerrace,
     required this.latitude,
     required this.longitude,
+    required this.saleOrRent, // Ajout de la variable saleOrRent
     super.key,
   });
 
@@ -31,19 +39,19 @@ class HousingDetailPage extends StatefulWidget {
 
 class _HousingDetailPageState extends State<HousingDetailPage> {
   bool _isFavorite = false; // État de l'élément dans les favoris
-  // dynamic imageData = imageUrls.insert(0, widget.imageUrl);
+
+  late List<String> allImageUrls; // Liste d'URL d'images incluant imageUrl
+
+  @override
+  void initState() {
+    super.initState();
+    allImageUrls = [widget.imageUrl, ...widget.imageUrls];
+  }
 
   @override
   Widget build(BuildContext context) {
-    // widget.imageUrls.insert(0, widget.imageUrl);
     return Scaffold(
-      // appBar: AppBar(
-      //   backgroundColor: Colors.transparent,
-      //   toolbarHeight: 500,
-      //   flexibleSpace: ImageCarousel(
-      //     imageUrls: widget.imageUrls,
-      //   ),
-      // ),
+      backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           // Ajouter la logique pour contacter le propriétaire
@@ -64,80 +72,64 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
           children: [
             Stack(
               children: [
+                // ImageCarousel à remplacer par votre widget existant
                 ImageCarousel(
-                  imageUrls: widget.imageUrls,
+                  imageUrls: allImageUrls,
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: IconButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.cyan,
-                        size: 25,
-                      ),
+                Positioned(
+                  top:
+                      40, // Ajout de l'espace supérieur pour une meilleure visibilité
+                  left: 16,
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                      size: 30,
                     ),
                   ),
                 ),
               ],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.location_on,
-                    color: Colors.cyan,
-                  ),
-                  label: const Text(
-                    'Localisation',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.share,
-                    color: Colors.cyan,
-                  ),
-                  label: const Text(
-                    'Partager',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // Action pour aimer
-                    setState(() {
-                      _isFavorite = !_isFavorite;
-                    });
-                  },
-                  icon: Icon(
-                    _isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: _isFavorite ? Colors.red : Colors.cyan,
-                    size: 35,
-                  ),
-                  label: const Text(
-                    'J\'aime',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-              ],
-            ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(vertical: 5.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildIconButton(
+                    icon: Icons.location_on,
+                    onPressed: () {},
+                    tooltip: 'Localisation',
+                  ),
+                  _buildIconButton(
+                    icon: _isFavorite ? Icons.favorite : Icons.favorite_border,
+                    onPressed: () {
+                      setState(() {
+                        _isFavorite = !_isFavorite;
+                      });
+                    },
+                    tooltip: 'J\'aime',
+                  ),
+                  _buildIconButton(
+                    icon: Icons.share,
+                    onPressed: () {},
+                    tooltip: 'Partager',
+                  ),
+                ],
+              ),
+            ),
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     widget.title,
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 20, // Augmentation de la taille du texte
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -145,7 +137,7 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
                   Text(
                     widget.location,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 18, // Augmentation de la taille du texte
                       color: Colors.grey,
                     ),
                   ),
@@ -153,16 +145,39 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
                   Text(
                     widget.price,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 20, // Augmentation de la taille du texte
                       fontWeight: FontWeight.bold,
                       color: Colors.cyan,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Détails',
+                    style: TextStyle(
+                      fontSize: 18, // Augmentation de la taille du texte
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 16.0,
+                    runSpacing: 8.0,
+                    children: [
+                      _buildDetailItem(
+                          Icons.king_bed, '${widget.numRooms} pièces'),
+                      _buildDetailItem(Icons.local_parking,
+                          widget.hasGarage ? 'Garage' : 'Pas de garage'),
+                      _buildDetailItem(Icons.terrain,
+                          widget.hasTerrace ? 'Terrasse' : 'Pas de terrasse'),
+                      _buildDetailItem(Icons.home,
+                          widget.saleOrRent ? 'À vendre' : 'À louer'),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
                   const Text(
                     'Description',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 18, // Augmentation de la taille du texte
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -173,32 +188,24 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
                       fontSize: 16,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   const Text(
                     'Équipements',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 18, // Augmentation de la taille du texte
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Column(
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
                     children: widget.amenities
                         .map(
-                          (amenity) => Row(
-                            children: [
-                              const Icon(Icons.check, color: Colors.cyan),
-                              const SizedBox(width: 10),
-                              Text(
-                                amenity,
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            ],
-                          ),
+                          (amenity) => _buildAmenityCard(amenity),
                         )
                         .toList(),
                   ),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -208,40 +215,57 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
     );
   }
 
-  Widget _buildFavoriteButton() {
+  Widget _buildIconButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required String tooltip,
+  }) {
     return IconButton(
-      onPressed: () {
-        setState(() {
-          _isFavorite = !_isFavorite;
-        });
-        // Ajoutez ici la logique pour ajouter/retirer des favoris
-      },
-      icon: Icon(
-        _isFavorite ? Icons.favorite : Icons.favorite_border,
-        color: _isFavorite ? Colors.red : Colors.cyan,
-        size: 35,
-      ),
+      icon: Icon(icon, size: 30, color: Colors.cyan),
+      onPressed: onPressed,
+      tooltip: tooltip,
     );
   }
 
-  Widget _buildGoogleMapButton() {
-    return IconButton(
-      onPressed: () {},
-      icon: const Icon(
-        Icons.location_on,
-        color: Colors.cyan,
-        size: 35,
+  Widget _buildDetailItem(IconData icon, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: Colors.cyan),
+        const SizedBox(width: 8),
+        Text(text, style: const TextStyle(fontSize: 16)),
+      ],
+    );
+  }
+
+  Widget _buildAmenityCard(String amenity) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check, color: Colors.cyan),
+            const SizedBox(width: 8),
+            Text(
+              amenity,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-
-
-
 // import 'package:flutter/material.dart';
+// import 'package:habitatgn/widgets/dashbord/dashbord.dart';
 
-// class HousingDetailPage extends StatelessWidget {
+// class HousingDetailPage extends StatefulWidget {
 //   final String imageUrl;
 //   final List<String> imageUrls;
 //   final String title;
@@ -249,9 +273,14 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
 //   final String price;
 //   final String description;
 //   final List<String> amenities;
+//   final int numRooms; // Nombre de pièces
+//   final bool hasGarage; // Indicateur de garage
+//   final bool hasTerrace; // Indicateur de terrasse
+//   final double latitude;
+//   final double longitude;
+//   final bool saleOrRent; // Vente ou location
 
 //   const HousingDetailPage({
-//     super.key,
 //     required this.imageUrl,
 //     required this.imageUrls,
 //     required this.title,
@@ -259,120 +288,235 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
 //     required this.price,
 //     required this.description,
 //     required this.amenities,
+//     required this.numRooms,
+//     required this.hasGarage,
+//     required this.hasTerrace,
+//     required this.latitude,
+//     required this.longitude,
+//     required this.saleOrRent, // Ajout de la variable saleOrRent
+//     super.key,
 //   });
+
+//   @override
+//   State<HousingDetailPage> createState() => _HousingDetailPageState();
+// }
+
+// class _HousingDetailPageState extends State<HousingDetailPage> {
+//   bool _isFavorite = false; // État de l'élément dans les favoris
+//   late List<String> allImageUrls; // Liste d'URL d'images incluant imageUrl
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     allImageUrls = [widget.imageUrl, ...widget.imageUrls];
+//   }
 
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//       // appBar: AppBar(
-//       //   title: Text(
-//       //     'Détail du Logement',
-//       //     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-//       //   ),
-//       //   backgroundColor: Colors.cyan,
-//       // ),
+//       backgroundColor: Colors.white,
+//       floatingActionButton: FloatingActionButton.extended(
+//         onPressed: () {
+//           // Ajouter la logique pour contacter le propriétaire
+//         },
+//         icon: const Icon(
+//           Icons.phone,
+//           color: Colors.white,
+//         ),
+//         label: const Text(
+//           'Appeler',
+//           style: TextStyle(color: Colors.white),
+//         ),
+//         backgroundColor: Colors.cyan,
+//       ),
 //       body: SingleChildScrollView(
-//         padding: EdgeInsets.all(16.0),
 //         child: Column(
 //           crossAxisAlignment: CrossAxisAlignment.start,
 //           children: [
-//             AspectRatio(
-//               aspectRatio: 16 / 8,
-//               child: PageView.builder(
-//                 itemCount: imageUrls.length,
-//                 itemBuilder: (context, index) {
-//                   return Image.asset(
-//                     imageUrls[index],
-//                     fit: BoxFit.cover,
-//                   );
-//                 },
+//             Stack(
+//               children: [
+//                 // ImageCarousel à remplacer par votre widget existant
+//                 ImageCarousel(
+//                   imageUrls: allImageUrls,
+//                 ),
+//                 Positioned(
+//                   top:
+//                       40, // Ajout de l'espace supérieur pour une meilleure visibilité
+//                   left: 16,
+//                   child: IconButton(
+//                     onPressed: () {
+//                       Navigator.of(context).pop();
+//                     },
+//                     icon: const Icon(
+//                       Icons.arrow_back_ios_new_rounded,
+//                       color: Colors.white,
+//                       size: 30,
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//             Padding(
+//               padding: const EdgeInsets.symmetric(vertical: 5.0),
+//               child: Row(
+//                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//                 children: [
+//                   _buildIconButton(
+//                     icon: Icons.location_on,
+//                     onPressed: () {},
+//                     tooltip: 'Localisation',
+//                   ),
+//                   _buildIconButton(
+//                     icon: _isFavorite ? Icons.favorite : Icons.favorite_border,
+//                     onPressed: () {
+//                       setState(() {
+//                         _isFavorite = !_isFavorite;
+//                       });
+//                     },
+//                     tooltip: 'J\'aime',
+//                   ),
+//                   _buildIconButton(
+//                     icon: Icons.share,
+//                     onPressed: () {},
+//                     tooltip: 'Partager',
+//                   ),
+//                 ],
 //               ),
 //             ),
-//             SizedBox(height: 16.0),
-//             Text(
-//               title,
-//               style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-//             ),
-//             SizedBox(height: 8.0),
-//             Row(
-//               children: [
-//                 Icon(Icons.location_on, color: Colors.grey),
-//                 SizedBox(width: 8.0),
-//                 Text(location),
-//               ],
-//             ),
-//             SizedBox(height: 8.0),
-//             Row(
-//               children: [
-//                 Icon(Icons.attach_money, color: Colors.grey),
-//                 SizedBox(width: 8.0),
-//                 Text(price),
-//               ],
-//             ),
-//             SizedBox(height: 16.0),
-//             Text(
-//               'Description',
-//               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-//             ),
-//             SizedBox(height: 8.0),
-//             Text(description),
-//             SizedBox(height: 16.0),
-//             Text(
-//               'Équipements',
-//               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-//             ),
-//             SizedBox(height: 8.0),
-//             Wrap(
-//               spacing: 8.0,
-//               children: amenities
-//                   .map(
-//                     (amenity) => Chip(
-//                       label: Text(amenity),
+//             const Divider(),
+//             Padding(
+//               padding: const EdgeInsets.all(10.0),
+//               child: Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Text(
+//                     widget.title,
+//                     style: const TextStyle(
+//                       fontSize: 20, // Augmentation de la taille du texte
+//                       fontWeight: FontWeight.bold,
 //                     ),
-//                   )
-//                   .toList(),
+//                   ),
+//                   const SizedBox(height: 10),
+//                   Text(
+//                     widget.location,
+//                     style: const TextStyle(
+//                       fontSize: 18, // Augmentation de la taille du texte
+//                       color: Colors.grey,
+//                     ),
+//                   ),
+//                   const SizedBox(height: 10),
+//                   Text(
+//                     widget.price,
+//                     style: const TextStyle(
+//                       fontSize: 20, // Augmentation de la taille du texte
+//                       fontWeight: FontWeight.bold,
+//                       color: Colors.cyan,
+//                     ),
+//                   ),
+//                   const SizedBox(height: 10),
+//                   const Text(
+//                     'Détails',
+//                     style: TextStyle(
+//                       fontSize: 18, // Augmentation de la taille du texte
+//                       fontWeight: FontWeight.bold,
+//                     ),
+//                   ),
+//                   const SizedBox(height: 10),
+//                   Wrap(
+//                     spacing: 16.0,
+//                     runSpacing: 8.0,
+//                     children: [
+//                       _buildDetailItem(
+//                           Icons.king_bed, '${widget.numRooms} pièces'),
+//                       _buildDetailItem(Icons.local_parking,
+//                           widget.hasGarage ? 'Garage' : 'Pas de garage'),
+//                       _buildDetailItem(Icons.terrain,
+//                           widget.hasTerrace ? 'Terrasse' : 'Pas de terrasse'),
+//                       _buildDetailItem(Icons.home,
+//                           widget.saleOrRent ? 'À vendre' : 'À louer'),
+//                     ],
+//                   ),
+//                   const SizedBox(height: 10),
+//                   const Text(
+//                     'Description',
+//                     style: TextStyle(
+//                       fontSize: 18, // Augmentation de la taille du texte
+//                       fontWeight: FontWeight.bold,
+//                     ),
+//                   ),
+//                   const SizedBox(height: 10),
+//                   Text(
+//                     widget.description,
+//                     style: const TextStyle(
+//                       fontSize: 16,
+//                     ),
+//                   ),
+//                   const SizedBox(height: 10),
+//                   const Text(
+//                     'Équipements',
+//                     style: TextStyle(
+//                       fontSize: 18, // Augmentation de la taille du texte
+//                       fontWeight: FontWeight.bold,
+//                     ),
+//                   ),
+//                   const SizedBox(height: 10),
+//                   Wrap(
+//                     spacing: 10,
+//                     runSpacing: 10,
+//                     children: widget.amenities
+//                         .map(
+//                           (amenity) => _buildAmenityCard(amenity),
+//                         )
+//                         .toList(),
+//                   ),
+//                 ],
+//               ),
 //             ),
-//             SizedBox(height: 16.0),
-//             Row(
-//               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//               children: [
-//                 ElevatedButton.icon(
-//                   onPressed: () {
-//                     // Action pour localisation
-//                     ScaffoldMessenger.of(context).showSnackBar(
-//                       SnackBar(
-//                         content: Text('Localisation en cours...'),
-//                       ),
-//                     );
-//                   },
-//                   icon: Icon(Icons.location_on),
-//                   label: Text('Localisation'),
-//                 ),
-//                 ElevatedButton.icon(
-//                   onPressed: () {
-//                     // Action pour sauvegarder
-//                     ScaffoldMessenger.of(context).showSnackBar(
-//                       SnackBar(
-//                         content: Text('Sauvegardé avec succès'),
-//                       ),
-//                     );
-//                   },
-//                   icon: Icon(Icons.bookmark),
-//                   label: Text('Sauvegarder'),
-//                 ),
-//                 ElevatedButton.icon(
-//                   onPressed: () {
-//                     // Action pour aimer
-//                     ScaffoldMessenger.of(context).showSnackBar(
-//                       SnackBar(
-//                         content: Text('Ajouté aux favoris'),
-//                       ),
-//                     );
-//                   },
-//                   icon: Icon(Icons.favorite),
-//                   label: Text('J\'aime'),
-//                 ),
-//               ],
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildIconButton({
+//     required IconData icon,
+//     required VoidCallback onPressed,
+//     required String tooltip,
+//   }) {
+//     return IconButton(
+//       icon: Icon(icon, size: 30, color: Colors.cyan),
+//       onPressed: onPressed,
+//       tooltip: tooltip,
+//     );
+//   }
+
+//   Widget _buildDetailItem(IconData icon, String text) {
+//     return Row(
+//       mainAxisSize: MainAxisSize.min,
+//       children: [
+//         Icon(icon, color: Colors.cyan),
+//         const SizedBox(width: 8),
+//         Text(text, style: const TextStyle(fontSize: 16)),
+//       ],
+//     );
+//   }
+
+//   Widget _buildAmenityCard(String amenity) {
+//     return Card(
+//       elevation: 0,
+//       shape: RoundedRectangleBorder(
+//         borderRadius: BorderRadius.circular(10),
+//       ),
+//       child: Padding(
+//         padding: const EdgeInsets.all(8.0),
+//         child: Row(
+//           mainAxisSize: MainAxisSize.min,
+//           children: [
+//             const Icon(Icons.check, color: Colors.cyan),
+//             const SizedBox(width: 8),
+//             Text(
+//               amenity,
+//               style: const TextStyle(fontSize: 16),
 //             ),
 //           ],
 //         ),

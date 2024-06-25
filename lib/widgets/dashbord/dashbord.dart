@@ -33,6 +33,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
             autoPlay: false,
             aspectRatio: 16 / 8,
             // enlargeFactor: 0.2,
+            height: 300,
             enlargeCenterPage: true,
             enableInfiniteScroll: false,
             viewportFraction: 1.0,
@@ -75,18 +76,6 @@ class _ImageCarouselState extends State<ImageCarousel> {
                 );
               }).toList(),
             ),
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    "A vendre",
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.cyan),
-                  )),
-            )
           ],
         ),
       ],

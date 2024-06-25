@@ -16,7 +16,7 @@
 
 //   static final List<Widget> _widgetOptions = <Widget>[
 //     const DashbordScreen(),
-//     const AlertsTab(),
+//     const FavoritesPage(),
 //     const ProfilePage(),
 //   ];
 
@@ -60,8 +60,8 @@
 //   }
 // }
 
-// class AlertsTab extends StatelessWidget {
-//   const AlertsTab({super.key});
+// class FavoritesPage extends StatelessWidget {
+//   const FavoritesPage({super.key});
 
 //   @override
 //   Widget build(BuildContext context) {
@@ -77,6 +77,7 @@
 // }
 
 import 'package:flutter/material.dart';
+import 'package:habitatgn/screens/favoris/favoris.dart';
 import 'package:habitatgn/screens/home/dashbord.dart';
 import 'package:habitatgn/screens/profil/profil.dart';
 import 'package:habitatgn/utils/appColors.dart';
@@ -94,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static final List<Widget> _widgetOptions = <Widget>[
     const DashbordScreen(),
-    const AlertsTab(),
+    FavoritesPage(),
     const ProfilePage(),
   ];
 
@@ -117,8 +118,8 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Alerts',
+            icon: Icon(Icons.favorite),
+            label: 'Favoris',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
@@ -133,22 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
         unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
         selectedItemColor: primary,
         unselectedItemColor: Colors.grey,
-      ),
-    );
-  }
-}
-
-class AlertsTab extends StatelessWidget {
-  const AlertsTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('Alerts Tab'),
-        ],
       ),
     );
   }
