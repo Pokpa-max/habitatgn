@@ -55,76 +55,63 @@ Widget seachResult({results}) {
                   child: Image.asset(
                     house.imageUrl,
                     width: 150,
-                    height: 120,
+                    height: 140,
                     fit: BoxFit.cover,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Text(
+                        house.type,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      Row(
                         children: [
+                          const Icon(Icons.location_on,
+                              size: 18, color: Colors.grey),
+                          const SizedBox(width: 4),
                           Text(
-                            house.type,
+                            house.location,
                             style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
+                                fontSize: 14, color: Colors.black87),
                           ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on,
-                                  size: 18, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Text(
-                                house.location,
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_city,
+                              size: 18, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          Text(
+                            house.commune,
+                            style: const TextStyle(
+                                fontSize: 14, color: Colors.black87),
                           ),
-                          Row(
-                            children: [
-                              const Icon(Icons.location_city,
-                                  size: 18, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Text(
-                                house.commune,
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              const Icon(Icons.location_pin,
-                                  size: 18, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Text(
-                                house.quartier,
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              const Icon(Icons.home,
-                                  size: 18, color: Colors.grey),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${house.numRooms} pièces',
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.home, size: 18, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${house.numRooms} pièces',
+                            style: const TextStyle(fontSize: 14),
                           ),
                         ],
                       ),
                       Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: Text(
-                          '${house.price.toString()} GN',
+                          '${house.price.toString()} GN/mois',
                           style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,

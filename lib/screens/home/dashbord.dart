@@ -19,6 +19,7 @@ class DashbordScreen extends StatelessWidget {
     }
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           'HABITATGN',
@@ -27,13 +28,38 @@ class DashbordScreen extends StatelessWidget {
         ),
         backgroundColor: primary,
         actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.notifications,
-              color: Colors.white,
+          InkWell(
+            onTap: performSearch,
+            child: Container(
+              height: 30,
+              width: 30,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30), color: Colors.white),
+              child: const Icon(
+                Icons.search,
+                color: primary,
+              ),
             ),
           ),
+          const SizedBox(
+            width: 10,
+          ),
+          InkWell(
+            onTap: () {},
+            child: Container(
+                height: 30,
+                width: 30,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    color: Colors.white),
+                child: const Icon(
+                  Icons.notifications,
+                  color: primary,
+                )),
+          ),
+          const SizedBox(
+            width: 5,
+          )
         ],
       ),
       body: Column(

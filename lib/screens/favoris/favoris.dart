@@ -32,6 +32,7 @@ class FavoritesPage extends StatelessWidget {
     ];
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         centerTitle: true,
         title: const CustomTitle(
@@ -40,152 +41,168 @@ class FavoritesPage extends StatelessWidget {
         ),
         backgroundColor: primary,
       ),
-      body: ListView.builder(
-        itemCount: favoriteItems.length,
-        itemBuilder: (context, index) {
-          final item = favoriteItems[index];
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            child: Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HousingDetailPage(
-                        saleOrRent: item.isForSale,
-                        hasTerrace: true,
-                        hasGarage: true,
-                        numRooms: item.numRooms,
-                        imageUrl: item.imageUrl,
-                        imageUrls: const [
-                          'assets/images/maison2.jpg',
-                          'assets/images/logo.png',
-                        ],
-                        title: item.title,
-                        location: item.location,
-                        price: '${item.price.toString()} GN/mois',
-                        description:
-                            'Un magnifique appartement situé au cœur de ${item.location} avec une vue imprenable. Comprend ${item.numRooms} chambres, ${item.quartier}, et une cuisine entièrement équipée.',
-                        amenities: const [
-                          'Wi-Fi gratuit',
-                          'Cuisine équipée',
-                          'Piscine',
-                          'Salle de gym',
-                          'Parking gratuit',
-                        ],
-                        latitude: 48.8588443,
-                        longitude: 2.2943506,
-                      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 10),
+          Expanded(
+            child: ListView.builder(
+              itemCount: favoriteItems.length,
+              itemBuilder: (context, index) {
+                final item = favoriteItems[index];
+                return Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(0),
-                        child: Image.asset(
-                          item.imageUrl,
-                          width: 100,
-                          height: 100,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HousingDetailPage(
+                              saleOrRent: item.isForSale,
+                              hasTerrace: true,
+                              hasGarage: true,
+                              numRooms: item.numRooms,
+                              imageUrl: item.imageUrl,
+                              imageUrls: const [
+                                'assets/images/maison2.jpg',
+                                'assets/images/logo.png',
+                              ],
+                              title: item.title,
+                              location: item.location,
+                              price: '${item.price.toString()} GN/mois',
+                              description:
+                                  'Un magnifique appartement situé au cœur de ${item.location} avec une vue imprenable. Comprend ${item.numRooms} chambres, ${item.quartier}, et une cuisine entièrement équipée.',
+                              amenities: const [
+                                'Wi-Fi gratuit',
+                                'Cuisine équipée',
+                                'Piscine',
+                                'Salle de gym',
+                                'Parking gratuit',
+                              ],
+                              latitude: 48.8588443,
+                              longitude: 2.2943506,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            child: Image.asset(
+                              item.imageUrl,
+                              width: 150,
+                              height: 140,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Text(
+                                      item.title,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 4,
+                                          horizontal: 8,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: item.isForSale
+                                              ? Colors.green
+                                              : Colors.blue,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          item.isForSale
+                                              ? "À vendre"
+                                              : "Location",
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.location_pin,
+                                        size: 16, color: Colors.grey),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${item.commune}, ${item.quartier}',
+                                      style: const TextStyle(
+                                          fontSize: 14, color: Colors.black87),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.home,
+                                            size: 18, color: Colors.grey),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '${item.numRooms} pièces',
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.black87),
+                                        ),
+                                      ],
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.favorite,
+                                          color: Colors.red),
+                                      onPressed: () {
+                                        // Ajouter ici la logique pour supprimer l'élément des favoris
+                                      },
+                                    )
+                                  ],
+                                ),
                                 Text(
-                                  item.title,
+                                  '${item.price.toString()} GN/mois',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4,
-                                    horizontal: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: item.isForSale
-                                        ? Colors.green
-                                        : Colors.blue,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    item.isForSale ? "À vendre" : "Location",
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
+                                    color: primary,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
-                            Row(
-                              children: [
-                                const Icon(Icons.location_pin,
-                                    size: 18, color: Colors.grey),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${item.commune}, ${item.quartier}',
-                                  style: const TextStyle(
-                                      fontSize: 14, color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
-                              children: [
-                                const Icon(Icons.home,
-                                    size: 18, color: Colors.grey),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${item.numRooms} pièces',
-                                  style: const TextStyle(
-                                      fontSize: 14, color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              '${item.price.toString()} GN/mois',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: primary,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.favorite, color: Colors.red),
-                        onPressed: () {
-                          // Ajouter ici la logique pour supprimer l'élément des favoris
-                        },
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }

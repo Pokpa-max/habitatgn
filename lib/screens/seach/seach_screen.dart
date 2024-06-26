@@ -411,8 +411,8 @@ class _SearchPageState extends State<SearchPage> {
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: ListView(
-                padding:
-                    EdgeInsets.only(bottom: 80.0), // Ajout de padding en bas
+                padding: const EdgeInsets.only(
+                    bottom: 80.0), // Ajout de padding en bas
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -467,16 +467,21 @@ class _SearchPageState extends State<SearchPage> {
                 ],
               ),
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        extendedPadding: EdgeInsets.all(1),
-        onPressed: _performSearch,
-        label: const Text(
-          'Lancez votre recherche',
-          style: TextStyle(color: Colors.white),
-        ),
-        icon: const Icon(Icons.search, color: Colors.white),
-        backgroundColor: primary,
-      ),
+      floatingActionButton: _searchResults.isEmpty
+          ? FloatingActionButton.extended(
+              // isExtended: false,
+              onPressed: _performSearch,
+              icon: const Icon(
+                Icons.search,
+                color: Colors.white,
+              ),
+              label: const Text(
+                'Soumettre',
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.cyan,
+            )
+          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
