@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:habitatgn/screens/home/home_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habitatgn/viewmodels/splashScreen/splashscreen_provider.dart';
+import 'package:habitatgn/utils/appcolors.dart'; // Assurez-vous d'importer vos couleurs personnalisées ici
 
-class SplashScreen extends StatefulWidget {
-  // ignore: use_super_parameters
-  const SplashScreen({Key? key}) : super(key: key);
+class SplashScreen extends ConsumerStatefulWidget {
+  const SplashScreen({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _animationController;
+  late final SplashScreenViewModel _splashScreenViewModel;
 
   @override
   void initState() {
@@ -21,10 +23,11 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..forward().whenComplete(() {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
+        // Appeler checkLoggedIn après l'animation
+        _splashScreenViewModel.checkLoggedIn(context);
       });
+
+    _splashScreenViewModel = ref.read(splashScreenViewModelProvider);
   }
 
   @override
@@ -46,8 +49,8 @@ class _SplashScreenState extends State<SplashScreen>
               ),
               child: Image.asset(
                 'assets/images/logo.png',
-                width: 200,
-                height: 200,
+                width: 300,
+                height: 300,
               ),
             ),
           ),
@@ -58,7 +61,13 @@ class _SplashScreenState extends State<SplashScreen>
               child: Container(
                 height: 150,
                 width: MediaQuery.of(context).size.width,
-                color: Colors.cyan,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [primary, primary],
+                  ),
+                ),
               ),
             ),
           ),

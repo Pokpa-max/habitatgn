@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habitatgn/screens/house/house_detail_screen.dart';
-import 'package:habitatgn/utils/appColors.dart';
+import 'package:habitatgn/utils/appcolors.dart';
 import 'package:habitatgn/utils/ui_element.dart';
 
 class FavoritesPage extends StatelessWidget {
@@ -32,7 +32,7 @@ class FavoritesPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: lightPrimary,
       appBar: AppBar(
         centerTitle: true,
         title: const CustomTitle(
@@ -53,6 +53,7 @@ class FavoritesPage extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.all(5.0),
                   child: Card(
+                    color: backgroundColor,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "309566641555",
+    "project_id": "meloger-b4e82",
+    "storage_bucket": "meloger-b4e82.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:309566641555:android:8686bba6f29e6795808466",
+        "android_client_info": {
+          "package_name": "com.example.habitatgn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "309566641555-1trkq939hqc81vga9r5hmfcnr4i52gg5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCazMYdtoLddh5ZP02bgNjgyPNiyL0v_gE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "309566641555-1trkq939hqc81vga9r5hmfcnr4i52gg5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "309566641555-1ta8hteb6o13293d5k1d391i8831u58j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.meloger"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:309566641555:android:c2970a0a3106ca87808466",
+        "android_client_info": {
+          "package_name": "com.example.meloger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "309566641555-kb7fjvg6cltirtm09pjha3412erg08jk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.meloger",
+            "certificate_hash": "931087f2e9d0a741df0d9f72f17efb4ad265e1e9"
+          }
+        },
+        {
+          "client_id": "309566641555-1trkq939hqc81vga9r5hmfcnr4i52gg5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCazMYdtoLddh5ZP02bgNjgyPNiyL0v_gE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "309566641555-1trkq939hqc81vga9r5hmfcnr4i52gg5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "309566641555-1ta8hteb6o13293d5k1d391i8831u58j.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.meloger"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

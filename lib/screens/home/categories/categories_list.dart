@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:habitatgn/utils/appColors.dart';
+import 'package:habitatgn/utils/appcolors.dart';
 
 class CategoryDetailScreen extends StatelessWidget {
   final String categoryTitle;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habitatgn/screens/seach/seach_screen.dart';
-import 'package:habitatgn/utils/appColors.dart';
+import 'package:habitatgn/utils/appcolors.dart';
 
 class CustomTitle extends StatelessWidget {
   final String text;
@@ -106,16 +106,45 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-// void main() {
-//   runApp(MaterialApp(
-//     home: Scaffold(
-//       appBar: CustomAppBar(
-//         title: 'Ma Page',
-//         leadingIcon: Icons.arrow_back_ios_outlined,
-//       ),
-//       body: Center(
-//         child: Text('Contenu de la page'),
-//       ),
-//     ),
-//   ));
-// }
+Widget houseCategoryListEmpty() {
+  return Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.home_outlined,
+          size: 100,
+          color: Colors.grey[400],
+        ),
+        const SizedBox(height: 20),
+        Text(
+          'Aucune catégorie de logement disponible',
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.grey[600],
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'Veuillez vérifier ultérieurement',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey[500],
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    ),
+  );
+}
+
+
+
+ // Navigator.pushAndRemoveUntil(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => const HomeScreen(),
+                      //   ),
+                      //   (route) => false, // Supprime toutes les autres routes
+                      // );

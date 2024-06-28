@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:habitatgn/models/house_result_model.dart';
 import 'package:habitatgn/screens/house/house_detail_screen.dart';
-import 'package:habitatgn/utils/appColors.dart';
+import 'package:habitatgn/utils/appcolors.dart';
 
 Widget seachResult({results}) {
   return ListView.builder(
@@ -11,6 +11,7 @@ Widget seachResult({results}) {
       return Padding(
         padding: const EdgeInsets.all(5.0),
         child: Card(
+          color: backgroundColor,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

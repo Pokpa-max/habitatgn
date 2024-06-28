@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:habitatgn/utils/appColors.dart';
+import 'package:habitatgn/utils/appcolors.dart';
 import 'package:habitatgn/utils/ui_element.dart';
 import 'package:habitatgn/widgets/dashbord/dashbord.dart';
 
@@ -92,6 +92,7 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
           children: [
             ImageCarousel(
               imageUrls: allImageUrls,
+              
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 5.0),
@@ -241,6 +242,7 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
 
   Widget _buildAmenityCard(String amenity) {
     return Card(
+      color: lightPrimary,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
