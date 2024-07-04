@@ -11,14 +11,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:habitatgn/viewmodels/auth_provider/auth_provider.dart';
 
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+
 class LoginScreen extends ConsumerWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   LoginScreen({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authService = ref.watch(authViewModelProvider);
+    final isLoading =
+        ref.watch(authViewModelProvider.select((value) => value.isLoading));
+    final isPasswordVisible = ref.watch(passwordVisibilityProvider);
 
     return Scaffold(
       backgroundColor: lightPrimary,
@@ -30,9 +36,7 @@ class LoginScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
                 const Text(
                   'Connexion',
                   style: TextStyle(
@@ -41,9 +45,7 @@ class LoginScreen extends ConsumerWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
                 const Icon(
                   Icons.person,
                   size: 100,
@@ -69,6 +71,7 @@ class LoginScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 TextField(
                   controller: passwordController,
+                  style: const TextStyle(color: Colors.black),
                   decoration: InputDecoration(
                     labelText: 'Mot de passe',
                     labelStyle: const TextStyle(color: Colors.black),
@@ -78,11 +81,24 @@ class LoginScreen extends ConsumerWidget {
                         borderSide: const BorderSide(color: Colors.white),
                         borderRadius: BorderRadius.circular(15)),
                     focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.white),
-                        borderRadius: BorderRadius.circular(15)),
+                      borderSide: const BorderSide(color: Colors.white),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        ref
+                            .read(passwordVisibilityProvider.notifier)
+                            .toggleVisibility();
+                      },
+                    ),
                   ),
-                  obscureText: true,
-                  style: const TextStyle(color: Colors.black),
+                  obscureText: !isPasswordVisible,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -98,30 +114,35 @@ class LoginScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
-                  width: double.infinity, // Prendre toute la largeur disponible
+                  width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () async {
-                      try {
-                        // Connexion réussie avec l'email et mot de passe
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const HomeScreen()),
-                        );
-                      } catch (e) {
-                        // Gérer les erreurs d'authentification par email
-                        print('Erreur de connexion par email: $e');
-                      }
-                    },
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            try {
+                              // Connexion réussie avec l'email et mot de passe
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const HomeScreen()),
+                              );
+                            } catch (e) {
+                              print('Erreur de connexion par email: $e');
+                            }
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primary,
                       foregroundColor: Colors.white,
-                      side: const BorderSide(
-                          color: Colors.cyan,
-                          width:
-                              2), // Couleur et épaisseur du contour du bouton
                     ),
-                    child: const Text('Se connecter'),
+                    child: isLoading
+                        ? const SpinKitFadingCircle(
+                            color: primary,
+                            size: 40.0,
+                          )
+                        : const Text(
+                            'Se connecter',
+                            style: TextStyle(color: Colors.white),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -134,23 +155,15 @@ class LoginScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     ElevatedButton.icon(
-                      onPressed: () async {
-                        try {
-                          // final LoginResult result =
-                          //     await FacebookAuth.instance.login();
-                          // if (result.status == LoginStatus.success) {
-                          //   Navigator.pushReplacement(
-                          //     context,
-                          //     MaterialPageRoute(
-                          //         builder: (context) => const DashbordScreen()
-                          //         ),
-                          //   );
-                          // }
-                          authService.signInWithFacebook(context);
-                        } catch (e) {
-                          print('Erreur de connexion Facebook: $e');
-                        }
-                      },
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                              try {
+                                await authService.signInWithFacebook(context);
+                              } catch (e) {
+                                print('Erreur de connexion Facebook: $e');
+                              }
+                            },
                       icon: const Icon(
                         Icons.facebook,
                         color: Colors.white,
@@ -166,9 +179,15 @@ class LoginScreen extends ConsumerWidget {
                       ),
                     ),
                     ElevatedButton.icon(
-                      onPressed: () async {
-                        authService.signInWithGoogle(context);
-                      },
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                              try {
+                                await authService.signInWithGoogle(context);
+                              } catch (e) {
+                                print('Erreur de connexion Google: $e');
+                              }
+                            },
                       icon: const FaIcon(
                         FontAwesomeIcons.google,
                         color: Colors.white,
@@ -200,6 +219,7 @@ class LoginScreen extends ConsumerWidget {
                     TextButton(
                       onPressed: () {
                         // Handle navigation to register page
+                        authService.navigateToCreateAccount(context);
                       },
                       child: const Text(
                         "S'inscrire maintenant",

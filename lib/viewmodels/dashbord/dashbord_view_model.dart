@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:habitatgn/models/house_result_model.dart';
 import 'package:habitatgn/screens/house/houseList.dart';
 import 'package:habitatgn/screens/seach/seach_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,14 +16,26 @@ final dashbordViewModelProvider =
     ChangeNotifierProvider((ref) => DashbordViewModel(ref));
 
 class DashbordViewModel extends ChangeNotifier {
+  final HouseService _houseService = HouseService();
   final Ref _read;
   bool _isNavigating = false;
   List<String> imageUrls = [];
   List<String> subtitles = [];
-  bool isLoading = true;
+  bool isAdverstingLoading = true;
+
+  final List<House> _houses = [];
+  List<House> get houses => _houses;
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  DocumentSnapshot? _lastDocument;
+  bool _hasMore = true;
+  bool get hasMore => _hasMore;
 
   DashbordViewModel(this._read) {
     _fetchAdvertisementData();
+    //  fetchHouses();
   }
 
   Future<void> _fetchAdvertisementData() async {
@@ -34,10 +48,60 @@ class DashbordViewModel extends ChangeNotifier {
     } catch (e) {
       // Handle error
     } finally {
-      isLoading = false;
+      isAdverstingLoading = false;
       notifyListeners();
     }
   }
+
+// @@@@@@@@@@@@@@@@@@@@@@@@@1
+  // Future<void> fetchHouses() async {
+  //   if (_isLoading || !_hasMore) return;
+
+  //   _isLoading = true;
+  //   notifyListeners();
+
+  //   try {
+  //     List<House> newHouses = await _houseService.getHouses(lastDocument: _lastDocument);
+  //     if (newHouses.isNotEmpty) {
+  //       _houses.addAll(newHouses);
+  //       _lastDocument = _houses.last.snapshot;  // Assurez-vous que `snapshot` est une propriété de `House`
+  //     } else {
+  //       _hasMore = false;
+  //     }
+  //   } catch (e) {
+  //     debugPrint('Error fetching houses: $e');
+  //   }
+
+  //   _isLoading = false;
+  //   notifyListeners();
+  // }
+
+  // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2
+  //Recuperation des logements selon le type
+
+  //  Future<void> fetchHouses({HousingType? housingType}) async {
+  //   if (isLoading) return;
+
+  //   _isLoading = true;
+  //   notifyListeners();
+
+  //   List<House> newHouses = await _houseService.getHouses(
+  //     lastDocument: _lastDocument,
+  //     housingType: housingType,
+  //   );
+
+  //   if (newHouses.length < 20) {
+  //     _hasMore = false;
+  //   }
+
+  //   houses.addAll(newHouses);
+  //   if (newHouses.isNotEmpty) {
+  //     _lastDocument = newHouses.last.snapshot;
+  //   }
+
+  //   _isLoading = false;
+  //   notifyListeners();
+  // }
 
   List<CategoryData> getHousingCategories() {
     return [
@@ -61,7 +125,7 @@ class DashbordViewModel extends ChangeNotifier {
     if (_isNavigating) return; // Ignore if already navigating
     _isNavigating = true;
 
-    final houses = await _read
+    final categoryHousesData = await _read
         .read(houseServiceProvider)
         .getHousesByCategory(category.label);
 
@@ -75,7 +139,7 @@ class DashbordViewModel extends ChangeNotifier {
           title: category.label,
           iconData: category.icon,
           isForSale: false,
-          results: houses,
+          results: categoryHousesData,
           onTap: () {
             navigateToSearchPage(context);
           },

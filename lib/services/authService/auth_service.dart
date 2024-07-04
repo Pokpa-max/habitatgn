@@ -53,46 +53,6 @@ class AuthService {
   }
 
   // Authentification avec Google
-
-  // Future<User?> signInWithGoogle() async {
-  //   try {
-  //     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-  //     if (googleUser != null) {
-  //       final GoogleSignInAuthentication googleAuth =
-  //           await googleUser.authentication;
-
-  //       final AuthCredential credential = GoogleAuthProvider.credential(
-  //         accessToken: googleAuth.accessToken,
-  //         idToken: googleAuth.idToken,
-  //       );
-
-  //       final UserCredential userCredential =
-  //           await _auth.signInWithCredential(credential);
-
-  //       // Récupérer l'utilisateur actuel
-  //       User? user = userCredential.user;
-
-  //       // Vérifier si l'utilisateur est nouvellement créé
-  //       if (userCredential.additionalUserInfo?.isNewUser ?? false) {
-  //         // Créer un document utilisateur dans Firestore
-  //         await _firestore.collection('users').doc(user!.uid).set({
-  //           'displayName': user.displayName ?? '',
-  //           'email': user.email ?? '',
-  //           'phoneNumber': user.phoneNumber ?? '',
-  //           'photoURL': user.photoURL ?? '',
-  //           'createdAt': Timestamp.now(),
-  //           'updatedAt': Timestamp.now(),
-  //         });
-  //       }
-
-  //       return user;
-  //     }
-  //   } catch (e) {
-  //     print('Erreur de connexion Google: $e');
-  //   }
-  //   return null;
-  // }
-
   Future<User?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -143,7 +103,33 @@ class AuthService {
     }
   }
 
-  //recupereration de lutilisateur courant
+  // Création de compte par email et mot de passe
+  Future<User?> createUserWithEmailAndPassword(String email, String password,
+      String displayName, String? phoneNumber) async {
+    UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    User? user = userCredential.user;
+    if (user != null) {
+      await user.updateProfile(displayName: displayName);
+      await user.reload();
+      user = _auth.currentUser;
+
+      await _firestore.collection('users').doc(user!.uid).set({
+        'displayName': displayName,
+        'email': email,
+        'phoneNumber': phoneNumber ?? '',
+        'photoURL': user.photoURL ?? '',
+        'createdAt': Timestamp.now(),
+        'updatedAt': Timestamp.now(),
+      });
+    }
+
+    return user;
+  }
+
+  // Récupération de l'utilisateur courant
   User? getCurrentUser() {
     return _auth.currentUser;
   }

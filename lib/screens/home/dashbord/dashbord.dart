@@ -18,7 +18,7 @@ class DashbordScreen extends ConsumerWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (viewModel.isLoading)
+          if (viewModel.isAdverstingLoading)
             const ShimmerLoading()
           else
             AdvertisementCarousel(
@@ -52,7 +52,7 @@ class DashbordScreen extends ConsumerWidget {
         style: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
-          fontSize: 18,
+          fontSize: 20,
         ),
       ),
       backgroundColor: primary,
@@ -103,8 +103,8 @@ class DashbordScreen extends ConsumerWidget {
             return CategoryCard(
               icon: category.icon,
               label: category.label,
-              onTap: () {
-                viewModel.navigateToHouseList(context, category);
+              onTap: () async {
+                await viewModel.navigateToHouseList(context, category);
               },
             );
           }).toList(),

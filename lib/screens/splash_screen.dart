@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:habitatgn/viewmodels/splashScreen/splashscreen_provider.dart';
-import 'package:habitatgn/utils/appcolors.dart'; // Assurez-vous d'importer vos couleurs personnalisées ici
+import 'package:habitatgn/utils/appcolors.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _SplashScreenState createState() => _SplashScreenState();
 }
 
@@ -39,20 +39,32 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: lightPrimary,
       body: Stack(
         children: [
-          Center(
-            child: ScaleTransition(
-              scale: _animationController.drive(
-                CurveTween(curve: Curves.easeOutBack),
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "HABITATGN",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              child: Image.asset(
-                'assets/images/logo.png',
-                width: 300,
-                height: 300,
+              Text(
+                "Bienvenue .......",
+                style: TextStyle(fontSize: 16),
               ),
-            ),
+              SizedBox(height: 20),
+              SpinKitWave(
+                color: primary,
+                size: 50.0,
+                duration: Duration(seconds: 4),
+              ),
+            ],
           ),
           Align(
             alignment: Alignment.bottomCenter,
@@ -66,6 +78,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [primary, primary],
+                  ),
+                ),
+                child: const Center(
+                  child: Text(
+                    // "Bienvenue chez HabitatGN",
+                    "Explorez,Découvrez,Vivez",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 10.0,
+                          color: Colors.black26,
+                          offset: Offset(2, 2),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

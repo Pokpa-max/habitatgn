@@ -309,14 +309,14 @@ class _SearchPageState extends State<SearchPage> {
       ),
       selected: selected,
       onSelected: (bool value) => onSelected(),
-      selectedColor: Colors.cyan,
+      selectedColor: primary,
       backgroundColor: lightPrimary,
       labelStyle: TextStyle(
         color: selected ? Colors.white : Colors.cyan,
         fontWeight: FontWeight.bold,
       ),
       shape: RoundedRectangleBorder(
-        side: const BorderSide(color: Colors.white),
+        side: const BorderSide(color: primary),
         borderRadius: BorderRadius.circular(10),
       ),
     );
