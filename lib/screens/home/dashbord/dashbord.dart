@@ -5,43 +5,67 @@ import 'package:habitatgn/screens/adversting/adversting.dart';
 import 'package:habitatgn/screens/home/dashbord/widgets/sniper_loading.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 
-class DashbordScreen extends ConsumerWidget {
+class DashbordScreen extends ConsumerStatefulWidget {
   const DashbordScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  _DashbordScreenState createState() => _DashbordScreenState();
+}
+
+class _DashbordScreenState extends ConsumerState<DashbordScreen> {
+  @override
+  Widget build(BuildContext context) {
     final viewModel = ref.watch(dashbordViewModelProvider);
 
     return Scaffold(
       backgroundColor: lightPrimary,
       appBar: _buildAppBar(context, viewModel),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (viewModel.isAdverstingLoading)
-            const ShimmerLoading()
-          else
-            AdvertisementCarousel(
-              imageUrls: viewModel.imageUrls,
-              subtitles: viewModel.subtitles,
-            ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      body: viewModel.isAdverstingLoading
+          ? SingleChildScrollView(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
-                  _buildSectionTitle('Nos Catégories de Logements'),
-                  const SizedBox(height: 10),
-                  _buildCategoryGrid(context, viewModel),
-                  const SizedBox(height: 20),
+                  ShimmerLoading(
+                      categorieLength: viewModel.getHousingCategories().length),
                 ],
               ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                viewModel.advertisementData.isEmpty
+                    ? Container(
+                        height: 250,
+                        color: lightPrimary,
+                        child: const Center(
+                          child: Text(
+                            "HABITATGN",
+                            style: TextStyle(
+                                color: primaryColor,
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      )
+                    : AdvertisementCarousel(
+                        adverstingData: viewModel.advertisementData,
+                      ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20),
+                        _buildSectionTitle('Nos Catégories de Logements'),
+                        const SizedBox(height: 10),
+                        _buildCategoryGrid(context, viewModel),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -55,7 +79,7 @@ class DashbordScreen extends ConsumerWidget {
           fontSize: 20,
         ),
       ),
-      backgroundColor: primary,
+      backgroundColor: primaryColor,
       actions: [
         _buildAppBarIcon(
           icon: Icons.search,
@@ -81,7 +105,7 @@ class DashbordScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(30),
           color: Colors.white,
         ),
-        child: Icon(icon, color: primary),
+        child: Icon(icon, color: primaryColor),
       ),
     );
   }
@@ -150,7 +174,7 @@ class CategoryCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 30, color: primary),
+              Icon(icon, size: 30, color: primaryColor),
               const SizedBox(height: 5),
               Text(
                 label,

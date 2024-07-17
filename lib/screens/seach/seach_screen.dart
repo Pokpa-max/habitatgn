@@ -40,28 +40,66 @@ class _SearchPageState extends State<SearchPage> {
     'Nice'
   ];
 
+  List<Map<String, List<String>>> communes = [
+    // 'Conakry'= [
+    //   { label: 'Kaloum', value: 'Kaloum' },
+    //   { label: 'Dixinn', value: 'Dixinn' },
+    //   { label: 'Matam', value: 'Matam' },
+    //   { label: 'Ratoma', value: 'Ratoma' },
+    //   { label: 'Matoto', value: 'Matoto' }
+    // ],
+    // Kankan: [
+    //   { label: 'Kankan Centre', value: 'Kankan Centre' },
+    //   { label: 'Banankoro', value: 'Banankoro' },
+    //   { label: 'Karifamoriah', value: 'Karifamoriah' }
+    // ],
+    // Kindia: [
+    //   { label: 'Kindia Centre', value: 'Kindia Centre' },
+    //   { label: 'Friguiagbé', value: 'Friguiagbé' },
+    //   { label: 'Mambia', value: 'Mambia' }
+    // ],
+    // Labe: [
+    //   { label: 'Labé Centre', value: 'Labé Centre' },
+    //   { label: 'Daka', value: 'Daka' },
+    //   { label: 'Pita', value: 'Pita' }
+    // ],
+    // Mamou: [
+    //   { label: 'Mamou Centre', value: 'Mamou Centre' },
+    //   { label: 'Sérédou', value: 'Sérédou' },
+    //   { label: 'Koumbia', value: 'Koumbia' }
+    // ],
+    // Nzerekore: [
+    //   { label: 'Nzérékoré Centre', value: 'Nzérékoré Centre' },
+    //   { label: 'Sérédou', value: 'Sérédou' },
+    //   { label: 'Yalenzou', value: 'Yalenzou' }
+    // ],
+    // Boke: [
+    //   { label: 'Boké Centre', value: 'Boké Centre' },
+    //   { label: 'Kamsar', value: 'Kamsar' },
+    //   { label: 'Sangaredi', value: 'Sangaredi' }
+    // ],
+    // Faranah: [
+    //   { label: 'Faranah Centre', value: 'Faranah Centre' },
+    //   { label: 'Tiro', value: 'Tiro' },
+    //   { label: 'Banian', value: 'Banian' }
+    // ],
+    // Kamsar: [
+    //   { label: 'Kamsar Centre', value: 'Kamsar Centre' },
+    //   { label: 'Kolaboui', value: 'Kolaboui' },
+    //   { label: 'Bintimodia', value: 'Bintimodia' }
+    // ],
+    // Siguiri: [
+    //   { label: 'Siguiri Centre', value: 'Siguiri Centre' },
+    //   { label: 'Kintinian', value: 'Kintinian' },
+    //   { label: 'Niandankoro', value: 'Niandankoro' }
+    // ]
+  ];
+
   List<House> _searchResults = [];
 
   void _performSearch() {
     // Simulation de résultats de recherche
-    List<House> results = [
-      House(
-          type: 'Villa',
-          location: 'Paris',
-          commune: 'Commune1',
-          quartier: 'Quartier1',
-          price: 3000,
-          imageUrl: 'assets/images/maison.jpg',
-          numRooms: 3),
-      House(
-          type: 'Maison',
-          location: 'Lyon',
-          commune: 'Commune2',
-          quartier: 'Quartier2',
-          price: 2500,
-          numRooms: 2,
-          imageUrl: 'assets/images/maison.jpg'),
-    ];
+    List<House> results = [];
 
     setState(() {
       _searchResults = results;
@@ -95,7 +133,7 @@ class _SearchPageState extends State<SearchPage> {
       body: _searchResults.isNotEmpty
           ? seachResult(results: _searchResults)
           : Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20.0),
               child: ListView(
                 padding: const EdgeInsets.only(
                     bottom: 80.0), // Ajout de padding en bas
@@ -106,7 +144,6 @@ class _SearchPageState extends State<SearchPage> {
                       _buildToggleButtons(context),
                       const SizedBox(height: 10),
                       _buildDropdown(
-                        'Type de bien',
                         _types,
                         _selectedType,
                         (value) {
@@ -117,7 +154,6 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                       const SizedBox(height: 10),
                       _buildDropdown(
-                        'Localisation',
                         _locations,
                         _selectedLocation,
                         (value) {
@@ -172,17 +208,14 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _buildDropdown(String label, List<String> options,
-      String selectedValue, ValueChanged<String?> onChanged) {
+  Widget _buildDropdown(List<String> options, String selectedValue,
+      ValueChanged<String?> onChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
+          borderRadius: BorderRadius.circular(15),
           iconSize: 30,
           iconEnabledColor: primary,
           value: selectedValue,
@@ -194,16 +227,18 @@ class _SearchPageState extends State<SearchPage> {
           }).toList(),
           onChanged: onChanged,
           decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: primary),
+              borderSide: const BorderSide(color: Colors.white),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: primary),
+              borderSide: const BorderSide(color: Colors.white),
             ),
           ),
         ),
@@ -216,25 +251,25 @@ class _SearchPageState extends State<SearchPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ),
         const SizedBox(height: 8),
         TextFormField(
-          initialValue: value,
+          cursorColor: primary,
           onChanged: onChanged,
           decoration: InputDecoration(
+            labelText: label,
+            labelStyle: const TextStyle(color: Colors.black),
+            filled: true,
+            fillColor: Colors.white,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(15),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: primary),
+              borderRadius: BorderRadius.circular(15),
+              borderSide: const BorderSide(color: Colors.white),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: primary),
+              borderRadius: BorderRadius.circular(15),
+              borderSide: const BorderSide(color: Colors.white),
             ),
           ),
         ),

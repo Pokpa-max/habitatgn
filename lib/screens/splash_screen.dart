@@ -60,7 +60,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               ),
               SizedBox(height: 20),
               SpinKitWave(
-                color: primary,
+                color: primaryColor,
                 size: 50.0,
                 duration: Duration(seconds: 4),
               ),
@@ -77,7 +77,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [primary, primary],
+                    colors: [primaryColor, primaryColor],
                   ),
                 ),
                 child: const Center(

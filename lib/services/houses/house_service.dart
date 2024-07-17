@@ -1,97 +1,126 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:habitatgn/models/house_result_model.dart';
-import 'package:habitatgn/models/housing.dart';
 
 class HouseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  Future<List<House>> getHousesByCategory(String category) async {
-    // Simuler un délai de chargement
-    await Future.delayed(const Duration(seconds: 0));
-    // Retourner une liste simulée de maisons pour chaque catégorie
-    switch (category) {
-      case 'Villas':
-        return [
-          House(
-            type: 'Villa',
-            location: 'Paris',
-            commune: 'Commune1',
-            quartier: 'Quartier1',
-            price: 3000,
-            imageUrl: 'assets/images/maison.jpg',
-            numRooms: 3,
-          ),
-          // Ajouter d'autres maisons ici
-        ];
-      case 'Maisons':
-        return [
-          House(
-            type: 'Maison',
-            location: 'Lyon',
-            commune: 'Commune2',
-            quartier: 'Quartier2',
-            price: 2500,
-            imageUrl: 'assets/images/maison2.jpg',
-            numRooms: 4,
-          ),
-          // Ajouter d'autres maisons ici
-        ];
-      // Ajouter d'autres catégories ici
-      default:
-        return [];
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<House?> getHouseById(String houseId) async {
+    try {
+      DocumentSnapshot doc =
+          await _firestore.collection('houses').doc(houseId).get();
+
+      if (doc.exists) {
+        House house = House.fromFirestore(doc);
+        return house;
+      } else {
+        print('Document does not exist');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching house by id: $e');
+      return null;
     }
   }
 
-//Recuperation  des logements avec une taille de 20 element
-//  Future<List<House>> getHouses(
-//       {DocumentSnapshot? lastDocument, int limit = 20}) async {
-//     try {
-//       Query query = _firestore
-//           .collection('houses')
-//           .orderBy('createdAt', descending: true)
-//           .limit(limit);
+  Future<List<House>> getHouses({
+    DocumentSnapshot? lastDocument,
+    int limit = 20,
+    String? housingType,
+  }) async {
+    try {
+      Query query = _firestore
+          .collection('houses')
+          .orderBy('createdAt', descending: true)
+          .limit(limit);
 
-//       if (lastDocument != null) {
-//         query = query.startAfterDocument(lastDocument);
-//       }
+      if (housingType != null) {
+        query = query.where('houseType.label', isEqualTo: housingType);
+      }
 
-//       QuerySnapshot querySnapshot = await query.get();
-//       List<House> houses = querySnapshot.docs
-//           .map((doc) => House.fromFirestore(doc.data() as DocumentSnapshot<Object?>))
-//           .toList();
-//       return houses;
-//     } catch (e) {
-//       print('Error fetching houses: $e');
-//       return [];
-//     }
-//   }
+      if (lastDocument != null) {
+        query = query.startAfterDocument(lastDocument);
+      }
 
-  // Future<List<House>> getHouses({
-  //   DocumentSnapshot? lastDocument,
-  //   int limit = 20,
-  //   HousingType? housingType, // Ajout du paramètre de type de logement
-  // }) async {
-  //   try {
-  //     Query query = _firestore
-  //         .collection('houses')
-  //         .orderBy('createdAt', descending: true)
-  //         .limit(limit);
+      QuerySnapshot querySnapshot = await query.get();
 
-  //     if (housingType != null) {
-  //       query = query.where('type',
-  //           isEqualTo: housingType.toString().split('.').last);
-  //     }
+      List<House> houses =
+          querySnapshot.docs.map((doc) => House.fromFirestore(doc)).toList();
 
-  //     if (lastDocument != null) {
-  //       query = query.startAfterDocument(lastDocument);
-  //     }
+      return houses;
+    } catch (e) {
+      print('Error fetching houses: $e');
+      return [];
+    }
+  }
 
-  //     QuerySnapshot querySnapshot = await query.get();
-  //     List<House> houses =
-  //         querySnapshot.docs.map((doc) => House.fromFirestore(doc)).toList();
-  //     return houses;
-  //   } catch (e) {
-  //     print('Error fetching houses: $e');
-  //     return [];
-  //   }
-  // }
+  Future<void> addFavorite(String houseId) async {
+    try {
+      String userId = _auth.currentUser!.uid;
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('favorites')
+          .doc(houseId)
+          .set({'houseId': houseId});
+    } catch (e) {
+      print('Error adding favorite: $e');
+    }
+  }
+
+  Future<void> removeFavorite(String houseId) async {
+    try {
+      String userId = _auth.currentUser!.uid;
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('favorites')
+          .doc(houseId)
+          .delete();
+    } catch (e) {
+      print('Error removing favorite: $e');
+    }
+  }
+
+  Future<bool> isFavorite(String houseId) async {
+    try {
+      String userId = _auth.currentUser!.uid;
+      DocumentSnapshot doc = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('favorites')
+          .doc(houseId)
+          .get();
+      return doc.exists;
+    } catch (e) {
+      print('Error checking favorite: $e');
+      return false;
+    }
+  }
+
+  Future<List<House>> getFavorites() async {
+    try {
+      String userId = _auth.currentUser!.uid;
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('favorites')
+          .get();
+
+      List<String> houseIds = querySnapshot.docs.map((doc) => doc.id).toList();
+
+      List<House> favoriteHouses = [];
+      for (String houseId in houseIds) {
+        House? house = await getHouseById(houseId);
+        if (house != null) {
+          favoriteHouses.add(house);
+        }
+      }
+      return favoriteHouses;
+    } catch (e) {
+      print('Error fetching favorites: $e');
+      return [];
+    }
+  }
 }

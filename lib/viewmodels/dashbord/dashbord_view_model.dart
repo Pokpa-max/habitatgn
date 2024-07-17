@@ -1,5 +1,7 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:habitatgn/models/adversting.dart';
 import 'package:habitatgn/models/house_result_model.dart';
 import 'package:habitatgn/screens/house/houseList.dart';
 import 'package:habitatgn/screens/seach/seach_screen.dart';
@@ -20,8 +22,13 @@ class DashbordViewModel extends ChangeNotifier {
   final Ref _read;
   bool _isNavigating = false;
   List<String> imageUrls = [];
-  List<String> subtitles = [];
-  bool isAdverstingLoading = true;
+
+  List<AdvertisementData> _advertisementData = [];
+  List<AdvertisementData> get advertisementData => _advertisementData;
+
+  String title = "Habitat Gn";
+  bool _isAdverstingLoading = true;
+  bool get isAdverstingLoading => _isAdverstingLoading;
 
   final List<House> _houses = [];
   List<House> get houses => _houses;
@@ -34,115 +41,76 @@ class DashbordViewModel extends ChangeNotifier {
   bool get hasMore => _hasMore;
 
   DashbordViewModel(this._read) {
-    _fetchAdvertisementData();
-    //  fetchHouses();
+    fetchAdvertisementData();
+    fetchHouses();
   }
 
-  Future<void> _fetchAdvertisementData() async {
-    try {
-      final data = await _read
-          .read(advertisementServiceProvider)
-          .fetchAdvertisementData();
-      imageUrls = data['imageUrls']!;
-      subtitles = data['subtitles']!;
-    } catch (e) {
-      // Handle error
-    } finally {
-      isAdverstingLoading = false;
-      notifyListeners();
+  // Ajout de la méthode resetHouses
+  void resetHouses() async {
+    _houses.clear();
+    _lastDocument = null;
+    _hasMore = true;
+    // notifyListeners();
+  }
+
+  // Récupération des logements selon le type
+  Future<void> fetchHouses({String? housingType}) async {
+    print("houseType: $housingType");
+    if (isLoading) return;
+    if (housingType == null) return;
+
+    _isLoading = true;
+    // notifyListeners();
+
+    List<House> newHouses = await _houseService.getHouses(
+      lastDocument: _lastDocument,
+      housingType: housingType,
+    );
+
+    if (newHouses.length < 20) {
+      _hasMore = false;
     }
+
+    _houses.addAll(newHouses);
+    if (newHouses.isNotEmpty) {
+      _lastDocument = newHouses.last.snapshot;
+    }
+
+    _isLoading = false;
+    notifyListeners();
   }
 
-// @@@@@@@@@@@@@@@@@@@@@@@@@1
-  // Future<void> fetchHouses() async {
-  //   if (_isLoading || !_hasMore) return;
-
-  //   _isLoading = true;
-  //   notifyListeners();
-
-  //   try {
-  //     List<House> newHouses = await _houseService.getHouses(lastDocument: _lastDocument);
-  //     if (newHouses.isNotEmpty) {
-  //       _houses.addAll(newHouses);
-  //       _lastDocument = _houses.last.snapshot;  // Assurez-vous que `snapshot` est une propriété de `House`
-  //     } else {
-  //       _hasMore = false;
-  //     }
-  //   } catch (e) {
-  //     debugPrint('Error fetching houses: $e');
-  //   }
-
-  //   _isLoading = false;
-  //   notifyListeners();
-  // }
-
-  // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2
-  //Recuperation des logements selon le type
-
-  //  Future<void> fetchHouses({HousingType? housingType}) async {
-  //   if (isLoading) return;
-
-  //   _isLoading = true;
-  //   notifyListeners();
-
-  //   List<House> newHouses = await _houseService.getHouses(
-  //     lastDocument: _lastDocument,
-  //     housingType: housingType,
-  //   );
-
-  //   if (newHouses.length < 20) {
-  //     _hasMore = false;
-  //   }
-
-  //   houses.addAll(newHouses);
-  //   if (newHouses.isNotEmpty) {
-  //     _lastDocument = newHouses.last.snapshot;
-  //   }
-
-  //   _isLoading = false;
-  //   notifyListeners();
-  // }
+  Future<void> fetchAdvertisementData() async {
+    _isAdverstingLoading = true;
+    _advertisementData = await _read
+        .read(advertisementServiceProvider)
+        .fetchAdvertisementDatas();
+    _isAdverstingLoading = false;
+    notifyListeners();
+  }
 
   List<CategoryData> getHousingCategories() {
     return [
       CategoryData(Icons.villa, 'Villas'),
       CategoryData(Icons.house, 'Maisons'),
+      CategoryData(Icons.home_filled, 'Duplex'),
       CategoryData(Icons.home_work, 'Studios'),
+      CategoryData(Icons.house_siding_rounded, 'Chantiers'),
       CategoryData(Icons.hotel, 'Hôtels'),
-      CategoryData(Icons.store, 'Magasin'),
-      CategoryData(Icons.terrain, 'Terrain'),
+      CategoryData(Icons.store, 'Magasins'),
+      CategoryData(Icons.terrain, 'Terrains'),
     ];
-  }
-
-  Future<Map<String, List<String>>> fetchAdvertisementData() async {
-    return await _read
-        .read(advertisementServiceProvider)
-        .fetchAdvertisementData();
   }
 
   Future<void> navigateToHouseList(
       BuildContext context, CategoryData category) async {
     if (_isNavigating) return; // Ignore if already navigating
-    _isNavigating = true;
-
-    final categoryHousesData = await _read
-        .read(houseServiceProvider)
-        .getHousesByCategory(category.label);
-
-    // Ensure _isNavigating is reset even if navigation fails
-    _isNavigating = false;
-
-    // ignore: use_build_context_synchronously
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => HouselistScreen(
+        builder: (context) => HouseListScreen(
           title: category.label,
           iconData: category.icon,
-          isForSale: false,
-          results: categoryHousesData,
-          onTap: () {
-            navigateToSearchPage(context);
-          },
+          housingType: category.label,
         ),
       ),
     );
@@ -153,6 +121,13 @@ class DashbordViewModel extends ChangeNotifier {
       MaterialPageRoute(
         builder: (context) => const SearchPage(),
       ),
+    );
+  }
+
+  HousingType parseHousingType(String type) {
+    return HousingType.values.firstWhere(
+      (e) => e.toString().split('.').last == type,
+      orElse: () => HousingType.apartment,
     );
   }
 }
@@ -190,7 +165,7 @@ class CategoryCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 30, color: primary),
+              Icon(icon, size: 30, color: primaryColor),
               const SizedBox(height: 5),
               Text(
                 label,

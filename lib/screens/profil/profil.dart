@@ -39,7 +39,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
               ),
-              color: primary,
+              color: primaryColor,
             ),
             child: Column(
               children: [
@@ -50,7 +50,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   child: Icon(
                     Icons.person,
                     size: 100,
-                    color: primary,
+                    color: primaryColor,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -157,7 +157,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             ElevatedButton(
                               style: ButtonStyle(
                                   backgroundColor:
-                                      WidgetStateProperty.all(primary),
+                                      WidgetStateProperty.all(primaryColor),
                                   foregroundColor:
                                       WidgetStateProperty.all(backgroundColor)),
                               onPressed: () async {
@@ -222,7 +222,7 @@ Widget _buildProfileOption({
   required IconData icon,
   required String title,
   required VoidCallback onTap,
-  Color color = primary,
+  Color color = primaryColor,
 }) {
   return Column(
     children: [

@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 
 // class AppColors {
-const Color primary = Color(0xFF00BCD4); // Cyan
+const Color primaryColor = Color.fromARGB(255, 35, 181, 200);
+// const Color primaryColor = Color.fromARGB(255, 4, 197, 222);
+//  Color(0xFF00BCD4); // Cyan
 final Color lightPrimary = Colors.grey.shade100;
 const Color secondary = Color(0xFF00796B); // Dark Blue
 const Color accent = Color(0xFF8BC34A); // Light Green

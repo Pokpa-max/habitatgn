@@ -1,246 +1,288 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habitatgn/models/house_result_model.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:habitatgn/utils/ui_element.dart';
+import 'package:habitatgn/viewmodels/housings/house_list.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:habitatgn/widgets/dashbord/dashbord.dart';
+//* import 'package:share_plus/share_plus.dart';
 
-class HousingDetailPage extends StatefulWidget {
-  final String imageUrl;
-  final List<String> imageUrls;
-  final String title;
-  final String location;
-  final String price;
-  final String description;
-  final List<String> amenities;
-  final int numRooms; // Nombre de pièces
-  final bool hasGarage; // Indicateur de garage
-  final bool hasTerrace; // Indicateur de terrasse
-  final double latitude;
-  final double longitude;
-  final bool saleOrRent; // Vente ou location
+class HousingDetailPage extends ConsumerStatefulWidget {
+  final String houseId;
 
   const HousingDetailPage({
-    required this.imageUrl,
-    required this.imageUrls,
-    required this.title,
-    required this.location,
-    required this.price,
-    required this.description,
-    required this.amenities,
-    required this.numRooms,
-    required this.hasGarage,
-    required this.hasTerrace,
-    required this.latitude,
-    required this.longitude,
-    required this.saleOrRent, // Ajout de la variable saleOrRent
+    required this.houseId,
     super.key,
   });
 
   @override
-  State<HousingDetailPage> createState() => _HousingDetailPageState();
+  ConsumerState<HousingDetailPage> createState() => _HousingDetailPageState();
 }
 
-class _HousingDetailPageState extends State<HousingDetailPage> {
-  bool _isFavorite = false; // État de l'élément dans les favoris
-
-  late List<String> allImageUrls; // Liste d'URL d'images incluant imageUrl
+class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
+  House? house;
+  bool isLoading = false;
+  bool isLiked = false;
 
   @override
   void initState() {
     super.initState();
-    allImageUrls = [widget.imageUrl, ...widget.imageUrls];
+    _fetchHouseDetails();
+    _checkIfFavorite();
+  }
+
+  Future<void> _fetchHouseDetails() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      final houseListViewModel = ref.read(houseListViewModelProvider);
+      House? fetchedHouse =
+          await houseListViewModel.fetchHouseById(widget.houseId);
+      if (fetchedHouse != null) {
+        setState(() {
+          house = fetchedHouse;
+        });
+      }
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _checkIfFavorite() async {
+    final houseListViewModel = ref.read(houseListViewModelProvider);
+    bool isFav = await houseListViewModel.isFavorite(widget.houseId);
+    setState(() {
+      isLiked = isFav;
+    });
+  }
+
+  void _toggleLike() async {
+    final houseListViewModel = ref.read(houseListViewModelProvider);
+    await houseListViewModel.toggleFavorite(widget.houseId);
+    setState(() {
+      isLiked = !isLiked;
+    });
+  }
+
+  void _shareHouseDetails() {
+    if (house != null) {
+      // Share.share(
+      //     'Découvrez ce logement : ${house!.houseType!.label}, situé à ${house!.address?.commune['name'] ?? 'localisation inconnue'}. Prix: ${house!.price} €. Description: ${house!.description}');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_outlined,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: const CustomTitle(
-          textColor: Colors.white,
-          text: "Details",
-        ),
-        elevation: 0,
-        centerTitle: true,
-        backgroundColor: primary,
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Ajouter la logique pour contacter le propriétaire
-        },
-        icon: const Icon(
-          Icons.phone,
-          color: Colors.white,
-        ),
-        label: const Text(
-          'Appeler',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.cyan,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ImageCarousel(
-              imageUrls: allImageUrls,
-              
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildIconButton(
-                    icon: Icons.location_on,
-                    onPressed: () {},
-                    tooltip: 'Localisation',
-                  ),
-                  _buildIconButton(
-                    isliked: _isFavorite,
-                    icon: _isFavorite ? Icons.favorite : Icons.favorite_border,
-                    onPressed: () {
-                      setState(() {
-                        _isFavorite = !_isFavorite;
-                      });
-                    },
-                    tooltip: 'J\'aime',
-                  ),
-                  _buildIconButton(
-                    icon: Icons.share,
-                    onPressed: () {},
-                    tooltip: 'Partager',
-                  ),
-                ],
+    return isLoading
+        ? const Scaffold(
+            backgroundColor: backgroundColor,
+            body: Center(
+                child: CircularProgressIndicator(
+              color: primaryColor,
+            )),
+          )
+        : Scaffold(
+            backgroundColor: backgroundColor,
+            floatingActionButton: FloatingActionButton.extended(
+              onPressed: () {
+                // Ajouter la logique pour contacter le propriétaire
+              },
+              icon: const Icon(
+                Icons.phone,
+                color: Colors.white,
               ),
+              label: const Text(
+                'Appeler',
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: primaryColor,
             ),
-            const Divider(),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontSize: 20, // Augmentation de la taille du texte
-                      fontWeight: FontWeight.bold,
+            body: CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  backgroundColor: primaryColor,
+                  expandedHeight: 280.0,
+                  leading: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios_outlined,
+                      color: Colors.white,
                     ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    widget.location,
-                    style: const TextStyle(
-                      fontSize: 18, // Augmentation de la taille du texte
-                      color: Colors.grey,
+                  floating: false,
+                  pinned: true,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: house != null
+                        ? ImageCarousel(
+                            imageUrls: [
+                              house!.imageUrl,
+                              ...house!.houseInsides
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                  actions: [
+                    IconButton(
+                      icon: Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        color: isLiked ? Colors.red : Colors.white,
+                        size: 30,
+                      ),
+                      onPressed: _toggleLike,
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    widget.price,
-                    style: const TextStyle(
-                      fontSize: 20, // Augmentation de la taille du texte
-                      fontWeight: FontWeight.bold,
-                      color: Colors.cyan,
+                    IconButton(
+                      icon: const Icon(
+                        Icons.share,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                      onPressed: _shareHouseDetails,
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Détails',
-                    style: TextStyle(
-                      fontSize: 18, // Augmentation de la taille du texte
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 16.0,
-                    runSpacing: 8.0,
-                    children: [
-                      _buildDetailItem(
-                          Icons.king_bed, '${widget.numRooms} pièces'),
-                      _buildDetailItem(Icons.local_parking,
-                          widget.hasGarage ? 'Garage' : 'Pas de garage'),
-                      _buildDetailItem(Icons.terrain,
-                          widget.hasTerrace ? 'Terrasse' : 'Pas de terrasse'),
-                      _buildDetailItem(Icons.home,
-                          widget.saleOrRent ? 'À vendre' : 'À louer'),
+                  ],
+                ),
+                SliverList(
+                  delegate: SliverChildListDelegate(
+                    [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: house != null
+                            ? _buildHouseDetails(house!)
+                            : Container(),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Description',
-                    style: TextStyle(
-                      fontSize: 18, // Augmentation de la taille du texte
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    widget.description,
-                    style: const TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Équipements',
-                    style: TextStyle(
-                      fontSize: 18, // Augmentation de la taille du texte
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: widget.amenities
-                        .map(
-                          (amenity) => _buildAmenityCard(amenity),
-                        )
-                        .toList(),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
+          );
   }
 
-  Widget _buildIconButton(
-      {required IconData icon,
-      required VoidCallback onPressed,
-      required String tooltip,
-      bool isliked = false}) {
-    return IconButton(
-      icon: Icon(icon, size: 30, color: isliked ? Colors.red : primary),
-      onPressed: onPressed,
-      tooltip: tooltip,
-    );
-  }
-
-  Widget _buildDetailItem(IconData icon, String text) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+  Widget _buildHouseDetails(House house) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: primary),
-        const SizedBox(width: 8),
-        Text(text, style: const TextStyle(fontSize: 16)),
+        _buildTitleAndLocationRow(house),
+        const SizedBox(height: 10),
+        _buildPriceRow(house),
+        const SizedBox(height: 10),
+        _buildBedroomsRow(house),
+        const SizedBox(height: 10),
+        _buildDescriptionSection(house),
+        const SizedBox(height: 16),
+        _buildAmenitiesSection(house),
+        const SizedBox(height: 16),
+        _buildAdditionalInfoSection(house),
+        const SizedBox(height: 20),
       ],
     );
   }
 
-  Widget _buildAmenityCard(String amenity) {
+  Widget _buildPriceRow(House house) {
+    return Row(
+      children: [
+        const Icon(
+          Icons.attach_money_outlined,
+          color: primaryColor,
+          size: 30,
+        ),
+        FormattedPrice(
+          color: Colors.black,
+          price: house.price,
+          suffix: house.offerType["label"] == "ALouer" ? '/mois' : '',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBedroomsRow(House house) {
+    return Row(
+      children: [
+        const Icon(Icons.king_bed, color: primaryColor),
+        const SizedBox(width: 8),
+        Text(
+          '${house.bedrooms} chambres',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDescriptionSection(House house) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Description',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          house.description,
+          style: const TextStyle(
+            fontSize: 16,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAmenitiesSection(House house) {
+    return house.houseType!.label != "Terrains"
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Équipements',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: house.commodites!
+                    .map((amenity) => _buildAmenityCard(amenity['label']))
+                    .toList(),
+              )
+            ],
+          )
+        : const Text("");
+  }
+
+  Widget _buildAdditionalInfoSection(House house) {
+    return house.houseType!.label != "Terrains"
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Informations supplémentaires',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildAdditionalInfo(house),
+            ],
+          )
+        : const Text('');
+  }
+
+  Widget _buildAmenityCard(String label) {
     return Card(
       color: lightPrimary,
       elevation: 0,
@@ -252,15 +294,91 @@ class _HousingDetailPageState extends State<HousingDetailPage> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check, color: primary),
+            const Icon(Icons.check, color: primaryColor),
             const SizedBox(width: 8),
             Text(
-              amenity,
+              label,
               style: const TextStyle(fontSize: 16),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAdditionalInfo(House house) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildInfoRow(
+            Icons.attach_money, 'Caution: ${house.housingDeposit} mois'),
+        _buildInfoRow(Icons.calendar_today,
+            'Mois d\'avance: ${house.rentalDeposit} mois'),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String info) {
+    return Row(
+      children: [
+        Icon(icon, color: primaryColor),
+        const SizedBox(width: 8),
+        Text(
+          info,
+          style: const TextStyle(fontSize: 16),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTitleAndLocationRow(House house) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Text(
+              '${house.houseType?.label ?? ''} - ',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 8),
+            SeparatedText(
+              text: house.offerType["label"],
+              firstLetterStyle: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+              restOfTextStyle: const TextStyle(
+                fontSize: 20,
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+              spaceBetween: 6.0,
+            ),
+          ],
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.location_on_rounded,
+                size: 30,
+                color: primaryColor,
+              ),
+            ),
+            const Text(
+              'Voir localisation',
+              style: TextStyle(fontSize: 14, color: Colors.black87),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

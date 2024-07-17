@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:habitatgn/utils/ui_element.dart';
 
 Widget buildSectionTitle(String title) {
   return Text(
@@ -17,7 +18,6 @@ class ImageCarousel extends StatefulWidget {
   const ImageCarousel({super.key, required this.imageUrls});
 
   @override
-  // ignore: library_private_types_in_public_api
   _ImageCarouselState createState() => _ImageCarouselState();
 }
 
@@ -26,14 +26,16 @@ class _ImageCarouselState extends State<ImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    double carouselHeight =
+        MediaQuery.of(context).size.height * 0.3; // 30% of screen height
+    return Stack(
+      alignment: Alignment.bottomCenter,
       children: [
         CarouselSlider(
           options: CarouselOptions(
             autoPlay: false,
             aspectRatio: 16 / 8,
-            // enlargeFactor: 0.2,
-            height: 300,
+            height: 310.0,
             enlargeCenterPage: true,
             enableInfiniteScroll: false,
             viewportFraction: 1.0,
@@ -46,37 +48,35 @@ class _ImageCarouselState extends State<ImageCarousel> {
           items: widget.imageUrls.map((imageUrl) {
             return Builder(
               builder: (BuildContext context) {
-                return Image.asset(
-                  imageUrl,
-                  fit: BoxFit.cover,
+                return CustomCachedNetworkImage(
+                  imageUrl: imageUrl,
                   width: MediaQuery.of(context).size.width,
+                  height: carouselHeight,
                 );
               },
             );
           }).toList(),
         ),
-        // const SizedBox(height: 10),
-        Stack(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: widget.imageUrls.map((imageUrl) {
-                int index = widget.imageUrls.indexOf(imageUrl);
-                return Container(
-                  width: 8.0,
-                  height: 8.0,
-                  margin: const EdgeInsets.symmetric(
-                      vertical: 10.0, horizontal: 2.0),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _currentIndex == index
-                        ? Colors.cyan
-                        : Colors.black.withOpacity(0.4),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
+        Positioned(
+          bottom: 10.0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: widget.imageUrls.map((imageUrl) {
+              int index = widget.imageUrls.indexOf(imageUrl);
+              return Container(
+                width: 10.0,
+                height: 10.0,
+                margin:
+                    const EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _currentIndex == index
+                      ? Colors.white
+                      : Colors.black.withOpacity(0.4),
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );

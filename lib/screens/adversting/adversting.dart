@@ -1,14 +1,16 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:habitatgn/utils/ui_element.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:habitatgn/models/adversting.dart';
 
 class AdvertisementCarousel extends StatefulWidget {
-  final List<String> imageUrls;
-  final List<String> subtitles;
+  final List<AdvertisementData> adverstingData;
 
   const AdvertisementCarousel({
     super.key,
-    required this.imageUrls,
-    required this.subtitles,
+    required this.adverstingData,
   });
 
   @override
@@ -18,19 +20,23 @@ class AdvertisementCarousel extends StatefulWidget {
 class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
   @override
   Widget build(BuildContext context) {
+    // Get the screen width and height
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return CarouselSlider.builder(
-      itemCount: widget.imageUrls.length,
+      itemCount: widget.adverstingData.length,
       itemBuilder: (BuildContext context, int index, int realIndex) {
         return _buildCarouselItem(
           context,
-          widget.imageUrls[index],
-          widget.subtitles[index],
+          widget.adverstingData[index].imageUrl,
+          widget.adverstingData[index].title,
         );
       },
       options: CarouselOptions(
-        height: 200.0,
+        height: screenHeight * 0.25, // 25% of screen height
         autoPlay: true,
-        aspectRatio: 16 / 8,
+        aspectRatio: 16 / 9,
         viewportFraction: 1.0,
         enlargeFactor: 0.15,
         enlargeCenterPage: true,
@@ -40,17 +46,19 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
 
   Widget _buildCarouselItem(
       BuildContext context, String imageUrl, String subtitle) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Container(
       margin: const EdgeInsets.all(0.0),
       child: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(0.0)),
         child: Stack(
           children: <Widget>[
-            Image.asset(
-              imageUrl,
-              fit: BoxFit.cover,
-              width: 1000.0,
-              // height: 150.0,
+            CustomCachedNetworkImage(
+              imageUrl: imageUrl,
+              width: screenWidth,
+              height: screenHeight * 0.25,
             ),
             Positioned(
               bottom: 0.0,
@@ -60,23 +68,16 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Color.fromARGB(200, 0, 0, 0),
+                      Color.fromARGB(300, 0, 0, 0),
                       Color.fromARGB(0, 0, 0, 0)
                     ],
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 5.0,
-                  horizontal: 10.0,
-                ),
-                child: Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14.0,
-                  ),
+                padding: EdgeInsets.symmetric(
+                  vertical: screenHeight * 0.01, // 1% of screen height
+                  horizontal: screenWidth * 0.03, // 3% of screen width
                 ),
               ),
             ),

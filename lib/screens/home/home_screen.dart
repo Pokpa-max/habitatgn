@@ -46,7 +46,7 @@ class HomeScreen extends ConsumerWidget {
         unselectedFontSize: 12,
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
         unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
-        selectedItemColor: primary,
+        selectedItemColor: primaryColor,
         unselectedItemColor: Colors.grey,
       ),
     );

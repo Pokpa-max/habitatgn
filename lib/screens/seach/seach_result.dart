@@ -22,29 +22,7 @@ Widget seachResult({results}) {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const HousingDetailPage(
-                    saleOrRent: false,
-                    hasTerrace: true,
-                    hasGarage: true,
-                    numRooms: 3,
-                    imageUrl: 'assets/images/maison.jpg',
-                    imageUrls: [
-                      'assets/images/maison2.jpg',
-                      'assets/images/logo.png',
-                    ],
-                    title: 'Luxurious Apartment',
-                    location: 'Paris, France',
-                    price: '€2,000 / mois',
-                    description:
-                        'Un magnifique appartement situé au cœur de Paris avec une vue imprenable sur la Tour Eiffel. Comprend 2 chambres, 2 salles de bains, un grand salon et une cuisine entièrement équipée.',
-                    amenities: [
-                      'Wi-Fi gratuit',
-                      'Cuisine équipée',
-                      'Piscine',
-                      'Salle de gym',
-                      'Parking gratuit',
-                    ],
-                    latitude: 48.8588443,
-                    longitude: 2.2943506,
+                    houseId: "house.id",
                   ),
                 ),
               );
@@ -66,7 +44,7 @@ Widget seachResult({results}) {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        house.type,
+                        'house.type',
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -79,7 +57,7 @@ Widget seachResult({results}) {
                               size: 18, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
-                            house.location,
+                            ' house.location',
                             style: const TextStyle(
                                 fontSize: 14, color: Colors.black87),
                           ),
@@ -92,7 +70,7 @@ Widget seachResult({results}) {
                               size: 18, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
-                            house.commune,
+                            ' house.commune',
                             style: const TextStyle(
                                 fontSize: 14, color: Colors.black87),
                           ),
@@ -104,21 +82,22 @@ Widget seachResult({results}) {
                           const Icon(Icons.home, size: 18, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
-                            '${house.numRooms} pièces',
+                            // '${house.numRooms} pièces'
+                            '4',
                             style: const TextStyle(fontSize: 14),
                           ),
                         ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Text(
-                          '${house.price.toString()} GN/mois',
-                          style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: primary),
-                        ),
-                      ),
+                      // Padding(
+                      //   padding: const EdgeInsets.all(10.0),
+                      //   child: Text(
+                      //     '${house.price.toString()} GN/mois',
+                      //     style: const TextStyle(
+                      //         fontSize: 15,
+                      //         fontWeight: FontWeight.bold,
+                      //         color: primary),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),

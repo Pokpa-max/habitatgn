@@ -27,25 +27,23 @@ class LoginScreen extends ConsumerWidget {
     final isPasswordVisible = ref.watch(passwordVisibilityProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: lightPrimary,
+        title: const Text(
+          "HABITATGN",
+          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+      ),
       backgroundColor: lightPrimary,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0),
           child: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                const SizedBox(height: 20),
-                const Text(
-                  'Connexion',
-                  style: TextStyle(
-                    color: primary,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 20),
                 const Icon(
                   Icons.person,
                   size: 100,
@@ -68,8 +66,9 @@ class LoginScreen extends ConsumerWidget {
                   ),
                   style: const TextStyle(color: Colors.black),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 15),
                 TextField(
+                  cursorColor: primaryColor,
                   controller: passwordController,
                   style: const TextStyle(color: Colors.black),
                   decoration: InputDecoration(
@@ -100,14 +99,15 @@ class LoginScreen extends ConsumerWidget {
                   ),
                   obscureText: !isPasswordVisible,
                 ),
+                const SizedBox(height: 5),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
                       onPressed: () {},
-                      child: const Text(
+                      child: Text(
                         'Mot de passe oublié?',
-                        style: TextStyle(color: Colors.orangeAccent),
+                        style: TextStyle(color: Colors.red[500]),
                       ),
                     ),
                   ],
@@ -115,7 +115,7 @@ class LoginScreen extends ConsumerWidget {
                 const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: isLoading
                         ? null
                         : () async {
@@ -130,19 +130,20 @@ class LoginScreen extends ConsumerWidget {
                               print('Erreur de connexion par email: $e');
                             }
                           },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primary,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: isLoading
-                        ? const SpinKitFadingCircle(
-                            color: primary,
+                    label: isLoading
+                        ? SpinKitFadingCircle(
+                            color: primaryColor,
                             size: 40.0,
                           )
-                        : const Text(
-                            'Se connecter',
-                            style: TextStyle(color: Colors.white),
-                          ),
+                        : const Text('Se connecter',
+                            style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -151,60 +152,63 @@ class LoginScreen extends ConsumerWidget {
                   style: TextStyle(color: Colors.black87, fontSize: 16),
                 ),
                 const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: isLoading
-                          ? null
-                          : () async {
-                              try {
-                                await authService.signInWithFacebook(context);
-                              } catch (e) {
-                                print('Erreur de connexion Facebook: $e');
-                              }
-                            },
-                      icon: const Icon(
-                        Icons.facebook,
-                        color: Colors.white,
-                      ),
-                      label: const Text('Facebook',
-                          style: TextStyle(color: Colors.white)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            try {
+                              await authService.signInWithFacebook(context);
+                            } catch (e) {
+                              print('Erreur de connexion Facebook: $e');
+                            }
+                          },
+                    icon: const Icon(
+                      Icons.facebook,
+                      color: Colors.white,
+                    ),
+                    label: const Text('Facebook',
+                        style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                    ElevatedButton.icon(
-                      onPressed: isLoading
-                          ? null
-                          : () async {
-                              try {
-                                await authService.signInWithGoogle(context);
-                              } catch (e) {
-                                print('Erreur de connexion Google: $e');
-                              }
-                            },
-                      icon: const FaIcon(
-                        FontAwesomeIcons.google,
-                        color: Colors.white,
-                      ),
-                      label: const Text(
-                        'Google',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            try {
+                              await authService.signInWithGoogle(context);
+                            } catch (e) {
+                              print('Erreur de connexion Google: $e');
+                            }
+                          },
+                    icon: const FaIcon(
+                      FontAwesomeIcons.google,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    label: const Text(
+                      'Google',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -223,7 +227,7 @@ class LoginScreen extends ConsumerWidget {
                       },
                       child: const Text(
                         "S'inscrire maintenant",
-                        style: TextStyle(color: primary),
+                        style: TextStyle(color: primaryColor),
                       ),
                     ),
                   ],

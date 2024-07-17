@@ -1,6 +1,7 @@
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class House {
+class HouseEssai {
   final String imageUrl;
   final String type;
   final String location;
@@ -9,7 +10,7 @@ class House {
   final int price;
   final int numRooms;
 
-  House({
+  HouseEssai({
     required this.imageUrl,
     required this.type,
     required this.location,
@@ -20,223 +21,203 @@ class House {
   });
 }
 
-// // enum HousingType {
-//   apartment,
-//   maison,
-//   villa,
-//   studio,
-//   magasin,
-//   terrain,
-//   hotel,
-//   duplex,
-// }
+// Récupération d'un logement en fonction de son type
 
-// enum Furnishing {
-//   furnished,
-//   unfurnished,
-//   semiFurnished,
-//   // ajoutez d'autres types de mobilier si nécessaire
-// }
+enum HousingType {
+  apartment,
+  maison,
+  villa,
+  studio,
+  magasin,
+  terrain,
+  hotel,
+  duplex,
+}
 
-// class House {
-//   final String id;
-//   final String title;
-//   final String imageUrl;
-//   final String description;
-//   final double price;
-//   final int rooms;
-//   final double area;
-//   final String address;
-//   final List<String> imageUrls;
-//   final HousingType type;
-//   final int bathrooms;
-//   final int kitchens;
-//   final int livingRooms;
-//   final int balconies;
-//   final bool hasParking;
-//   final bool hasGarden;
-//   final bool hasPool;
-//   final bool isAvailable;
-//   final DateTime availableFrom;
-//   final List<String> amenities;
-//   final String contactName;
-//   final String contactPhone;
-//   final Furnishing furnishing;
-//   final DateTime createdAt;
-//   final DateTime updatedAt;
-//   final DocumentSnapshot snapshot;  // Ajoutez ce champ pour conserver le document snapshot
+enum FurnishingEnum {
+  furnished,
+  unfurnished,
+  semiFurnished,
+  // ajoutez d'autres types de mobilier si nécessaire
+}
 
-//   House({
-//     required this.id,
-//     required this.title,
-//     required this.imageUrl,
-//     required this.description,
-//     required this.price,
-//     required this.rooms,
-//     required this.area,
-//     required this.address,
-//     required this.imageUrls,
-//     required this.type,
-//     required this.bathrooms,
-//     required this.kitchens,
-//     required this.livingRooms,
-//     required this.balconies,
-//     required this.hasParking,
-//     required this.hasGarden,
-//     required this.hasPool,
-//     required this.isAvailable,
-//     required this.availableFrom,
-//     required this.amenities,
-//     required this.contactName,
-//     required this.contactPhone,
-//     required this.furnishing,
-//     required this.createdAt,
-//     required this.updatedAt,
-//     required this.snapshot,
-//   });
+class House {
+  final String id;
+  final String phoneNumber;
+  final bool isAvailable;
+  final int bedrooms;
+  final double rentalDeposit;
+  final double housingDeposit;
+  final Address? address;
+  final Map<String, dynamic> offerType;
+  final Map<String, dynamic> furnishing;
+  final double area;
+  final double price;
+  // final Map<String, dynamic> commodites;
+  final List<Map<String, dynamic>>? commodites;
 
-//   factory House.fromFirestore(DocumentSnapshot doc) {
-//     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+  final String imageUrl;
+  final String description;
+  final HouseType? houseType;
+  final List<String> houseInsides;
+  final List<String> likes;
+  final String userId;
+  final Timestamp createdAt;
+  final Timestamp updatedAt;
+  final DocumentSnapshot snapshot;
 
-//     return House(
-//       id: data['id'],
-//       title: data['title'],
-//       imageUrl: data['imageUrl'],
-//       description: data['description'],
-//       price: data['price'].toDouble(),
-//       rooms: data['rooms'],
-//       area: data['area'].toDouble(),
-//       address: data['address'],
-//       imageUrls: List<String>.from(data['imageUrls']),
-//       type: HousingType.values.firstWhere((e) => e.toString() == 'HousingType.${data['type']}'),
-//       bathrooms: data['bathrooms'],
-//       kitchens: data['kitchens'],
-//       livingRooms: data['livingRooms'],
-//       balconies: data['balconies'],
-//       hasParking: data['hasParking'],
-//       hasGarden: data['hasGarden'],
-//       hasPool: data['hasPool'],
-//       isAvailable: data['isAvailable'],
-//       availableFrom: (data['availableFrom'] as Timestamp).toDate(),
-//       amenities: List<String>.from(data['amenities']),
-//       contactName: data['contactName'],
-//       contactPhone: data['contactPhone'],
-//       furnishing: Furnishing.values.firstWhere((e) => e.toString() == 'Furnishing.${data['furnishing']}'),
-//       createdAt: (data['createdAt'] as Timestamp).toDate(),
-//       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
-//       snapshot: doc,
-//     );
-//   }
-// }
+  House({
+    required this.id,
+    required this.phoneNumber,
+    required this.isAvailable,
+    required this.bedrooms,
+    required this.rentalDeposit,
+    required this.housingDeposit,
+    this.address,
+    required this.offerType,
+    required this.furnishing,
+    required this.area,
+    required this.price,
+    required this.commodites,
+    required this.imageUrl,
+    required this.description,
+    this.houseType,
+    required this.houseInsides,
+    required this.likes,
+    required this.userId,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.snapshot,
+  });
 
-//Recuperaion dun logement en fonction de son type
-// enum HousingType {
-//   apartment,
-//   maison,
-//   villa,
-//   studio,
-//   magasin,
-//   terrain,
-//   hotel,
-//   duplex,
-// }
+  factory House.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-// enum Furnishing {
-//   furnished,
-//   unfurnished,
-//   semiFurnished,
-//   // ajoutez d'autres types de mobilier si nécessaire
-// }
+    return House(
+      id: doc.id,
+      phoneNumber: data['phoneNumber'] ?? '',
+      isAvailable: data['isAvailable'] ?? false,
+      bedrooms: data['bedrooms'] ?? 0,
+      rentalDeposit: (data['rentalDeposit'] as num).toDouble(),
+      housingDeposit: (data['housingDeposit'] as num).toDouble(),
+      address:
+          data['address'] != null && data['address'] is Map<String, dynamic>
+              ? Address.fromMap(data['address'])
+              : null,
+      offerType:
+          data['offerType'] != null && data['offerType'] is Map<String, dynamic>
+              ? Map<String, dynamic>.from(data['offerType'])
+              : {},
+      furnishing: data['furnishing'] != null &&
+              data['furnishing'] is Map<String, dynamic>
+          ? Map<String, dynamic>.from(data['furnishing'])
+          : {},
+      area: (data['area'] as num).toDouble(),
+      price: (data['price'] as num).toDouble(),
+      commodites: List<Map<String, dynamic>>.from(data['commodites']),
+      imageUrl: data['imageUrl'] ?? '',
+      description: data['description'] ?? '',
+      houseType:
+          data['houseType'] != null && data['houseType'] is Map<String, dynamic>
+              ? HouseType.fromMap(data['houseType'])
+              : null,
+      houseInsides: data['houseInsides'] != null && data['houseInsides'] is List
+          ? List<String>.from(data['houseInsides'])
+          : [],
+      likes: data['likes'] != null && data['likes'] is List
+          ? List<String>.from(data['likes'])
+          : [],
+      userId: data['userId'] ?? '',
+      createdAt: data['createdAt'] ?? Timestamp.now(),
+      updatedAt: data['updatedAt'] ?? Timestamp.now(),
+      snapshot: doc,
+    );
+  }
 
-// class House {
-//   final String id;
-//   final String title;
-//   final String imageUrl;
-//   final String description;
-//   final double price;
-//   final int rooms;
-//   final double area;
-//   final String address;
-//   final List<String> imageUrls;
-//   final HousingType type;
-//   final int bathrooms;
-//   final int kitchens;
-//   final int livingRooms;
-//   final int balconies;
-//   final bool hasParking;
-//   final bool hasGarden;
-//   final bool hasPool;
-//   final bool isAvailable;
-//   final DateTime availableFrom;
-//   final List<String> amenities;
-//   final String contactName;
-//   final String contactPhone;
-//   final Furnishing furnishing;
-//   final DateTime createdAt;
-//   final DateTime updatedAt;
-//   final DocumentSnapshot snapshot;
+  Map<String, dynamic> toMap() {
+    return {
+      'phoneNumber': phoneNumber,
+      'isAvailable': isAvailable,
+      'bedrooms': bedrooms,
+      'rentalDeposit': rentalDeposit,
+      'housingDeposit': housingDeposit,
+      'address': address?.toMap(),
+      'offerType': offerType,
+      'furnishing': furnishing,
+      'area': area,
+      'price': price,
+      'commodites': commodites,
+      'imageUrl': imageUrl,
+      'description': description,
+      'houseType': houseType?.toMap(),
+      'houseInsides': houseInsides,
+      'likes': likes,
+      'userId': userId,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+    };
+  }
+}
 
-//   House({
-//     required this.id,
-//     required this.title,
-//     required this.imageUrl,
-//     required this.description,
-//     required this.price,
-//     required this.rooms,
-//     required this.area,
-//     required this.address,
-//     required this.imageUrls,
-//     required this.type,
-//     required this.bathrooms,
-//     required this.kitchens,
-//     required this.livingRooms,
-//     required this.balconies,
-//     required this.hasParking,
-//     required this.hasGarden,
-//     required this.hasPool,
-//     required this.isAvailable,
-//     required this.availableFrom,
-//     required this.amenities,
-//     required this.contactName,
-//     required this.contactPhone,
-//     required this.furnishing,
-//     required this.createdAt,
-//     required this.updatedAt,
-//     required this.snapshot,
-//   });
+class Address {
+  final Map<String, dynamic> commune;
+  final Map<String, dynamic> town;
+  final String zone;
+  final double long;
+  final double lat;
 
-//   factory House.fromFirestore(DocumentSnapshot doc) {
-//     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+  Address({
+    required this.commune,
+    required this.town,
+    required this.zone,
+    required this.long,
+    required this.lat,
+  });
 
-//     return House(
-//       id: doc.id,
-//       title: data['title'],
-//       imageUrl: data['imageUrl'],
-//       description: data['description'],
-//       price: data['price'].toDouble(),
-//       rooms: data['rooms'],
-//       area: data['area'].toDouble(),
-//       address: data['address'],
-//       imageUrls: List<String>.from(data['imageUrls']),
-//       type: HousingType.values
-//           .firstWhere((e) => e.toString() == 'HousingType.${data['type']}'),
-//       bathrooms: data['bathrooms'],
-//       kitchens: data['kitchens'],
-//       livingRooms: data['livingRooms'],
-//       balconies: data['balconies'],
-//       hasParking: data['hasParking'],
-//       hasGarden: data['hasGarden'],
-//       hasPool: data['hasPool'],
-//       isAvailable: data['isAvailable'],
-//       availableFrom: (data['availableFrom'] as Timestamp).toDate(),
-//       amenities: List<String>.from(data['amenities']),
-//       contactName: data['contactName'],
-//       contactPhone: data['contactPhone'],
-//       furnishing: Furnishing.values.firstWhere(
-//           (e) => e.toString() == 'Furnishing.${data['furnishing']}'),
-//       createdAt: (data['createdAt'] as Timestamp).toDate(),
-//       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
-//       snapshot: doc,
-//     );
-//   }
-// }
+  factory Address.fromMap(Map<String, dynamic> data) {
+    return Address(
+      commune: Map<String, dynamic>.from(data['commune']),
+      town: Map<String, dynamic>.from(data['town']),
+      zone: data['zone'] ?? '',
+      long: (data['long'] as num?)?.toDouble() ?? 0.0,
+      lat: (data['lat'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'commune': commune,
+      'town': town,
+      'zone': zone,
+      'long': long,
+      'lat': lat,
+    };
+  }
+}
+
+class HouseType {
+  final String label;
+  final String value;
+
+  HouseType({required this.label, required this.value});
+
+  factory HouseType.fromMap(Map<String, dynamic> data) {
+    return HouseType(
+      label: data['label'] ?? '',
+      value: data['value'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'label': label,
+      'value': value,
+    };
+  }
+}
+
+
+
+
+//  List<Map<String, dynamic>>.from(json['accompagnements']),
+//    List<Map<String, dynamic>>?

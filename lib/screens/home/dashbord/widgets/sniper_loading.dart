@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ShimmerLoading extends StatelessWidget {
-  const ShimmerLoading({super.key});
+  ShimmerLoading({super.key, required this.categorieLength});
+  int categorieLength;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class ShimmerLoading extends StatelessWidget {
               mainAxisSpacing: 10,
               childAspectRatio: 3 / 2,
             ),
-            itemCount: 4,
+            itemCount: 8,
             itemBuilder: (context, index) => Card(
               elevation: 0,
               color: Colors.white,

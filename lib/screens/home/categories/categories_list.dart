@@ -20,7 +20,7 @@ class CategoryDetailScreen extends StatelessWidget {
           style:
               const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: primary,
+        backgroundColor: primaryColor,
       ),
       body: ListView.builder(
         itemCount: housingList.length,
@@ -123,7 +123,7 @@ class RecommendedHousingCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: primary,
+                    color: primaryColor,
                   ),
                 ),
               ],

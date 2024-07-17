@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:habitatgn/screens/seach/seach_screen.dart';
 import 'package:habitatgn/utils/appcolors.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
+
+import 'package:intl/intl.dart';
 
 class CustomTitle extends StatelessWidget {
   final String text;
@@ -118,7 +122,7 @@ Widget houseCategoryListEmpty() {
         ),
         const SizedBox(height: 20),
         Text(
-          'Aucune catégorie de logement disponible',
+          'Aucun de logement disponible',
           style: TextStyle(
             fontSize: 18,
             color: Colors.grey[600],
@@ -137,6 +141,134 @@ Widget houseCategoryListEmpty() {
       ],
     ),
   );
+}
+
+// Définissez votre couleur primaire
+const Color primary = Colors.blue;
+
+class FormattedPrice extends StatelessWidget {
+  final double price;
+  final String suffix;
+  final Color color;
+
+  const FormattedPrice(
+      {super.key,
+      required this.price,
+      this.suffix = '',
+      this.color = primaryColor});
+
+  @override
+  Widget build(BuildContext context) {
+    // Formater le prix en GNF
+    final NumberFormat currencyFormatter = NumberFormat.currency(
+      locale: 'fr_GN', // Vous pouvez ajuster la locale ici
+      symbol: 'GNF', // Symbole monétaire
+      decimalDigits: 0, // Pas de décimales pour les devises en GNF
+    );
+
+    String formattedPrice = currencyFormatter.format(price);
+
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Text(
+        '$formattedPrice $suffix',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+class SeparatedText extends StatelessWidget {
+  final String text;
+  final TextStyle? firstLetterStyle;
+  final TextStyle? restOfTextStyle;
+  final double spaceBetween;
+
+  const SeparatedText({
+    super.key,
+    required this.text,
+    this.firstLetterStyle,
+    this.restOfTextStyle,
+    this.spaceBetween = 4.0, // Espace par défaut de 4.0
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (text.isEmpty) return const Text('');
+
+    String firstLetter = text[0];
+    String restOfText = text.substring(1);
+
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: firstLetter,
+            style: firstLetterStyle ?? DefaultTextStyle.of(context).style,
+          ),
+          WidgetSpan(
+            child: SizedBox(width: spaceBetween),
+          ),
+          TextSpan(
+            text: restOfText,
+            style: restOfTextStyle ?? DefaultTextStyle.of(context).style,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CustomCachedNetworkImage extends StatelessWidget {
+  final String imageUrl;
+  final double? width;
+  final double? height;
+
+  const CustomCachedNetworkImage({
+    super.key,
+    required this.imageUrl,
+    this.width,
+    this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Définir les valeurs par défaut
+    const double defaultWidth = 150;
+    const double defaultHeight = 140;
+
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      width: width ?? defaultWidth,
+      height: height ?? defaultHeight,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Container(
+          width: width ?? defaultWidth,
+          height: height ?? defaultHeight,
+          color: Colors.grey[300],
+        ),
+      ),
+      errorWidget: (context, url, error) => Container(
+        width: width ?? defaultWidth,
+        height: height ?? defaultHeight,
+        color: Colors.grey.shade200,
+        child: const Center(
+          child: Icon(
+            Icons.error,
+            color: Colors.red,
+            size: 40,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 
