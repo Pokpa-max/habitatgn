@@ -205,10 +205,10 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                                               children: [
                                                 const Icon(Icons.location_on,
                                                     size: 16,
-                                                    color: Colors.grey),
+                                                    color: primaryColor),
                                                 const SizedBox(width: 4),
                                                 Text(
-                                                  house.address!.town["label"],
+                                                  ' ${house.address!.town["label"]} / ${house.address!.commune["label"]}',
                                                   style: const TextStyle(
                                                       fontSize: 14,
                                                       color: Colors.black),
@@ -220,7 +220,7 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                                               children: [
                                                 const Icon(Icons.home,
                                                     size: 16,
-                                                    color: Colors.grey),
+                                                    color: primaryColor),
                                                 const SizedBox(width: 4),
                                                 Text(
                                                   '${house.bedrooms} pièces',
@@ -234,8 +234,9 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                                               children: [
                                                 const Icon(
                                                     Icons.attach_money_outlined,
-                                                    color: Colors.grey),
+                                                    color: primaryColor),
                                                 FormattedPrice(
+                                                  color: Colors.black,
                                                   price: house.price,
                                                   suffix: house.offerType[
                                                               "label"] ==

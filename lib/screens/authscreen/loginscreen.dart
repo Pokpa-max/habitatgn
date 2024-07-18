@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:habitatgn/screens/authscreen/create_account.dart';
-import 'package:habitatgn/screens/authscreen/emailscreen.dart';
 import 'package:habitatgn/screens/home/dashbord/dashbord.dart';
-import 'package:habitatgn/screens/home/home_screen.dart';
 import 'package:habitatgn/utils/appcolors.dart';
-import 'package:habitatgn/utils/ui_element.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:habitatgn/viewmodels/auth_provider/auth_provider.dart';
-
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:habitatgn/viewmodels/auth_provider/auth_provider.dart';
 
 class LoginScreen extends ConsumerWidget {
   final TextEditingController emailController = TextEditingController();
@@ -119,19 +114,14 @@ class LoginScreen extends ConsumerWidget {
                     onPressed: isLoading
                         ? null
                         : () async {
-                            try {
-                              // Connexion réussie avec l'email et mot de passe
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const HomeScreen()),
-                              );
-                            } catch (e) {
-                              print('Erreur de connexion par email: $e');
-                            }
+                            await authService.signInWithEmailAndPassword(
+                              context,
+                              emailController.text,
+                              passwordController.text,
+                            );
                           },
                     label: isLoading
-                        ? SpinKitFadingCircle(
+                        ? const SpinKitFadingCircle(
                             color: primaryColor,
                             size: 40.0,
                           )

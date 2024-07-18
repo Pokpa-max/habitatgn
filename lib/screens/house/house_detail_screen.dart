@@ -6,7 +6,7 @@ import 'package:habitatgn/utils/ui_element.dart';
 import 'package:habitatgn/viewmodels/housings/house_list.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:habitatgn/widgets/dashbord/dashbord.dart';
-//* import 'package:share_plus/share_plus.dart';
+// import 'package:share_plus/share_plus.dart';
 
 class HousingDetailPage extends ConsumerStatefulWidget {
   final String houseId;
@@ -71,7 +71,9 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
   void _shareHouseDetails() {
     if (house != null) {
       // Share.share(
-      //     'Découvrez ce logement : ${house!.houseType!.label}, situé à ${house!.address?.commune['name'] ?? 'localisation inconnue'}. Prix: ${house!.price} €. Description: ${house!.description}');
+      //   'Découvrez ce logement : ${house!.houseType!.label}, situé à ${house!.address?.town['label'] ?? 'localisation inconnue'}. Prix: ${house!.price} €. Description: ${house!.description}',
+      //   subject: 'Détails du logement',
+      // );
     }
   }
 
@@ -81,9 +83,10 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
         ? const Scaffold(
             backgroundColor: backgroundColor,
             body: Center(
-                child: CircularProgressIndicator(
-              color: primaryColor,
-            )),
+              child: CircularProgressIndicator(
+                color: primaryColor,
+              ),
+            ),
           )
         : Scaffold(
             backgroundColor: backgroundColor,
@@ -173,10 +176,12 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
         const SizedBox(height: 10),
         _buildBedroomsRow(house),
         const SizedBox(height: 10),
+        _buildLocationRow(house),
+        const SizedBox(height: 10),
         _buildDescriptionSection(house),
-        const SizedBox(height: 16),
+        const SizedBox(height: 15),
         _buildAmenitiesSection(house),
-        const SizedBox(height: 16),
+        const SizedBox(height: 15),
         _buildAdditionalInfoSection(house),
         const SizedBox(height: 20),
       ],
@@ -201,16 +206,52 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
   }
 
   Widget _buildBedroomsRow(House house) {
-    return Row(
+    return house.houseType!.label != "Terrains"
+        ? Row(
+            children: [
+              const Icon(Icons.king_bed, color: primaryColor),
+              const SizedBox(width: 8),
+              Text(
+                '${house.bedrooms} chambres',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          )
+        : Container();
+  }
+
+  Widget _buildLocationRow(House house) {
+    return Column(
       children: [
-        const Icon(Icons.king_bed, color: primaryColor),
-        const SizedBox(width: 8),
-        Text(
-          '${house.bedrooms} chambres',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+        Row(
+          children: [
+            const Icon(Icons.location_city, color: primaryColor),
+            const SizedBox(width: 8),
+            Text(
+              '${house.address!.town['label']} ',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            const Icon(Icons.location_on, color: primaryColor),
+            const SizedBox(width: 8),
+            Text(
+              '${house.address!.commune['label']}/${house.address!.zone}',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -264,22 +305,22 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
   }
 
   Widget _buildAdditionalInfoSection(House house) {
-    return house.houseType!.label != "Terrains"
-        ? Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Informations supplémentaires',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildAdditionalInfo(house),
-            ],
-          )
-        : const Text('');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Informations supplémentaires',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        house.houseType!.label != "Terrains"
+            ? _buildAdditionalInfo(house)
+            : const Text('documents du terrain'),
+      ],
+    );
   }
 
   Widget _buildAmenityCard(String label) {

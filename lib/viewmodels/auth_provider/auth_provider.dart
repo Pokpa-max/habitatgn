@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitatgn/screens/authscreen/create_account.dart';
 import 'package:habitatgn/screens/authscreen/loginscreen.dart';
+import 'package:habitatgn/screens/home/dashbord/dashbord.dart';
 import 'package:habitatgn/screens/home/home_screen.dart';
 import 'package:habitatgn/services/authService/auth_service.dart';
 
 final authViewModelProvider =
     ChangeNotifierProvider((ref) => AuthViewModel(ref));
-final authService = Provider((ref) => AuthService());
+final authServiceProvider = Provider((ref) => AuthService());
 
 class AuthViewModel extends ChangeNotifier {
   Map<String, dynamic>? _userProfile;
@@ -16,8 +17,8 @@ class AuthViewModel extends ChangeNotifier {
   User? _user;
   User? get user => _user;
   final Ref _read;
-  bool _isLoading = false; // Ajout de la variable _isLoading
-  bool get isLoading => _isLoading; // Getter pour _isLoading
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
   bool _isCreatingAccount = false;
   bool get isCreatingAccount => _isCreatingAccount;
@@ -25,45 +26,80 @@ class AuthViewModel extends ChangeNotifier {
   AuthViewModel(this._read) {
     _getCurrentUser();
   }
+  Future<void> signInWithEmailAndPassword(
+      BuildContext context, String email, String password) async {
+    _setLoading(true);
+    try {
+      final User? user = await _read
+          .read(authServiceProvider)
+          .signInWithEmailAndPassword(email, password);
+      if (user != null) {
+        _user = user;
+        await fetchUserProfile(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        showErrorMessage(context,
+            'Échec de la connexion. Veuillez vérifier vos identifiants.');
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        showErrorMessage(context, 'Utilisateur non trouvé.');
+      } else if (e.code == 'wrong-password') {
+        showErrorMessage(context, 'Mot de passe incorrect.');
+      } else {
+        showErrorMessage(context,
+            'Une erreur est survenue. Veuillez réessayer. Code d\'erreur: ${e.code}');
+      }
+    } catch (e) {
+      showErrorMessage(
+          context, 'Une erreur inattendue est survenue. Veuillez réessayer.');
+      print('Erreur inattendue: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
 
   Future<void> signInWithFacebook(BuildContext context) async {
-    _setLoading(true); // Démarrage du chargement
-    final User? user = await _read.read(authService).signInWithFacebook();
+    _setLoading(true);
+    final User? user =
+        await _read.read(authServiceProvider).signInWithFacebook();
     if (user != null) {
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
     } else {
       showErrorMessage(context, 'Échec de la connexion avec Facebook.');
     }
-    _setLoading(false); // Fin du chargement
-    notifyListeners();
+    _setLoading(false);
   }
 
   Future<void> signInWithGoogle(BuildContext context) async {
-    _setLoading(true); // Démarrage du chargement
+    _setLoading(true);
     final User? user = await _read.read(authServiceProvider).signInWithGoogle();
     if (user != null) {
       _user = user;
       await fetchUserProfile(context);
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-    } else {
-      showErrorMessage(
         context,
-        'Échec de la connexion avec Google.',
-        color: Colors.red,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
+    } else {
+      showErrorMessage(context, 'Échec de la connexion avec Google.');
     }
-    _setLoading(false); // Fin du chargement
-    notifyListeners();
+    _setLoading(false);
   }
 
   Future<void> createUserWithEmailAndPassword(
-      BuildContext context,
-      String email,
-      String password,
-      String displayName,
-      String phoneNumber) async {
+    BuildContext context,
+    String email,
+    String password,
+    String displayName,
+    String phoneNumber,
+  ) async {
     try {
       _setCreatingAccount(true);
       final User? user =
@@ -77,20 +113,19 @@ class AuthViewModel extends ChangeNotifier {
         await user.reload();
         _user = _read.watch(authServiceProvider).getCurrentUser();
         await fetchUserProfile(context);
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
-        showErrorMessage(context, 'Le mot de passe est trop faible.',
-            color: Colors.orange[700]);
+        showErrorMessage(context, 'Le mot de passe est trop faible.');
       } else if (e.code == 'email-already-in-use') {
-        showErrorMessage(context, 'L\'adresse email est déjà utilisée.',
-            color: Colors.orange[700]);
+        showErrorMessage(context, 'L\'adresse email est déjà utilisée.');
       } else {
         showErrorMessage(
-            context, 'Une erreur est survenue. Veuillez réessayer.',
-            color: Colors.red[700]);
+            context, 'Une erreur est survenue. Veuillez réessayer.');
       }
     } finally {
       _setCreatingAccount(false);
@@ -104,14 +139,14 @@ class AuthViewModel extends ChangeNotifier {
 
   Future<void> fetchUserProfile(context) async {
     try {
-      final userProfile = await _read.watch(authService).getUserProfile();
+      final userProfile =
+          await _read.watch(authServiceProvider).getUserProfile();
       if (userProfile != null) {
         _userProfile = userProfile;
         notifyListeners();
       } else {
-        showErrorMessage(context, 'Échec de la connexion avec Google.');
-        print(
-            'Erreur: Impossible de récupérer les informations du profil utilisateur');
+        showErrorMessage(
+            context, 'Échec de la récupération du profil utilisateur.');
       }
     } catch (e) {
       print('Erreur lors de la récupération du profil utilisateur: $e');
@@ -142,9 +177,11 @@ class AuthViewModel extends ChangeNotifier {
     );
   }
 
-  void navigateToCreateAccount(context) {
+  void navigateToCreateAccount(BuildContext context) {
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => CreateAccountPage()));
+      context,
+      MaterialPageRoute(builder: (context) => CreateAccountPage()),
+    );
   }
 
   void _setLoading(bool isLoading) {
@@ -158,7 +195,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 }
 
-// mise a jour des champ de Visibility
+// Mise à jour des champs de Visibility
 class PasswordVisibilityNotifier extends StateNotifier<bool> {
   PasswordVisibilityNotifier() : super(false);
 

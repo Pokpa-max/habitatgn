@@ -229,7 +229,7 @@ class CreateAccountPage extends ConsumerWidget {
 
                           // Concaténation du code de référence avec le numéro de téléphone
                           String phoneNumberWithReference =
-                              '${referenceCodeController.text}-${phoneController.text}';
+                              '${referenceCodeController.text}${phoneController.text}';
 
                           await authProvider.createUserWithEmailAndPassword(
                             context,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitatgn/screens/splash_screen.dart';
+import 'package:habitatgn/utils/appcolors.dart';
 
 import 'firebase_options.dart';
 
@@ -23,6 +24,10 @@ class MyApp extends StatelessWidget {
       title: 'HabitatGN',
       theme: ThemeData(
         primarySwatch: Colors.cyan,
+        scrollbarTheme: ScrollbarThemeData(
+          thumbColor: WidgetStateProperty.all(primaryColor),
+          trackColor: WidgetStateProperty.all(primaryColor.withOpacity(0.1)),
+        ),
         fontFamily: 'Poppins',
       ),
       debugShowCheckedModeBanner: false,

@@ -91,16 +91,11 @@ class AuthService {
   // Authentification par email et mot de passe
   Future<User?> signInWithEmailAndPassword(
       String email, String password) async {
-    try {
-      UserCredential credential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      return credential.user;
-    } catch (e) {
-      print('Erreur de connexion: $e');
-      return null;
-    }
+    UserCredential credential = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    return credential.user;
   }
 
   // Création de compte par email et mot de passe
@@ -120,7 +115,6 @@ class AuthService {
         'displayName': displayName,
         'email': email,
         'phoneNumber': phoneNumber ?? '',
-        'photoURL': user.photoURL ?? '',
         'createdAt': Timestamp.now(),
         'updatedAt': Timestamp.now(),
       });

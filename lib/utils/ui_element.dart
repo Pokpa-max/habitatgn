@@ -173,7 +173,7 @@ class FormattedPrice extends StatelessWidget {
       child: Text(
         '$formattedPrice $suffix',
         style: TextStyle(
-          fontSize: 18,
+          fontSize: 16,
           fontWeight: FontWeight.bold,
           color: color,
         ),
