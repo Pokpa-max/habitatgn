@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitatgn/screens/authscreen/loginscreen.dart';
+import 'package:habitatgn/screens/settings/contact_page.dart';
+import 'package:habitatgn/screens/settings/helpsupport_page.dart';
+import 'package:habitatgn/screens/settings/settings_page.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:habitatgn/viewmodels/auth_provider/auth_provider.dart';
 
@@ -78,59 +81,38 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             child: Column(
               children: [
                 _buildProfileOption(
-                  icon: Icons.lock,
-                  title: 'Changer le mot de passe',
-                  onTap: () {
-                    // TODO: Implémenter la logique pour changer le mot de passe
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Changer le mot de passe'),
-                          content: const Text(
-                              'Implémenter le formulaire pour changer le mot de passe ici.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('Annuler'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                // Implémenter la logique de changement de mot de passe ici
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('Changer'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                ),
-                _buildProfileOption(
                   icon: Icons.settings,
                   title: 'Paramètres',
                   onTap: () {
-                    // TODO: Naviguer vers la page des paramètres
-                    // Exemple de navigation : Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SettingsPage()));
                   },
                 ),
                 _buildProfileOption(
-                  icon: Icons.privacy_tip,
-                  title: 'Privacy Settings',
-                  onTap: () {
-                    // TODO: Naviguer vers la page des paramètres de confidentialité
-                    // Exemple de navigation : Navigator.push(context, MaterialPageRoute(builder: (context) => PrivacySettingsPage()));
-                  },
+                  icon: Icons.help,
+                  title: 'Notifications',
+                  onTap: () {},
                 ),
                 _buildProfileOption(
                   icon: Icons.help,
                   title: 'Aide & Support',
                   onTap: () {
-                    // TODO: Naviguer vers la page d'aide et de support
-                    // Exemple de navigation : Navigator.push(context, MaterialPageRoute(builder: (context) => HelpSupportPage()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const HelpSupportPage()));
+                  },
+                ),
+                _buildProfileOption(
+                  icon: Icons.contact_mail_rounded,
+                  title: 'Nous contacter',
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ContactPage()));
                   },
                 ),
                 _buildProfileOption(
@@ -152,7 +134,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
-                              child: const Text('Annuler'),
+                              child: const Text('Annuler',
+                                  style: TextStyle(color: primaryColor)),
                             ),
                             ElevatedButton(
                               style: ButtonStyle(
@@ -164,43 +147,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                 userProfileViewModel.signOut(context);
                               },
                               child: const Text('Se déconnecter'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  color: Colors.red,
-                ),
-                _buildProfileOption(
-                  icon: Icons.delete,
-                  title: 'Supprimer son compte',
-                  onTap: () {
-                    // TODO: Implémenter la logique pour supprimer le compte
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Supprimer son compte'),
-                          content: const Text(
-                              'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text('Annuler'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                // Implémenter la logique de suppression de compte ici
-                                Navigator.of(context)
-                                    .popUntil(ModalRoute.withName('/'));
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                              ),
-                              child: const Text('Supprimer'),
                             ),
                           ],
                         );

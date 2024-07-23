@@ -29,6 +29,8 @@ class HouseService {
     int limit = 20,
     String? housingType,
   }) async {
+    print('ovoir house ype 🫅🫅🫅🫅');
+    print(housingType);
     try {
       Query query = _firestore
           .collection('houses')
@@ -36,7 +38,7 @@ class HouseService {
           .limit(limit);
 
       if (housingType != null) {
-        query = query.where('houseType.label', isEqualTo: housingType);
+        query = query.where('houseType.value', isEqualTo: housingType);
       }
 
       if (lastDocument != null) {

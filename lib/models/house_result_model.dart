@@ -53,7 +53,6 @@ class House {
   final Map<String, dynamic> furnishing;
   final double area;
   final double price;
-  // final Map<String, dynamic> commodites;
   final List<Map<String, dynamic>>? commodites;
 
   final String imageUrl;

@@ -119,11 +119,11 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                             return Padding(
                               padding: const EdgeInsets.all(5.0),
                               child: Card(
-                                color: backgroundColor,
+                                color: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(color: lightPrimary2)),
                                 child: InkWell(
                                   onTap: () {
                                     Navigator.push(

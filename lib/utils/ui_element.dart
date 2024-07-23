@@ -110,7 +110,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-Widget houseCategoryListEmpty() {
+Widget houseCategoryListEmpty({String title = 'Aucun logement disponible'}) {
   return Center(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -122,7 +122,7 @@ Widget houseCategoryListEmpty() {
         ),
         const SizedBox(height: 20),
         Text(
-          'Aucun de logement disponible',
+          title,
           style: TextStyle(
             fontSize: 18,
             color: Colors.grey[600],

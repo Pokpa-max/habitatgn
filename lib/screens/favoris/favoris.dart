@@ -56,7 +56,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
           : houseListViewModel.favoriteHouses.isEmpty
               ? houseCategoryListEmpty()
               : Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(5.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -69,11 +69,12 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                             return Padding(
                               padding: const EdgeInsets.all(5.0),
                               child: Card(
-                                color: backgroundColor,
+                                color: Colors.white,
                                 elevation: 0,
+                                clipBehavior: Clip.antiAlias,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(color: lightPrimary2)),
                                 child: InkWell(
                                   onTap: () {
                                     Navigator.push(
@@ -90,7 +91,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Padding(
-                                        padding: const EdgeInsets.all(5.0),
+                                        padding: const EdgeInsets.all(3.0),
                                         child: CustomCachedNetworkImage(
                                           imageUrl: house.imageUrl,
                                           width: 130,
@@ -161,7 +162,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                                     const Icon(
                                                         Icons.location_on,
                                                         size: 16,
-                                                        color: Colors.grey),
+                                                        color: primaryColor),
                                                     const SizedBox(width: 4),
                                                     Text(
                                                       house.address!
@@ -187,7 +188,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                               children: [
                                                 const Icon(Icons.home,
                                                     size: 16,
-                                                    color: Colors.grey),
+                                                    color: primaryColor),
                                                 const SizedBox(width: 4),
                                                 Text(
                                                   '${house.bedrooms} pièces',
@@ -201,8 +202,9 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                               children: [
                                                 const Icon(
                                                     Icons.attach_money_outlined,
-                                                    color: Colors.grey),
+                                                    color: primaryColor),
                                                 FormattedPrice(
+                                                  color: Colors.black,
                                                   price: house.price,
                                                   suffix: house.offerType[
                                                               "label"] ==
