@@ -70,7 +70,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                               padding: const EdgeInsets.all(5.0),
                               child: Card(
                                 color: Colors.white,
-                                elevation: 0,
+                                elevation: 0.5,
                                 clipBehavior: Clip.antiAlias,
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -94,8 +94,8 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                         padding: const EdgeInsets.all(3.0),
                                         child: CustomCachedNetworkImage(
                                           imageUrl: house.imageUrl,
-                                          width: 130,
-                                          height: 120,
+                                          width: 250,
+                                          height: 150,
                                         ),
                                       ),
                                       const SizedBox(width: 10),
@@ -130,22 +130,14 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                                       color: primaryColor,
                                                       borderRadius:
                                                           BorderRadius.circular(
-                                                              20),
+                                                              4),
                                                     ),
-                                                    child: SeparatedText(
-                                                      text: house
-                                                          .offerType["label"],
-                                                      firstLetterStyle:
-                                                          const TextStyle(
+                                                    child: Text(
+                                                      house.offerType["label"],
+                                                      style: const TextStyle(
                                                         fontSize: 16,
                                                         color: Colors.white,
                                                       ),
-                                                      restOfTextStyle:
-                                                          const TextStyle(
-                                                        fontSize: 16,
-                                                        color: Colors.white,
-                                                      ),
-                                                      spaceBetween: 6.0,
                                                     ),
                                                   ),
                                                 ),
@@ -207,7 +199,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                                   color: Colors.black,
                                                   price: house.price,
                                                   suffix: house.offerType[
-                                                              "label"] ==
+                                                              "value"] ==
                                                           "ALouer"
                                                       ? '/mois'
                                                       : '',

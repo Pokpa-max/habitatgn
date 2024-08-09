@@ -20,6 +20,10 @@ class SettingService {
     }
   }
 
+  User? getCurrentUser() {
+    return _auth.currentUser;
+  }
+
   // Future<void> changePassword(
   //     String currentPassword, String newPassword) async {
   //   try {

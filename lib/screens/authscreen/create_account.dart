@@ -57,14 +57,14 @@ class CreateAccountPage extends ConsumerWidget {
                   labelText: 'Nom *',
                   labelStyle: const TextStyle(color: Colors.black),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: inputBackground,
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: inputBackground),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: inputBackground),
                   ),
                 ),
               ),
@@ -77,14 +77,14 @@ class CreateAccountPage extends ConsumerWidget {
                   labelText: 'Email *',
                   labelStyle: const TextStyle(color: Colors.black),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: inputBackground,
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: inputBackground),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: inputBackground),
                   ),
                 ),
               ),
@@ -96,14 +96,14 @@ class CreateAccountPage extends ConsumerWidget {
                   labelText: 'Numéro de téléphone',
                   labelStyle: const TextStyle(color: Colors.black),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: inputBackground,
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: inputBackground),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: inputBackground),
                   ),
                 ),
                 keyboardType: TextInputType.phone,
@@ -117,14 +117,14 @@ class CreateAccountPage extends ConsumerWidget {
                   labelText: 'Code de référence',
                   labelStyle: const TextStyle(color: Colors.black),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: inputBackground,
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: inputBackground),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: inputBackground),
                   ),
                 ),
               ),
@@ -136,14 +136,14 @@ class CreateAccountPage extends ConsumerWidget {
                   labelText: 'Mot de passe *',
                   labelStyle: const TextStyle(color: Colors.black),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: inputBackground,
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: inputBackground),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: inputBackground),
                   ),
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -169,14 +169,14 @@ class CreateAccountPage extends ConsumerWidget {
                   labelText: 'Confirmer le mot de passe *',
                   labelStyle: const TextStyle(color: Colors.black),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: inputBackground,
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: inputBackground),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.0),
-                    borderSide: const BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: inputBackground),
                   ),
                   suffixIcon: IconButton(
                     icon: Icon(

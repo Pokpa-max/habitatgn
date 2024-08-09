@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitatgn/models/house_result_model.dart';
+import 'package:habitatgn/screens/notification/map/map_screen.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:habitatgn/utils/ui_element.dart';
-import 'package:habitatgn/viewmodels/housings/house_list.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:habitatgn/widgets/dashbord/dashbord.dart';
-// import 'package:share_plus/share_plus.dart';
+import 'package:habitatgn/viewmodels/housings/house_list.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class HousingDetailPage extends ConsumerStatefulWidget {
   final String houseId;
@@ -33,137 +33,142 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
   }
 
   Future<void> _fetchHouseDetails() async {
+    setState(() => isLoading = true);
     try {
-      setState(() {
-        isLoading = true;
-      });
       final houseListViewModel = ref.read(houseListViewModelProvider);
-      House? fetchedHouse =
-          await houseListViewModel.fetchHouseById(widget.houseId);
-      if (fetchedHouse != null) {
-        setState(() {
-          house = fetchedHouse;
-        });
-      }
+      house = await houseListViewModel.fetchHouseById(widget.houseId);
+    } catch (e) {
+      print('Error fetching house details: $e');
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
   }
 
   Future<void> _checkIfFavorite() async {
     final houseListViewModel = ref.read(houseListViewModelProvider);
-    bool isFav = await houseListViewModel.isFavorite(widget.houseId);
-    setState(() {
-      isLiked = isFav;
-    });
+    isLiked = await houseListViewModel.isFavorite(widget.houseId);
+    setState(() {});
   }
 
-  void _toggleLike() async {
+  Future<void> _toggleLike() async {
     final houseListViewModel = ref.read(houseListViewModelProvider);
-    await houseListViewModel.toggleFavorite(widget.houseId);
-    setState(() {
-      isLiked = !isLiked;
-    });
+
+    if (!await houseListViewModel.checkConnectivity()) {
+      _showSnackBar(
+          'Pas de connexion Internet. Veuillez vérifier votre réseau.',
+          Colors.black87);
+      return;
+    }
+
+    final successMessage = isLiked
+        ? '${house?.houseType?.label} retiré des coups de cœur!'
+        : '${house?.houseType?.label} ajouté aux coups de cœur!';
+
+    try {
+      setState(() => isLiked = !isLiked);
+      await houseListViewModel.toggleFavorite(widget.houseId);
+      _showSnackBar(successMessage, isLiked ? primaryColor : Colors.black87);
+    } catch (e) {
+      _showSnackBar('Erreur: Veuillez réessayer plus tard.', Colors.red);
+    }
   }
 
-  void _shareHouseDetails() {
-    if (house != null) {
-      // Share.share(
-      //   'Découvrez ce logement : ${house!.houseType!.label}, situé à ${house!.address?.town['label'] ?? 'localisation inconnue'}. Prix: ${house!.price} €. Description: ${house!.description}',
-      //   subject: 'Détails du logement',
-      // );
-    }
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Center(
+            child: Text(
+          message,
+          style: const TextStyle(fontSize: 16),
+        )),
+        backgroundColor: color,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return isLoading
-        ? const Scaffold(
-            backgroundColor: backgroundColor,
-            body: Center(
-              child: CircularProgressIndicator(
-                color: primaryColor,
-              ),
-            ),
-          )
-        : Scaffold(
-            backgroundColor: backgroundColor,
-            floatingActionButton: FloatingActionButton.extended(
-              onPressed: () {
-                // Ajouter la logique pour contacter le propriétaire
-              },
-              icon: const Icon(
-                Icons.phone,
-                color: Colors.white,
-              ),
-              label: const Text(
-                'Appeler',
-                style: TextStyle(color: Colors.white),
-              ),
-              backgroundColor: primaryColor,
-            ),
-            body: CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  backgroundColor: primaryColor,
-                  expandedHeight: 280.0,
-                  leading: IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back_ios_outlined,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                  floating: false,
-                  pinned: true,
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: house != null
-                        ? ImageCarousel(
-                            imageUrls: [
-                              house!.imageUrl,
-                              ...house!.houseInsides
-                            ],
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                  actions: [
-                    IconButton(
-                      icon: Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? Colors.red : Colors.white,
-                        size: 30,
-                      ),
-                      onPressed: _toggleLike,
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.share,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                      onPressed: _shareHouseDetails,
-                    ),
-                  ],
-                ),
-                SliverList(
-                  delegate: SliverChildListDelegate(
-                    [
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: house != null
-                            ? _buildHouseDetails(house!)
-                            : Container(),
-                      ),
-                    ],
-                  ),
-                ),
+    if (isLoading) {
+      return const Scaffold(
+        backgroundColor: backgroundColor,
+        body: Center(
+          child: CircularProgressIndicator(color: primaryColor),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      floatingActionButton: _buildFloatingActionButton(),
+      body: CustomScrollView(
+        slivers: [
+          _buildSliverAppBar(),
+          SliverList(
+            delegate: SliverChildListDelegate(
+              [
+                Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: house != null
+                        ? _buildHouseDetails(house!)
+                        : Container())
               ],
             ),
-          );
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFloatingActionButton() {
+    return ElevatedButton.icon(
+      icon: const Icon(
+        Icons.phone,
+        size: 30,
+      ),
+      style: ButtonStyle(
+          padding: const WidgetStatePropertyAll(EdgeInsets.all(8)),
+          backgroundColor: WidgetStateProperty.all(primaryColor),
+          foregroundColor: WidgetStateProperty.all(Colors.white)),
+      onPressed: () async {
+        if (house?.phoneNumber != null) {
+          final houseListViewModel = ref.read(houseListViewModelProvider);
+          await houseListViewModel.launchPhoneCall("tel:${house!.phoneNumber}");
+        }
+      },
+      label: const Text('Appeler', style: TextStyle(fontSize: 18)),
+    );
+  }
+
+  SliverAppBar _buildSliverAppBar() {
+    final screenHeight = MediaQuery.of(context).size.height * 0.3;
+    return SliverAppBar(
+      backgroundColor: primaryColor,
+      expandedHeight: screenHeight,
+      //  350.0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_outlined, color: Colors.white),
+        onPressed: () => Navigator.pop(context),
+      ),
+      flexibleSpace: FlexibleSpaceBar(
+        background: house != null
+            ? ImageCarousel(
+                imageUrls: [house!.imageUrl, ...house!.houseInsides],
+              )
+            : const SizedBox.shrink(),
+      ),
+      actions: [
+        IconButton(
+          icon: Icon(isLiked ? Icons.favorite : Icons.favorite_border,
+              color: isLiked ? Colors.red : Colors.white, size: 30),
+          onPressed: _toggleLike,
+        ),
+        IconButton(
+          icon: const Icon(Icons.share, color: Colors.white, size: 30),
+          onPressed: () {}, // Add share functionality here
+        ),
+      ],
+    );
   }
 
   Widget _buildHouseDetails(House house) {
@@ -171,19 +176,71 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildTitleAndLocationRow(house),
-        const SizedBox(height: 10),
+        const SizedBox(height: 15),
         _buildPriceRow(house),
-        const SizedBox(height: 10),
-        _buildBedroomsRow(house),
-        const SizedBox(height: 10),
+        const SizedBox(height: 15),
+        if (house.houseType?.label != "Terrains") ...[
+          _buildBedroomsRow(house),
+        ],
+        const SizedBox(height: 15),
         _buildLocationRow(house),
-        const SizedBox(height: 10),
+        const SizedBox(height: 20),
         _buildDescriptionSection(house),
-        const SizedBox(height: 15),
-        _buildAmenitiesSection(house),
-        const SizedBox(height: 15),
+        const SizedBox(height: 20),
+        if (house.houseType?.label != "Terrains") ...[
+          _buildAmenitiesSection(house),
+        ],
+        const SizedBox(height: 20),
         _buildAdditionalInfoSection(house),
         const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildTitleAndLocationRow(House house) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Text('${house.houseType?.label ?? ''} - ',
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(width: 8),
+            Text(house.offerType["label"],
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        InkWell(
+          onTap: () {
+            print("voir sur la carte ⛪⛪⛪⛪⛪⛪");
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LocationMapScreen(
+                  latitude: house.address!.lat,
+                  longitude: house.address!.long,
+                  address:
+                      '${house.address?.commune['label']}/${house.address?.zone}',
+                  houseType: house.houseType!,
+                ),
+              ),
+            );
+          },
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.location_on_rounded,
+                size: 30,
+                color: primaryColor,
+              ),
+              Text('Voir localisation',
+                  style: TextStyle(fontSize: 14, color: Colors.black87)),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -191,36 +248,25 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
   Widget _buildPriceRow(House house) {
     return Row(
       children: [
-        const Icon(
-          Icons.attach_money_outlined,
-          color: primaryColor,
-          size: 30,
-        ),
+        const Icon(Icons.attach_money_outlined, color: primaryColor, size: 30),
         FormattedPrice(
           color: Colors.black,
           price: house.price,
-          suffix: house.offerType["label"] == "ALouer" ? '/mois' : '',
+          suffix: house.offerType["value"] == "ALouer" ? '/mois' : '',
         ),
       ],
     );
   }
 
   Widget _buildBedroomsRow(House house) {
-    return house.houseType!.label != "Terrains"
-        ? Row(
-            children: [
-              const Icon(Icons.king_bed, color: primaryColor),
-              const SizedBox(width: 8),
-              Text(
-                '${house.bedrooms} chambres',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          )
-        : Container();
+    return Row(
+      children: [
+        const Icon(Icons.king_bed, color: primaryColor),
+        const SizedBox(width: 8),
+        Text('${house.bedrooms} chambres',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      ],
+    );
   }
 
   Widget _buildLocationRow(House house) {
@@ -230,13 +276,9 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
           children: [
             const Icon(Icons.location_city, color: primaryColor),
             const SizedBox(width: 8),
-            Text(
-              '${house.address!.town['label']} ',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text('${house.address?.town['label']}',
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
         const SizedBox(height: 10),
@@ -244,13 +286,9 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
           children: [
             const Icon(Icons.location_on, color: primaryColor),
             const SizedBox(width: 8),
-            Text(
-              '${house.address!.commune['label']}/${house.address!.zone}',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text('${house.address?.commune['label']}/${house.address?.zone}',
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
       ],
@@ -261,64 +299,45 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Description',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        const Text('Description:',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
-        Text(
-          house.description,
-          style: const TextStyle(
-            fontSize: 16,
-          ),
-        ),
+        Text(house.description, style: const TextStyle(fontSize: 16)),
       ],
     );
   }
 
   Widget _buildAmenitiesSection(House house) {
-    return house.houseType!.label != "Terrains"
-        ? Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Équipements',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: house.commodites!
-                    .map((amenity) => _buildAmenityCard(amenity['label']))
-                    .toList(),
-              )
-            ],
-          )
-        : const Text("");
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Équipements:',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: house.commodites
+                  ?.map((amenity) => _buildAmenityCard(amenity['label']))
+                  .toList() ??
+              [],
+        ),
+      ],
+    );
   }
 
   Widget _buildAdditionalInfoSection(House house) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Informations supplémentaires',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        const Text('Informations supplémentaires:',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
-        house.houseType!.label != "Terrains"
-            ? _buildAdditionalInfo(house)
-            : const Text('documents du terrain'),
+        if (house.houseType?.label != "Terrains") ...[
+          _buildAdditionalInfo(house),
+        ] else ...[
+          const Text('Documents du terrain'),
+        ],
       ],
     );
   }
@@ -328,8 +347,8 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
       color: lightPrimary,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
+          borderRadius: BorderRadius.circular(10),
+          side: BorderSide(color: inputBackground)),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -337,10 +356,7 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
           children: [
             const Icon(Icons.check, color: primaryColor),
             const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 16),
-            ),
+            Text(label, style: const TextStyle(fontSize: 16)),
           ],
         ),
       ),
@@ -353,6 +369,7 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
       children: [
         _buildInfoRow(
             Icons.attach_money, 'Caution: ${house.housingDeposit} mois'),
+        const SizedBox(height: 10),
         _buildInfoRow(Icons.calendar_today,
             'Mois d\'avance: ${house.rentalDeposit} mois'),
       ],
@@ -363,62 +380,11 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
     return Row(
       children: [
         Icon(icon, color: primaryColor),
-        const SizedBox(width: 8),
-        Text(
-          info,
-          style: const TextStyle(fontSize: 16),
+        const SizedBox(
+          height: 15,
+          width: 8,
         ),
-      ],
-    );
-  }
-
-  Widget _buildTitleAndLocationRow(House house) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Text(
-              '${house.houseType?.label ?? ''} - ',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(width: 8),
-            SeparatedText(
-              text: house.offerType["label"],
-              firstLetterStyle: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-              restOfTextStyle: const TextStyle(
-                fontSize: 20,
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-              spaceBetween: 6.0,
-            ),
-          ],
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.location_on_rounded,
-                size: 30,
-                color: primaryColor,
-              ),
-            ),
-            const Text(
-              'Voir localisation',
-              style: TextStyle(fontSize: 14, color: Colors.black87),
-            ),
-          ],
-        ),
+        Text(info, style: const TextStyle(fontSize: 16)),
       ],
     );
   }

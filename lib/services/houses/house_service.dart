@@ -24,22 +24,37 @@ class HouseService {
     }
   }
 
+  /// Récupère les logements récents.
+  Future<List<House>> getRecentHouses({int limit = 10}) async {
+    try {
+      Query query = _firestore
+          .collection('houses')
+          .orderBy('createdAt', descending: true)
+          .where('isAvailable', isEqualTo: true)
+          .limit(limit);
+
+      QuerySnapshot querySnapshot = await query.get();
+      List<House> houses =
+          querySnapshot.docs.map((doc) => House.fromFirestore(doc)).toList();
+
+      return houses;
+    } catch (e) {
+      print('Error fetching recent houses: $e');
+      return [];
+    }
+  }
+
   Future<List<House>> getHouses({
     DocumentSnapshot? lastDocument,
     int limit = 20,
-    String? housingType,
   }) async {
-    print('ovoir house ype 🫅🫅🫅🫅');
-    print(housingType);
     try {
       Query query = _firestore
           .collection('houses')
           .orderBy('createdAt', descending: true)
           .limit(limit);
 
-      if (housingType != null) {
-        query = query.where('houseType.value', isEqualTo: housingType);
-      }
+      query = query.where('isAvailable', isEqualTo: true);
 
       if (lastDocument != null) {
         query = query.startAfterDocument(lastDocument);

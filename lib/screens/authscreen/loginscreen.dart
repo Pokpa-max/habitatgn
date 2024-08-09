@@ -39,11 +39,11 @@ class LoginScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                const Icon(
-                  Icons.person,
-                  size: 100,
-                  color: Colors.grey,
-                ),
+                // const Icon(
+                //   Icons.person,
+                //   size: 100,
+                //   color: Colors.grey,
+                // ),
                 const SizedBox(height: 20),
                 TextField(
                   controller: emailController,
@@ -51,12 +51,12 @@ class LoginScreen extends ConsumerWidget {
                     labelText: 'Email',
                     labelStyle: const TextStyle(color: Colors.black),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: inputBackground,
                     enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.white),
+                        borderSide: BorderSide(color: inputBackground),
                         borderRadius: BorderRadius.circular(15)),
                     focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.white),
+                        borderSide: BorderSide(color: inputBackground),
                         borderRadius: BorderRadius.circular(15)),
                   ),
                   style: const TextStyle(color: Colors.black),
@@ -70,12 +70,12 @@ class LoginScreen extends ConsumerWidget {
                     labelText: 'Mot de passe',
                     labelStyle: const TextStyle(color: Colors.black),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: inputBackground,
                     enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.white),
+                        borderSide: BorderSide(color: inputBackground),
                         borderRadius: BorderRadius.circular(15)),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Colors.white),
+                      borderSide: BorderSide(color: inputBackground),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     suffixIcon: IconButton(

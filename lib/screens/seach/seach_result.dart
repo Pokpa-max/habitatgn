@@ -62,8 +62,8 @@ class SearchResultPage extends ConsumerWidget {
                                 padding: const EdgeInsets.all(5.0),
                                 child: CustomCachedNetworkImage(
                                   imageUrl: house.imageUrl,
-                                  width: 130,
-                                  height: 120,
+                                  width: 250,
+                                  height: 150,
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -92,19 +92,14 @@ class SearchResultPage extends ConsumerWidget {
                                             decoration: BoxDecoration(
                                               color: primaryColor,
                                               borderRadius:
-                                                  BorderRadius.circular(20),
+                                                  BorderRadius.circular(4.0),
                                             ),
-                                            child: SeparatedText(
-                                              text: house.offerType["label"],
-                                              firstLetterStyle: const TextStyle(
+                                            child: Text(
+                                              house.offerType["label"],
+                                              style: const TextStyle(
                                                 fontSize: 16,
                                                 color: Colors.white,
                                               ),
-                                              restOfTextStyle: const TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.white,
-                                              ),
-                                              spaceBetween: 6.0,
                                             ),
                                           ),
                                         ),
@@ -145,7 +140,7 @@ class SearchResultPage extends ConsumerWidget {
                                         FormattedPrice(
                                           color: Colors.black,
                                           price: house.price,
-                                          suffix: house.offerType["label"] ==
+                                          suffix: house.offerType["value"] ==
                                                   "ALouer"
                                               ? '/mois'
                                               : '',
@@ -160,10 +155,6 @@ class SearchResultPage extends ConsumerWidget {
                         ),
                       ),
                     );
-                    // ListTile(
-                    //   title: Text(house.houseType!.label),
-                    //   subtitle: Text('${house.price} GN'),
-                    // );
                   },
                 ),
     );

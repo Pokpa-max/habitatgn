@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitatgn/screens/authscreen/loginscreen.dart';
+import 'package:habitatgn/screens/preference/preference.dart';
 import 'package:habitatgn/screens/settings/contact_page.dart';
 import 'package:habitatgn/screens/settings/helpsupport_page.dart';
 import 'package:habitatgn/screens/settings/settings_page.dart';
@@ -90,11 +91,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             builder: (context) => const SettingsPage()));
                   },
                 ),
-                _buildProfileOption(
-                  icon: Icons.help,
-                  title: 'Notifications',
-                  onTap: () {},
-                ),
+                // _buildProfileOption(
+                //   icon: Icons.help,
+                //   title: 'Notifications',
+                //   onTap: () {
+                //     Navigator.push(
+                //         context,
+                //         MaterialPageRoute(
+                //             builder: (context) => HousingPreferencesScreen(
+                //                   userId: user!.uid.toString(),
+                //                 )));
+                //   },
+                // ),
                 _buildProfileOption(
                   icon: Icons.help,
                   title: 'Aide & Support',
@@ -127,15 +135,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           content: const Text(
                               'Êtes-vous sûr de vouloir vous déconnecter ?'),
                           actions: [
-                            TextButton(
+                            ElevatedButton(
                               style: ButtonStyle(
+                                  backgroundColor:
+                                      WidgetStateProperty.all(Colors.grey),
                                   foregroundColor:
-                                      WidgetStateProperty.all(Colors.blue)),
-                              onPressed: () {
-                                Navigator.of(context).pop();
+                                      WidgetStateProperty.all(Colors.white)),
+                              onPressed: () async {
+                                Navigator.pop(context);
                               },
-                              child: const Text('Annuler',
-                                  style: TextStyle(color: primaryColor)),
+                              child: const Text('annuler'),
                             ),
                             ElevatedButton(
                               style: ButtonStyle(

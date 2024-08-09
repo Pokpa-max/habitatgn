@@ -28,6 +28,10 @@ class _ImageCarouselState extends State<ImageCarousel> {
   Widget build(BuildContext context) {
     double carouselHeight =
         MediaQuery.of(context).size.height * 0.3; // 30% of screen height
+
+    // Obtenez la hauteur de l'écran
+    final screenHeight = MediaQuery.of(context).size.height * 0.35;
+
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
@@ -35,7 +39,8 @@ class _ImageCarouselState extends State<ImageCarousel> {
           options: CarouselOptions(
             autoPlay: false,
             aspectRatio: 16 / 8,
-            height: 310.0,
+            height: screenHeight,
+            // 380.0,
             enlargeCenterPage: true,
             enableInfiniteScroll: false,
             viewportFraction: 1.0,

@@ -439,6 +439,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     'Hôtel',
     'Magasin',
     'Terrain'
+        'Duplex',
+    'Appartement',
+    'Chantier',
   ];
   final List<String> _locations = [
     'Conakry',

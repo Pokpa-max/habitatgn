@@ -182,46 +182,46 @@ class FormattedPrice extends StatelessWidget {
   }
 }
 
-class SeparatedText extends StatelessWidget {
-  final String text;
-  final TextStyle? firstLetterStyle;
-  final TextStyle? restOfTextStyle;
-  final double spaceBetween;
+// class SeparatedText extends StatelessWidget {
+//   final String text;
+//   final TextStyle? firstLetterStyle;
+//   final TextStyle? restOfTextStyle;
+//   final double spaceBetween;
 
-  const SeparatedText({
-    super.key,
-    required this.text,
-    this.firstLetterStyle,
-    this.restOfTextStyle,
-    this.spaceBetween = 4.0, // Espace par défaut de 4.0
-  });
+//   const SeparatedText({
+//     super.key,
+//     required this.text,
+//     this.firstLetterStyle,
+//     this.restOfTextStyle,
+//     this.spaceBetween = 4.0, // Espace par défaut de 4.0
+//   });
 
-  @override
-  Widget build(BuildContext context) {
-    if (text.isEmpty) return const Text('');
+//   @override
+//   Widget build(BuildContext context) {
+//     if (text.isEmpty) return const Text('');
 
-    String firstLetter = text[0];
-    String restOfText = text.substring(1);
+//     String firstLetter = text[0];
+//     String restOfText = text.substring(1);
 
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(
-            text: firstLetter,
-            style: firstLetterStyle ?? DefaultTextStyle.of(context).style,
-          ),
-          WidgetSpan(
-            child: SizedBox(width: spaceBetween),
-          ),
-          TextSpan(
-            text: restOfText,
-            style: restOfTextStyle ?? DefaultTextStyle.of(context).style,
-          ),
-        ],
-      ),
-    );
-  }
-}
+//     return RichText(
+//       text: TextSpan(
+//         children: [
+//           TextSpan(
+//             text: firstLetter,
+//             style: firstLetterStyle ?? DefaultTextStyle.of(context).style,
+//           ),
+//           WidgetSpan(
+//             child: SizedBox(width: spaceBetween),
+//           ),
+//           TextSpan(
+//             text: restOfText,
+//             style: restOfTextStyle ?? DefaultTextStyle.of(context).style,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class CustomCachedNetworkImage extends StatelessWidget {
   final String imageUrl;
@@ -259,12 +259,19 @@ class CustomCachedNetworkImage extends StatelessWidget {
         width: width ?? defaultWidth,
         height: height ?? defaultHeight,
         color: Colors.grey.shade200,
-        child: const Center(
-          child: Icon(
-            Icons.error,
-            color: Colors.red,
-            size: 40,
-          ),
+        child: const Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Center(
+              child: Icon(
+                Icons.image_not_supported,
+                color: Colors.grey,
+                size: 40,
+              ),
+            ),
+            Text('Pas de connexion internet')
+          ],
         ),
       ),
     );

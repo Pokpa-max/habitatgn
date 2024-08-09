@@ -22,7 +22,7 @@ class LoadingSkeleton extends StatelessWidget {
             children: [
               Container(
                 width: 150,
-                height: 140,
+                height: 200,
                 color: Colors.grey[300],
               ),
               const SizedBox(width: 10),

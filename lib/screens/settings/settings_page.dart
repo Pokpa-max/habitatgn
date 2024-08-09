@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitatgn/providers/provider.dart';
 import 'package:habitatgn/screens/authscreen/loginscreen.dart';
+import 'package:habitatgn/screens/preference/preference.dart';
 import 'package:habitatgn/screens/settings/about_page.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 
@@ -12,6 +14,7 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    User user = ref.read(settingViewModelProvider.notifier).currentUser!;
     return Scaffold(
       backgroundColor: lightPrimary,
       appBar: AppBar(
@@ -39,9 +42,14 @@ class SettingsPage extends ConsumerWidget {
           const SizedBox(height: 20),
           _buildSettingsOption(
             icon: Icons.location_on,
-            title: 'Préférences de localisation',
+            title: 'Préférences de notification',
             onTap: () {
-              // TODO: Naviguer vers la page des préférences de localisation
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => HousingPreferencesScreen(
+                            userId: user.uid,
+                          )));
             },
           ),
           _buildSettingsOption(
@@ -228,8 +236,6 @@ class SettingsPage extends ConsumerWidget {
     required VoidCallback toggleObscure,
     required bool obscureText,
   }) {
-    print('voir les resultats222⛪⛪⛪⛪⛪');
-    print(obscureText);
     return TextField(
       controller: controller,
       obscureText: obscureText,
@@ -249,7 +255,7 @@ class SettingsPage extends ConsumerWidget {
       builder: (context) => AlertDialog(
         title: const Text(
           'Supprimer le compte',
-          style: TextStyle(fontSize: 20, color: primaryColor),
+          style: TextStyle(fontSize: 20, color: Colors.red),
         ),
         content: const Text(
             'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.'),

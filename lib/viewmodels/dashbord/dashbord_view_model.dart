@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:habitatgn/models/adversting.dart';
 import 'package:habitatgn/models/house_result_model.dart';
 import 'package:habitatgn/screens/house/houseList.dart';
+import 'package:habitatgn/screens/house/house_detail_screen.dart';
 import 'package:habitatgn/screens/seach/seach_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:habitatgn/screens/servicies/moving.dart';
+import 'package:habitatgn/screens/servicies/repair.dart';
 import 'package:habitatgn/services/advertisement/advertisement_service.dart';
 import 'package:habitatgn/services/houses/house_service.dart';
 import 'package:habitatgn/utils/appcolors.dart';
@@ -29,11 +32,17 @@ class DashbordViewModel extends ChangeNotifier {
   bool _isAdverstingLoading = true;
   bool get isAdverstingLoading => _isAdverstingLoading;
 
+  List<House> _recentHouses = [];
+  List<House> get recentHouses => _recentHouses;
+
   final List<House> _houses = [];
   List<House> get houses => _houses;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  bool _isRecentLoading = false;
+  bool get isRecentLoading => _isRecentLoading;
 
   DocumentSnapshot? _lastDocument;
   bool _hasMore = true;
@@ -52,18 +61,25 @@ class DashbordViewModel extends ChangeNotifier {
     // notifyListeners();
   }
 
+  Future<void> fetchRecentHouses() async {
+    _isRecentLoading = true;
+
+    _recentHouses = await _houseService.getRecentHouses(
+        limit: 10); // Ajustez le nombre selon vos besoins
+    _isRecentLoading = false;
+
+    notifyListeners();
+  }
+
   // Récupération des logements selon le type
-  Future<void> fetchHouses({String? housingType}) async {
-    print("houseType: $housingType");
+  Future<void> fetchHouses() async {
     if (isLoading) return;
-    if (housingType == null) return;
 
     _isLoading = true;
     // notifyListeners();
 
     List<House> newHouses = await _houseService.getHouses(
       lastDocument: _lastDocument,
-      housingType: housingType,
     );
 
     if (newHouses.length < 20) {
@@ -101,16 +117,35 @@ class DashbordViewModel extends ChangeNotifier {
     ];
   }
 
+  void navigateToHousingDetailPage(BuildContext context, String houseId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HousingDetailPage(
+          houseId: houseId,
+        ),
+      ),
+    );
+  }
+
+  void navigateToHouseListPage(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const HouseListScreen(),
+      ),
+    );
+  }
+
   Future<void> navigateToHouseList(
       BuildContext context, CategoryData category) async {
     if (_isNavigating) return; // Ignore if already navigating
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => HouseListScreen(
-          title: category.label,
-          iconData: category.icon,
-          housingType: category.label,
-        ),
+            // title: category.label,
+            // iconData: category.icon,
+            // housingType: category.label,
+            ),
       ),
     );
   }
@@ -119,6 +154,22 @@ class DashbordViewModel extends ChangeNotifier {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const SearchPage(),
+      ),
+    );
+  }
+
+  void navigateToRepairPage(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const RepairServicesScreen(),
+      ),
+    );
+  }
+
+  void navigateToMovingPage(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const MovingServicesScreen(),
       ),
     );
   }
