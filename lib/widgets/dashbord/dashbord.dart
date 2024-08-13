@@ -27,10 +27,10 @@ class _ImageCarouselState extends State<ImageCarousel> {
   @override
   Widget build(BuildContext context) {
     double carouselHeight =
-        MediaQuery.of(context).size.height * 0.3; // 30% of screen height
+        MediaQuery.of(context).size.height * 0.35; // 30% of screen height
 
     // Obtenez la hauteur de l'écran
-    final screenHeight = MediaQuery.of(context).size.height * 0.35;
+    final screenHeight = MediaQuery.of(context).size.height * 0.42;
 
     return Stack(
       alignment: Alignment.bottomCenter,
@@ -69,8 +69,8 @@ class _ImageCarouselState extends State<ImageCarousel> {
             children: widget.imageUrls.map((imageUrl) {
               int index = widget.imageUrls.indexOf(imageUrl);
               return Container(
-                width: 10.0,
-                height: 10.0,
+                width: 12.0,
+                height: 12.0,
                 margin:
                     const EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
                 decoration: BoxDecoration(

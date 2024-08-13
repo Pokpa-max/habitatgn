@@ -124,7 +124,6 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
     return ElevatedButton.icon(
       icon: const Icon(
         Icons.phone,
-        size: 30,
       ),
       style: ButtonStyle(
           padding: const WidgetStatePropertyAll(EdgeInsets.all(8)),
@@ -136,36 +135,86 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
           await houseListViewModel.launchPhoneCall("tel:${house!.phoneNumber}");
         }
       },
-      label: const Text('Appeler', style: TextStyle(fontSize: 18)),
+      label: const Text("Appeler l'Agence ", style: TextStyle(fontSize: 18)),
     );
   }
 
   SliverAppBar _buildSliverAppBar() {
-    final screenHeight = MediaQuery.of(context).size.height * 0.3;
+    double screenHeight = MediaQuery.of(context).size.height * 0.40;
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return SliverAppBar(
       backgroundColor: primaryColor,
       expandedHeight: screenHeight,
-      //  350.0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_outlined, color: Colors.white),
-        onPressed: () => Navigator.pop(context),
+      leading: Container(
+        margin: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(5),
+          color: Colors.white,
+        ),
+        child: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_outlined,
+            color: Colors.black87,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       flexibleSpace: FlexibleSpaceBar(
         background: house != null
-            ? ImageCarousel(
-                imageUrls: [house!.imageUrl, ...house!.houseInsides],
+            ? Stack(
+                children: [
+                  ImageCarousel(
+                    imageUrls: [house!.imageUrl, ...house!.houseInsides],
+                  ),
+                  Positioned(
+                    bottom: 0.0,
+                    left: 0.0,
+                    right: 0.0,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Color.fromARGB(300, 0, 0, 0),
+                            Color.fromARGB(0, 0, 0, 0)
+                          ],
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                        ),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        vertical: screenHeight * 0.01, // 1% of screen height
+                        horizontal: screenWidth * 0.03, // 3% of screen width
+                      ),
+                    ),
+                  ),
+                ],
               )
             : const SizedBox.shrink(),
       ),
       actions: [
-        IconButton(
-          icon: Icon(isLiked ? Icons.favorite : Icons.favorite_border,
-              color: isLiked ? Colors.red : Colors.white, size: 30),
-          onPressed: _toggleLike,
+        Container(
+          margin: const EdgeInsets.all(0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: Colors.white,
+          ),
+          child: IconButton(
+            icon: Icon(isLiked ? Icons.favorite : Icons.favorite_border,
+                color: isLiked ? Colors.red : Colors.black87, size: 30),
+            onPressed: _toggleLike,
+          ),
         ),
-        IconButton(
-          icon: const Icon(Icons.share, color: Colors.white, size: 30),
-          onPressed: () {}, // Add share functionality here
+        Container(
+          margin: const EdgeInsets.only(right: 5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: Colors.white,
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.share, color: Colors.black87, size: 30),
+            onPressed: () {}, // Add share functionality here
+          ),
         ),
       ],
     );
@@ -179,15 +228,18 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
         const SizedBox(height: 15),
         _buildPriceRow(house),
         const SizedBox(height: 15),
-        if (house.houseType?.label != "Terrains") ...[
+        if (house.houseType?.label != "Terrain") ...[
           _buildBedroomsRow(house),
+        ],
+        if (house.houseType?.label == "Terrain") ...[
+          _buildAreaRow(house),
         ],
         const SizedBox(height: 15),
         _buildLocationRow(house),
         const SizedBox(height: 20),
         _buildDescriptionSection(house),
         const SizedBox(height: 20),
-        if (house.houseType?.label != "Terrains") ...[
+        if (house.houseType?.label != "Terrain") ...[
           _buildAmenitiesSection(house),
         ],
         const SizedBox(height: 20),
@@ -205,41 +257,42 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
           children: [
             Text('${house.houseType?.label ?? ''} - ',
                 style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(width: 8),
             Text(house.offerType["label"],
                 style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           ],
         ),
-        InkWell(
-          onTap: () {
-            print("voir sur la carte ⛪⛪⛪⛪⛪⛪");
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => LocationMapScreen(
-                  latitude: house.address!.lat,
-                  longitude: house.address!.long,
-                  address:
-                      '${house.address?.commune['label']}/${house.address?.zone}',
-                  houseType: house.houseType!,
-                ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ElevatedButton.icon(
+              icon: const Icon(
+                Icons.location_on,
               ),
-            );
-          },
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.location_on_rounded,
-                size: 30,
-                color: primaryColor,
-              ),
-              Text('Voir localisation',
-                  style: TextStyle(fontSize: 14, color: Colors.black87)),
-            ],
-          ),
+              style: ButtonStyle(
+                  padding: const WidgetStatePropertyAll(EdgeInsets.all(8)),
+                  backgroundColor: WidgetStateProperty.all(primaryColor),
+                  foregroundColor: WidgetStateProperty.all(Colors.white)),
+              onPressed: () async {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LocationMapScreen(
+                      latitude: house.address!.lat,
+                      longitude: house.address!.long,
+                      address:
+                          '${house.address?.commune['label']}/${house.address?.zone}',
+                      houseType: house.houseType!,
+                    ),
+                  ),
+                );
+              },
+              label: const Text('Voir la localisation',
+                  style: TextStyle(fontSize: 18)),
+            ),
+          ],
         ),
       ],
     );
@@ -248,12 +301,24 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
   Widget _buildPriceRow(House house) {
     return Row(
       children: [
-        const Icon(Icons.attach_money_outlined, color: primaryColor, size: 30),
+        Icon(Icons.attach_money_outlined, color: Colors.grey[700]),
         FormattedPrice(
           color: Colors.black,
           price: house.price,
+          size: 20,
           suffix: house.offerType["value"] == "ALouer" ? '/mois' : '',
         ),
+      ],
+    );
+  }
+
+  Widget _buildAreaRow(House house) {
+    return Row(
+      children: [
+        const Icon(Icons.area_chart_sharp, color: Colors.grey),
+        const SizedBox(width: 8),
+        Text('${house.area} mm',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       ],
     );
   }
@@ -261,10 +326,10 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
   Widget _buildBedroomsRow(House house) {
     return Row(
       children: [
-        const Icon(Icons.king_bed, color: primaryColor),
+        const Icon(Icons.king_bed, color: Colors.grey),
         const SizedBox(width: 8),
         Text('${house.bedrooms} chambres',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       ],
     );
   }
@@ -274,21 +339,21 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
       children: [
         Row(
           children: [
-            const Icon(Icons.location_city, color: primaryColor),
+            const Icon(Icons.location_city, color: Colors.grey),
             const SizedBox(width: 8),
             Text('${house.address?.town['label']}',
                 style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ],
         ),
         const SizedBox(height: 10),
         Row(
           children: [
-            const Icon(Icons.location_on, color: primaryColor),
+            const Icon(Icons.location_on, color: Colors.grey),
             const SizedBox(width: 8),
             Text('${house.address?.commune['label']}/${house.address?.zone}',
                 style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ],
         ),
       ],
@@ -300,9 +365,12 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Description:',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+        Divider(
+          color: Colors.grey[200],
+        ),
         const SizedBox(height: 8),
-        Text(house.description, style: const TextStyle(fontSize: 16)),
+        Text(house.description, style: const TextStyle(fontSize: 18)),
       ],
     );
   }
@@ -312,7 +380,10 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Équipements:',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+        Divider(
+          color: Colors.grey[200],
+        ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 10,
@@ -331,12 +402,18 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Informations supplémentaires:',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+        Divider(
+          color: Colors.grey[200],
+        ),
         const SizedBox(height: 8),
-        if (house.houseType?.label != "Terrains") ...[
+        if (house.houseType?.label != "Terrain") ...[
           _buildAdditionalInfo(house),
         ] else ...[
-          const Text('Documents du terrain'),
+          const Text(
+            'Documents du terrain',
+          ),
+          //  _buildAdditionalInfo(house),
         ],
       ],
     );
@@ -354,9 +431,9 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check, color: primaryColor),
+            const Icon(Icons.check, color: Colors.grey),
             const SizedBox(width: 8),
-            Text(label, style: const TextStyle(fontSize: 16)),
+            Text(label, style: const TextStyle(fontSize: 18)),
           ],
         ),
       ),
@@ -379,12 +456,12 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
   Widget _buildInfoRow(IconData icon, String info) {
     return Row(
       children: [
-        Icon(icon, color: primaryColor),
+        Icon(icon, color: Colors.grey),
         const SizedBox(
           height: 15,
           width: 8,
         ),
-        Text(info, style: const TextStyle(fontSize: 16)),
+        Text(info, style: const TextStyle(fontSize: 18)),
       ],
     );
   }

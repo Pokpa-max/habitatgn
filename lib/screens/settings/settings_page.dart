@@ -101,7 +101,7 @@ class SettingsPage extends ConsumerWidget {
           leading: Icon(icon, color: primaryColor),
           title: Text(
             title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
           ),
           trailing: const Icon(
             Icons.arrow_forward_ios,
@@ -156,7 +156,7 @@ class SettingsPage extends ConsumerWidget {
             return AlertDialog(
               title: const Text(
                 'Changer le mot de passe',
-                style: TextStyle(fontSize: 20, color: primaryColor),
+                style: TextStyle(fontSize: 20, color: Colors.black),
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,

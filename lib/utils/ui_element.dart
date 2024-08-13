@@ -110,17 +110,18 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-Widget houseCategoryListEmpty({String title = 'Aucun logement disponible'}) {
+Widget houseCategoryListEmpty(
+    {String title = 'Aucun logement disponible',
+    subtitle = 'Veuillez vérifier ultérieurement'}) {
   return Center(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(
           Icons.home_outlined,
-          size: 100,
+          size: 80,
           color: Colors.grey[400],
         ),
-        const SizedBox(height: 20),
         Text(
           title,
           style: TextStyle(
@@ -129,9 +130,9 @@ Widget houseCategoryListEmpty({String title = 'Aucun logement disponible'}) {
           ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 5),
         Text(
-          'Veuillez vérifier ultérieurement',
+          subtitle,
           style: TextStyle(
             fontSize: 16,
             color: Colors.grey[500],
@@ -150,12 +151,14 @@ class FormattedPrice extends StatelessWidget {
   final double price;
   final String suffix;
   final Color color;
+  final double size;
 
   const FormattedPrice(
       {super.key,
       required this.price,
       this.suffix = '',
-      this.color = primaryColor});
+      this.color = primaryColor,
+      this.size = 16});
 
   @override
   Widget build(BuildContext context) {
@@ -173,7 +176,7 @@ class FormattedPrice extends StatelessWidget {
       child: Text(
         '$formattedPrice $suffix',
         style: TextStyle(
-          fontSize: 16,
+          fontSize: size,
           fontWeight: FontWeight.bold,
           color: color,
         ),

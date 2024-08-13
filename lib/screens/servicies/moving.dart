@@ -20,7 +20,8 @@ class MovingServicesScreen extends StatelessWidget {
         centerTitle: true,
         backgroundColor: primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const CustomTitle(text: 'Déménagement', textColor: Colors.white),
+        title: const CustomTitle(
+            text: 'Déménagement Rapide', textColor: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -30,7 +31,7 @@ class MovingServicesScreen extends StatelessWidget {
             const Text(
               'Services de Déménagement',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -125,7 +126,7 @@ class MovingServicesScreen extends StatelessWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -133,7 +134,7 @@ class MovingServicesScreen extends StatelessWidget {
                   Text(
                     description,
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: Colors.black54,
                     ),
                   ),

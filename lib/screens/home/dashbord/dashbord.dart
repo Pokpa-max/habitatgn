@@ -4,11 +4,10 @@ import 'package:habitatgn/models/house_result_model.dart';
 import 'package:habitatgn/utils/ui_element.dart';
 import 'package:habitatgn/viewmodels/dashbord/dashbord_view_model.dart';
 import 'package:habitatgn/screens/adversting/adversting.dart';
-import 'package:habitatgn/screens/home/dashbord/widgets/sniper_loading.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import 'package:webview_flutter_android/webview_flutter_android.dart';
+// ignore: depend_on_referenced_packages
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 class DashbordScreen extends ConsumerStatefulWidget {
@@ -122,6 +121,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                   const SizedBox(height: 20),
                   // Services Section
                   _buildSectionTitle('Nos Services'),
+
                   const SizedBox(height: 10),
                   _buildServicesSection(ref, context),
                   const SizedBox(height: 20),
@@ -169,7 +169,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
             hintText: 'Rechercher ici une maison, un appartement, terrain ...',
             prefixIcon: const Icon(Icons.search, color: Colors.grey),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide.none,
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -264,12 +264,15 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
   Widget _buildRecentListings(DashbordViewModel viewModel, List<House> houses) {
     double screenHeight = MediaQuery.of(context).size.height;
     return houses.isEmpty
-        ? const Center(child: Text('Aucun résultat trouvé'))
+        ? houseCategoryListEmpty(
+            title: 'Aucun résultat trouvé',
+            // subtitle: 'Veillez votre critere danonce'
+          )
         : viewModel.isRecentLoading
             ? const Center(
                 child: CircularProgressIndicator(color: primaryColor))
             : SizedBox(
-                height: screenHeight * 0.25,
+                height: screenHeight * 0.30,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: houses.length,
@@ -290,7 +293,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                               borderRadius: BorderRadius.circular(12),
                               side: BorderSide(color: lightPrimary2)),
                           child: Container(
-                            width: 300,
+                            width: screenHeight * 0.25,
                             padding: const EdgeInsets.all(8.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,7 +308,6 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                       child: CustomCachedNetworkImage(
                                         imageUrl: house.imageUrl,
                                         width: double.infinity,
-                                        height: 150,
                                       ),
                                     ),
                                   ),
@@ -315,20 +317,19 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      house.houseType!.label,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    FormattedPrice(
-                                      color: Colors.black,
-                                      price: house.price,
-                                      suffix:
-                                          house.offerType["value"] == "ALouer"
-                                              ? '/mois'
-                                              : '',
+                                    Row(
+                                      children: [
+                                        Text(
+                                            '${house.houseType?.label ?? ''} - ',
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold)),
+                                        const SizedBox(width: 8),
+                                        Text(house.offerType["label"],
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold)),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -351,14 +352,32 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                     ),
                                   ],
                                 ),
-                                Text(
-                                  house.description,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[700],
+                                Row(
+                                  children: [
+                                    const Icon(Icons.attach_money_outlined,
+                                        color: Colors.grey),
+                                    FormattedPrice(
+                                      color: Colors.black,
+                                      price: house.price,
+                                      size: 15,
+                                      suffix:
+                                          house.offerType["value"] == "ALouer"
+                                              ? '/mois'
+                                              : '',
+                                    ),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 5),
+                                  child: Text(
+                                    house.description,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[700],
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
                                 )
                                 // Ajoutez d'autres détails ici si nécessaire
                               ],

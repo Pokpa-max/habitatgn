@@ -271,7 +271,10 @@ class HouseListScreen extends ConsumerStatefulWidget {
 }
 
 class _HouseListScreenState extends ConsumerState<HouseListScreen> {
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
   bool _isFilterApplied = false;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -313,12 +316,28 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final houseListViewModel = ref.watch(dashbordViewModelProvider);
+
+    // Filtered list based on search query
+    final filteredHouses = houseListViewModel.houses.where((house) {
+      final lowerCaseQuery = _searchQuery.toLowerCase();
+      return house.houseType!.label.toLowerCase().contains(lowerCaseQuery) ||
+          house.description.toLowerCase().contains(lowerCaseQuery) ||
+          house.address!.town["label"].toLowerCase().contains(lowerCaseQuery);
+    }).toList();
 
     return Scaffold(
       backgroundColor: lightPrimary,
       appBar: AppBar(
+        toolbarHeight: 100,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_outlined,
@@ -331,10 +350,7 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
         centerTitle: true,
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const CustomTitle(
-          text: "Tous les Annonces de Logements",
-          textColor: primaryColor,
-        ),
+        title: _buildSearchBar(),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,7 +408,7 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                     itemCount: 10,
                     itemBuilder: (context, index) => const LoadingSkeleton(),
                   )
-                : houseListViewModel.houses.isEmpty
+                : filteredHouses.isEmpty
                     ? houseCategoryListEmpty()
                     : NotificationListener<ScrollNotification>(
                         onNotification: (ScrollNotification scrollInfo) {
@@ -405,16 +421,22 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                           return false;
                         },
                         child: ListView.builder(
-                          itemCount: houseListViewModel.houses.length + 1,
+                          itemCount: filteredHouses.length + 1,
                           itemBuilder: (context, index) {
-                            if (index == houseListViewModel.houses.length) {
+                            if (index == filteredHouses.length) {
                               return houseListViewModel.hasMore
                                   ? const Center(
-                                      child: CircularProgressIndicator())
+                                      child: CircularProgressIndicator(
+                                      color: primaryColor,
+                                    ))
                                   : Container();
                             }
+                            double screenWidth =
+                                MediaQuery.of(context).size.width;
+                            double screenHeight =
+                                MediaQuery.of(context).size.height;
 
-                            House house = houseListViewModel.houses[index];
+                            House house = filteredHouses[index];
                             return Padding(
                               padding: const EdgeInsets.all(5.0),
                               child: Card(
@@ -443,8 +465,10 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                                         padding: const EdgeInsets.all(5.0),
                                         child: CustomCachedNetworkImage(
                                           imageUrl: house.imageUrl,
-                                          width: 250,
-                                          height: 150,
+                                          width: screenWidth * 0.40,
+                                          height: screenHeight * 0.15,
+                                          // width: 250,
+                                          // height: 150,
                                         ),
                                       ),
                                       const SizedBox(width: 10),
@@ -551,6 +575,40 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Column(
+      children: [
+        const CustomTitle(
+          text: "Toutes les Annonces de Logements",
+          textColor: primaryColor,
+        ),
+        const SizedBox(
+          height: 15,
+        ),
+        TextField(
+          controller: _searchController,
+          onChanged: (query) {
+            setState(() {
+              _searchQuery = query;
+            });
+          },
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.grey.withOpacity(0.2),
+            hintText: 'Rechercher ici une maison, un appartement, terrain ...',
+            prefixIcon: const Icon(Icons.search, color: Colors.grey),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          ),
+        ),
+        const SizedBox(height: 10),
+      ],
     );
   }
 }

@@ -11,6 +11,8 @@ class HousingPreferencesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final preferencesAsyncValue = ref.watch(userPreferencesProvider(userId));
+    print("voir preferene🤬🤬🤬🤬🤬🤬🤬🤬 ");
+    print(preferencesAsyncValue);
 
     return Scaffold(
       backgroundColor: lightPrimary2,

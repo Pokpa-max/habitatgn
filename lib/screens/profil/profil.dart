@@ -62,7 +62,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   user?.displayName ?? '',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 22,
+                    fontSize: 25,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -70,7 +70,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   user?.email ?? '',
                   style: const TextStyle(
                     color: Colors.white70,
-                    fontSize: 16,
+                    fontSize: 18,
                   ),
                 ),
               ],
@@ -185,7 +185,7 @@ Widget _buildProfileOption({
         leading: Icon(icon, color: color),
         title: Text(
           title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
         ),
         onTap: onTap,
         trailing: const Icon(

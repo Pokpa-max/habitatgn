@@ -272,13 +272,12 @@ class DashbordViewModel extends ChangeNotifier {
     _houses.clear();
     _lastDocument = null;
     _hasMore = true;
-    // notifyListeners();
   }
 
   Future<void> fetchRecentHouses() async {
     _isRecentLoading = true;
     _recentHouses = await _houseService.getRecentHouses(
-        limit: 10); // Ajustez le nombre selon vos besoins
+        limit: 20); // Ajustez le nombre selon vos besoins
     _isRecentLoading = false;
     notifyListeners();
   }

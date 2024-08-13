@@ -160,6 +160,7 @@ class _LocationMapScreenState extends State<LocationMapScreen> {
     );
 
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_outlined),
@@ -167,9 +168,9 @@ class _LocationMapScreenState extends State<LocationMapScreen> {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         centerTitle: true,
-        title: const Text(
-          'Localisation du Logement',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          'Localisation  (${widget.houseType.label})',
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: primaryColor,
       ),

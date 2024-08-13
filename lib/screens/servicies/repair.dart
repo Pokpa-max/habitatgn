@@ -25,7 +25,8 @@ class RepairServicesScreen extends ConsumerWidget {
         centerTitle: true,
         backgroundColor: primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const CustomTitle(text: 'Réparations', textColor: Colors.white),
+        title: const CustomTitle(
+            text: 'Réparations & Divers', textColor: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -35,7 +36,7 @@ class RepairServicesScreen extends ConsumerWidget {
             const Text(
               'Services de Réparations',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -78,7 +79,10 @@ class RepairServicesScreen extends ConsumerWidget {
                     'tel:+1234567890'); // Remplacez par le numéro de téléphone réel
               },
               icon: const Icon(Icons.phone),
-              label: const Text('Appeler l\'agent'),
+              label: const Text(
+                'Appeler l\'agent',
+                style: TextStyle(fontSize: 16),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
@@ -130,7 +134,7 @@ class RepairServicesScreen extends ConsumerWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -138,7 +142,7 @@ class RepairServicesScreen extends ConsumerWidget {
                   Text(
                     description,
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       color: Colors.black87,
                     ),
                   ),

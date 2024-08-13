@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitatgn/models/house_result_model.dart';
 import 'package:habitatgn/screens/house/house_detail_screen.dart';
 import 'package:habitatgn/utils/appcolors.dart';
+import 'package:habitatgn/utils/skleton/house_list_skleton.dart';
 import 'package:habitatgn/utils/ui_element.dart';
 import 'package:habitatgn/viewmodels/housings/house_list.dart';
 
@@ -33,25 +34,16 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
       backgroundColor: lightPrimary,
       appBar: AppBar(
         centerTitle: true,
-        title: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CustomTitle(
-              text: "Mes coups de cœur",
-              textColor: Colors.white,
-            ),
-            SizedBox(width: 8),
-            Icon(
-              Icons.favorite,
-              color: Colors.white,
-            ),
-          ],
+        title: const CustomTitle(
+          text: "Mes coups de cœur",
+          textColor: Colors.white,
         ),
         backgroundColor: primaryColor,
       ),
       body: houseListViewModel.isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
+          ? ListView.builder(
+              itemCount: 10,
+              itemBuilder: (context, index) => const LoadingSkeleton(),
             )
           : houseListViewModel.favoriteHouses.isEmpty
               ? houseCategoryListEmpty()
@@ -64,6 +56,11 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                         child: ListView.builder(
                           itemCount: houseListViewModel.favoriteHouses.length,
                           itemBuilder: (context, index) {
+                            double screenWidth =
+                                MediaQuery.of(context).size.width;
+                            double screenHeight =
+                                MediaQuery.of(context).size.height;
+
                             House house =
                                 houseListViewModel.favoriteHouses[index];
                             return Padding(
@@ -94,8 +91,8 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                         padding: const EdgeInsets.all(3.0),
                                         child: CustomCachedNetworkImage(
                                           imageUrl: house.imageUrl,
-                                          width: 250,
-                                          height: 150,
+                                          width: screenWidth * 0.40,
+                                          height: screenHeight * 0.15,
                                         ),
                                       ),
                                       const SizedBox(width: 10),
@@ -154,7 +151,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                                     const Icon(
                                                         Icons.location_on,
                                                         size: 16,
-                                                        color: primaryColor),
+                                                        color: Colors.grey),
                                                     const SizedBox(width: 4),
                                                     Text(
                                                       house.address!
@@ -180,7 +177,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                               children: [
                                                 const Icon(Icons.home,
                                                     size: 16,
-                                                    color: primaryColor),
+                                                    color: Colors.grey),
                                                 const SizedBox(width: 4),
                                                 Text(
                                                   '${house.bedrooms} pièces',
@@ -194,7 +191,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                               children: [
                                                 const Icon(
                                                     Icons.attach_money_outlined,
-                                                    color: primaryColor),
+                                                    color: Colors.grey),
                                                 FormattedPrice(
                                                   color: Colors.black,
                                                   price: house.price,

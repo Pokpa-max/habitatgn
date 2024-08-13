@@ -6,6 +6,8 @@ class LoadingSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Card(
@@ -21,8 +23,10 @@ class LoadingSkeleton extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 150,
-                height: 200,
+                // width: 150,
+                // height: 200,
+                width: screenWidth * 0.40,
+                height: screenHeight * 0.15,
                 color: Colors.grey[300],
               ),
               const SizedBox(width: 10),
