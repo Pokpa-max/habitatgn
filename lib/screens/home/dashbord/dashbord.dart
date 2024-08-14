@@ -6,8 +6,6 @@ import 'package:habitatgn/viewmodels/dashbord/dashbord_view_model.dart';
 import 'package:habitatgn/screens/adversting/adversting.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-
-// ignore: depend_on_referenced_packages
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 class DashbordScreen extends ConsumerStatefulWidget {
@@ -27,7 +25,6 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialisation du WebView en fonction de la plateforme
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       params = WebKitWebViewControllerCreationParams();
@@ -40,10 +37,8 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
     _controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
-      ..loadRequest(
-          Uri.parse('https://flutter.dev')); // Charge une URL par défaut
+      ..loadRequest(Uri.parse('https://flutter.dev'));
 
-    // Met à jour le ViewModel avec le WebViewController
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = ref.read(dashbordViewModelProvider);
       viewModel.setWebViewController(_controller);
@@ -71,9 +66,9 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
   Widget build(BuildContext context) {
     final viewModel = ref.watch(dashbordViewModelProvider);
 
-    // Filtered list based on search query
     final filteredHouses = viewModel.recentHouses.where((house) {
       final lowerCaseQuery = _searchQuery.toLowerCase();
+
       return house.houseType!.label.toLowerCase().contains(lowerCaseQuery) ||
           house.description.toLowerCase().contains(lowerCaseQuery) ||
           house.address!.town["label"].toLowerCase().contains(lowerCaseQuery);
@@ -108,33 +103,29 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                               ),
                             ),
                             child: const Center(
-                              child: Text("HABITATGN",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.bold)),
+                              child: Text(
+                                "HABITATGN",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.bold),
+                              ),
                             ),
                           )
                         : AdvertisementCarousel(
                             adverstingData: viewModel.advertisementData),
                   ),
                   const SizedBox(height: 20),
-                  // Services Section
                   _buildSectionTitle('Nos Services'),
-
                   const SizedBox(height: 10),
                   _buildServicesSection(ref, context),
                   const SizedBox(height: 20),
-                  // Logements Récents
                   _buildSectionTitle('Logements Récents'),
                   const SizedBox(height: 10),
-                  // Affichage des logements filtrés
                   _buildRecentListings(viewModel, filteredHouses),
                   const SizedBox(height: 20),
-                  // Voir toutes les annonces Button
                   _buildViewAllButton(viewModel),
                   const SizedBox(height: 20),
-                  // Autres Informations
                   _buildOtherInformation(viewModel),
                 ],
               ),
@@ -152,14 +143,12 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                 color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
-        const SizedBox(
-          height: 10,
-        ),
+        const SizedBox(height: 10),
         TextField(
           controller: _searchController,
           onChanged: (query) {
             setState(() {
-              _searchQuery = query;
+              _searchQuery = query.trim();
             });
             _performSearch();
           },
@@ -167,12 +156,15 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
             filled: true,
             fillColor: Colors.white,
             hintText: 'Rechercher ici une maison, un appartement, terrain ...',
+            hintStyle:
+                TextStyle(color: Colors.grey[600]), // Style du texte du hint
             prefixIcon: const Icon(Icons.search, color: Colors.grey),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide.none,
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+            contentPadding: const EdgeInsets.symmetric(
+                vertical: 16, horizontal: 16), // Augmenter la hauteur du champ
           ),
         ),
         const SizedBox(height: 10),
@@ -181,10 +173,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
   }
 
   void _performSearch() {
-    // Refresh the UI by setting the search query
-    setState(() {
-      // No additional logic needed if search is handled in the build method
-    });
+    setState(() {});
   }
 
   Widget _buildSectionTitle(String title) {
@@ -266,7 +255,6 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
     return houses.isEmpty
         ? houseCategoryListEmpty(
             title: 'Aucun résultat trouvé',
-            // subtitle: 'Veillez votre critere danonce'
           )
         : viewModel.isRecentLoading
             ? const Center(
@@ -379,7 +367,6 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                     maxLines: 1,
                                   ),
                                 )
-                                // Ajoutez d'autres détails ici si nécessaire
                               ],
                             ),
                           ),
@@ -398,8 +385,8 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
           viewModel.navigateToHouseListPage(context);
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor, // Background color
-          foregroundColor: Colors.white, // Text color
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -442,12 +429,10 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
           const SizedBox(height: 10),
           InkWell(
             onTap: () async {
-              // Ajoutez ici votre logique pour ouvrir le lien
               try {
                 await navigateToUrl('https://www.example.com');
               } catch (e) {
-                print('Failed to open URL😡😡😡😡: $e');
-                print(e);
+                print('Failed to open URL: $e');
               }
             },
             child: _buildInfoItem(

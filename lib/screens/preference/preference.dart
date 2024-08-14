@@ -11,8 +11,6 @@ class HousingPreferencesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final preferencesAsyncValue = ref.watch(userPreferencesProvider(userId));
-    print("voir preferene🤬🤬🤬🤬🤬🤬🤬🤬 ");
-    print(preferencesAsyncValue);
 
     return Scaffold(
       backgroundColor: lightPrimary2,
@@ -45,7 +43,6 @@ class HousingPreferencesScreen extends ConsumerWidget {
             'Chantier',
           ];
 
-          // Vérifiez si aucune préférence n'est sélectionnée
           bool isAnyPreferenceSelected =
               housingTypes.any((type) => preferences[type] == true);
 
@@ -70,8 +67,6 @@ class HousingPreferencesScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 20.0),
-
-                // Switch for notification permission
                 SwitchListTile(
                   title: const Text(
                       "Autoriser l'envoi de notifications concernant vos préférences de logement"),
@@ -83,13 +78,10 @@ class HousingPreferencesScreen extends ConsumerWidget {
                       'type': 'notificationsEnabled',
                       'value': value,
                     }));
-                    // Recharger les préférences après mise à jour
                     ref.refresh(userPreferencesProvider(userId));
                   },
                 ),
-
                 const SizedBox(height: 20.0),
-
                 Expanded(
                   child: ListView(
                     children: housingTypes.map((type) {

@@ -60,8 +60,8 @@ class SettingsPage extends ConsumerWidget {
             },
           ),
           const SizedBox(height: 20),
-          _buildPrivacyOption(
-            icon: Icons.person,
+          _buildSettingsOption(
+            icon: Icons.privacy_tip,
             title: 'Accès aux données',
             onTap: () {
               // TODO: Naviguer vers la page d'accès aux données
@@ -98,35 +98,10 @@ class SettingsPage extends ConsumerWidget {
     return Column(
       children: [
         ListTile(
-          leading: Icon(icon, color: primaryColor),
+          leading: Icon(icon, color: Colors.grey),
           title: Text(
             title,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-          ),
-          trailing: const Icon(
-            Icons.arrow_forward_ios,
-            size: 20,
-            color: Colors.grey,
-          ),
-          onTap: onTap,
-        ),
-        const Divider(height: 1, thickness: 1),
-      ],
-    );
-  }
-
-  Widget _buildPrivacyOption({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return Column(
-      children: [
-        ListTile(
-          leading: Icon(icon, color: primaryColor),
-          title: Text(
-            title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
           trailing: const Icon(
             Icons.arrow_forward_ios,
