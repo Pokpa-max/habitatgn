@@ -30,7 +30,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
         MediaQuery.of(context).size.height * 0.35; // 30% of screen height
 
     // Obtenez la hauteur de l'écran
-    final screenHeight = MediaQuery.of(context).size.height * 0.42;
+    final screenHeight = MediaQuery.of(context).size.height * 0.45;
 
     return Stack(
       alignment: Alignment.bottomCenter,

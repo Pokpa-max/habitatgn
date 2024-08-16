@@ -23,10 +23,8 @@ class LoadingSkeleton extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                // width: 150,
-                // height: 200,
-                width: screenWidth * 0.40,
-                height: screenHeight * 0.15,
+                width: screenWidth * 0.45,
+                height: screenHeight * 0.20,
                 color: Colors.grey[300],
               ),
               const SizedBox(width: 10),

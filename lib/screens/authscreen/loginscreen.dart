@@ -1,7 +1,252 @@
+// import 'package:flutter/material.dart';
+// import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+// import 'package:habitatgn/screens/authscreen/create_account.dart';
+// import 'package:habitatgn/screens/home/dashbord/dashbord.dart';
+// import 'package:habitatgn/utils/appcolors.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+// import 'package:flutter_spinkit/flutter_spinkit.dart';
+// import 'package:habitatgn/viewmodels/auth_provider/auth_provider.dart';
+
+// class LoginScreen extends ConsumerWidget {
+//   final TextEditingController emailController = TextEditingController();
+//   final TextEditingController passwordController = TextEditingController();
+
+//   LoginScreen({super.key});
+
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final authService = ref.watch(authViewModelProvider);
+//     final isLoading =
+//         ref.watch(authViewModelProvider.select((value) => value.isLoading));
+//     final isPasswordVisible = ref.watch(passwordVisibilityProvider);
+
+//     return Scaffold(
+//       backgroundColor: Colors.white,
+//       body: Center(
+//         child: SingleChildScrollView(
+//           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 40.0),
+//           child: Column(
+//             mainAxisAlignment: MainAxisAlignment.center,
+//             children: <Widget>[
+//               Image.asset(
+//                 'assets/images/logo.png', // Assurez-vous que ce chemin est correct
+//                 height: 120,
+//               ),
+//               const SizedBox(height: 20),
+//               const Text(
+//                 "Bienvenue sur HABITATGN",
+//                 style: TextStyle(
+//                   color: primaryColor,
+//                   fontSize: 24,
+//                   fontWeight: FontWeight.bold,
+//                 ),
+//               ),
+//               const SizedBox(height: 20),
+//               _buildTextField(
+//                 controller: emailController,
+//                 labelText: 'Email',
+//                 obscureText: false,
+//               ),
+//               const SizedBox(height: 15),
+//               _buildTextField(
+//                 controller: passwordController,
+//                 labelText: 'Mot de passe',
+//                 obscureText: !isPasswordVisible,
+//                 suffixIcon: IconButton(
+//                   icon: Icon(
+//                     isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+//                     color: Colors.grey,
+//                   ),
+//                   onPressed: () {
+//                     ref
+//                         .read(passwordVisibilityProvider.notifier)
+//                         .toggleVisibility();
+//                   },
+//                 ),
+//               ),
+//               const SizedBox(height: 5),
+//               Align(
+//                 alignment: Alignment.centerRight,
+//                 child: TextButton(
+//                   onPressed: () {
+//                     // Add functionality for password recovery here
+//                   },
+//                   child: Text(
+//                     'Mot de passe oublié?',
+//                     style: TextStyle(color: Colors.red[500]),
+//                   ),
+//                 ),
+//               ),
+//               const SizedBox(height: 20),
+//               _buildElevatedButton(
+//                 onPressed: isLoading
+//                     ? null
+//                     : () async {
+//                         await authService.signInWithEmailAndPassword(
+//                           context,
+//                           emailController.text,
+//                           passwordController.text,
+//                         );
+//                       },
+//                 label: isLoading
+//                     ? const SpinKitFadingCircle(
+//                         color: Colors.white,
+//                         size: 30.0,
+//                       )
+//                     : const Text(
+//                         'Se connecter',
+//                         style: TextStyle(color: Colors.white, fontSize: 16),
+//                       ),
+//                 backgroundColor: primaryColor,
+//               ),
+//               const SizedBox(height: 20),
+//               const Text(
+//                 "Ou connectez-vous avec",
+//                 style: TextStyle(color: Colors.black87, fontSize: 16),
+//               ),
+//               const SizedBox(height: 10),
+//               _buildSocialButton(
+//                 icon: const Icon(Icons.facebook, color: Colors.white),
+//                 color: Colors.blueAccent,
+//                 label: 'Facebook',
+//                 onPressed: isLoading
+//                     ? null
+//                     : () async {
+//                         try {
+//                           await authService.signInWithFacebook(context);
+//                         } catch (e) {
+//                           print('Erreur de connexion Facebook: $e');
+//                         }
+//                       },
+//               ),
+//               const SizedBox(height: 15),
+//               _buildSocialButton(
+//                 icon: const FaIcon(
+//                   FontAwesomeIcons.google,
+//                   color: Colors.white,
+//                 ),
+//                 color: Colors.redAccent,
+//                 label: 'Google',
+//                 onPressed: isLoading
+//                     ? null
+//                     : () async {
+//                         try {
+//                           await authService.signInWithGoogle(context);
+//                         } catch (e) {
+//                           print('Erreur de connexion Google: $e');
+//                         }
+//                       },
+//               ),
+//               const SizedBox(height: 20),
+//               Row(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: [
+//                   const Text(
+//                     'Pas de compte?',
+//                     style: TextStyle(
+//                       color: Colors.black87,
+//                     ),
+//                   ),
+//                   TextButton(
+//                     onPressed: () {
+//                       authService.navigateToCreateAccount(context);
+//                     },
+//                     child: const Text(
+//                       "S'inscrire maintenant",
+//                       style: TextStyle(color: primaryColor),
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildTextField({
+//     required TextEditingController controller,
+//     required String labelText,
+//     required bool obscureText,
+//     Widget? suffixIcon,
+//   }) {
+//     return TextField(
+//       controller: controller,
+//       obscureText: obscureText,
+//       cursorColor: primaryColor,
+//       decoration: InputDecoration(
+//         labelText: labelText,
+//         labelStyle: const TextStyle(color: Colors.black),
+//         filled: true,
+//         fillColor: inputBackground,
+//         enabledBorder: OutlineInputBorder(
+//           borderSide: BorderSide(color: inputBackground),
+//           borderRadius: BorderRadius.circular(15),
+//         ),
+//         focusedBorder: OutlineInputBorder(
+//           borderSide: BorderSide(color: inputBackground),
+//           borderRadius: BorderRadius.circular(15),
+//         ),
+//         suffixIcon: suffixIcon,
+//       ),
+//       style: const TextStyle(color: Colors.black),
+//     );
+//   }
+
+//   Widget _buildElevatedButton({
+//     required VoidCallback? onPressed,
+//     required Widget label,
+//     required Color backgroundColor,
+//   }) {
+//     return SizedBox(
+//       width: double.infinity,
+//       child: ElevatedButton.icon(
+//         onPressed: onPressed,
+//         icon: const SizedBox.shrink(),
+//         label: label,
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: backgroundColor,
+//           padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+//           shape: RoundedRectangleBorder(
+//             borderRadius: BorderRadius.circular(15),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildSocialButton({
+//     required Widget icon,
+//     required Color color,
+//     required String label,
+//     required VoidCallback? onPressed,
+//   }) {
+//     return SizedBox(
+//       width: double.infinity,
+//       child: ElevatedButton.icon(
+//         onPressed: onPressed,
+//         icon: icon,
+//         label: Text(
+//           label,
+//           style: const TextStyle(color: Colors.white, fontSize: 16),
+//         ),
+//         style: ElevatedButton.styleFrom(
+//           backgroundColor: color,
+//           padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+//           shape: RoundedRectangleBorder(
+//             borderRadius: BorderRadius.circular(15),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:habitatgn/screens/authscreen/create_account.dart';
-import 'package:habitatgn/screens/home/dashbord/dashbord.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -22,183 +267,140 @@ class LoginScreen extends ConsumerWidget {
     final isPasswordVisible = ref.watch(passwordVisibilityProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: lightPrimary,
-        title: const Text(
-          "HABITATGN",
-          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+      body: Container(
+        decoration: BoxDecoration(
+          // gradient: LinearGradient(
+          //   colors: [primaryColor.withOpacity(0.5), primaryColor],
+          //   begin: Alignment.bottomRight,
+          //   end: Alignment.topLeft,
+          // ),
+          //  LinearGradient(
+          //   colors: [primaryColor, primaryColor],
+          //   begin: Alignment.topLeft,
+          //   end: Alignment.bottomRight,
+          // ),
+          color: Colors.white,
         ),
-        centerTitle: true,
-      ),
-      backgroundColor: lightPrimary,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
+        child: Center(
           child: SingleChildScrollView(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                // const Icon(
-                //   Icons.person,
-                //   size: 100,
-                //   color: Colors.grey,
-                // ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    labelStyle: const TextStyle(color: Colors.black),
-                    filled: true,
-                    fillColor: inputBackground,
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: inputBackground),
-                        borderRadius: BorderRadius.circular(15)),
-                    focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: inputBackground),
-                        borderRadius: BorderRadius.circular(15)),
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 100,
+                ),
+                const Text(
+                  "Se connecter",
+                  style: TextStyle(
+                    color: primaryColor,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
                   ),
-                  style: const TextStyle(color: Colors.black),
                 ),
-                const SizedBox(height: 15),
-                TextField(
-                  cursorColor: primaryColor,
-                  controller: passwordController,
-                  style: const TextStyle(color: Colors.black),
-                  decoration: InputDecoration(
-                    labelText: 'Mot de passe',
-                    labelStyle: const TextStyle(color: Colors.black),
-                    filled: true,
-                    fillColor: inputBackground,
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: inputBackground),
-                        borderRadius: BorderRadius.circular(15)),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: inputBackground),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                        color: Colors.grey,
+                const SizedBox(height: 30),
+                _buildCard(
+                  child: Column(
+                    children: [
+                      _buildTextField(
+                        controller: emailController,
+                        labelText: 'Email',
+                        obscureText: false,
                       ),
-                      onPressed: () {
-                        ref
-                            .read(passwordVisibilityProvider.notifier)
-                            .toggleVisibility();
-                      },
-                    ),
-                  ),
-                  obscureText: !isPasswordVisible,
-                ),
-                const SizedBox(height: 5),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () {},
-                      child: Text(
-                        'Mot de passe oublié?',
-                        style: TextStyle(color: Colors.red[500]),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: isLoading
-                        ? null
-                        : () async {
-                            await authService.signInWithEmailAndPassword(
-                              context,
-                              emailController.text,
-                              passwordController.text,
-                            );
+                      const SizedBox(height: 15),
+                      _buildTextField(
+                        controller: passwordController,
+                        labelText: 'Mot de passe',
+                        obscureText: !isPasswordVisible,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            ref
+                                .read(passwordVisibilityProvider.notifier)
+                                .toggleVisibility();
                           },
-                    label: isLoading
-                        ? const SpinKitFadingCircle(
-                            color: primaryColor,
-                            size: 40.0,
-                          )
-                        : const Text('Se connecter',
-                            style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 15),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {},
+                          child: Text(
+                            'Mot de passe oublié?',
+                            style: TextStyle(color: Colors.red[300]),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _buildElevatedButton(
+                        onPressed: isLoading
+                            ? null
+                            : () async {
+                                await authService.signInWithEmailAndPassword(
+                                  context,
+                                  emailController.text,
+                                  passwordController.text,
+                                );
+                              },
+                        label: isLoading
+                            ? const SpinKitFadingCircle(
+                                color: Colors.white,
+                                size: 30.0,
+                              )
+                            : const Text(
+                                'Se connecter',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                        backgroundColor: primaryColor,
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  "Ou connectez-vous avec ",
-                  style: TextStyle(color: Colors.black87, fontSize: 16),
+                  "Ou connectez-vous avec",
+                  style: TextStyle(color: Colors.black, fontSize: 18),
                 ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: isLoading
-                        ? null
-                        : () async {
-                            try {
-                              await authService.signInWithFacebook(context);
-                            } catch (e) {
-                              print('Erreur de connexion Facebook: $e');
-                            }
-                          },
-                    icon: const Icon(
-                      Icons.facebook,
-                      color: Colors.white,
-                    ),
-                    label: const Text('Facebook',
-                        style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
+                const SizedBox(height: 20),
+                _buildSocialButton(
+                  icon: const Icon(Icons.facebook, color: Colors.white),
+                  color: Colors.blueAccent,
+                  label: 'Facebook',
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          try {
+                            await authService.signInWithFacebook(context);
+                          } catch (e) {
+                            print('Erreur de connexion Facebook: $e');
+                          }
+                        },
                 ),
-                const SizedBox(height: 15),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: isLoading
-                        ? null
-                        : () async {
-                            try {
-                              await authService.signInWithGoogle(context);
-                            } catch (e) {
-                              print('Erreur de connexion Google: $e');
-                            }
-                          },
-                    icon: const FaIcon(
-                      FontAwesomeIcons.google,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    label: const Text(
-                      'Google',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
+                const SizedBox(height: 16),
+                _buildSocialButton(
+                  icon: const FaIcon(
+                    FontAwesomeIcons.google,
+                    color: Colors.white,
                   ),
+                  color: Colors.redAccent,
+                  label: 'Google',
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          try {
+                            await authService.signInWithGoogle(context);
+                          } catch (e) {
+                            print('Erreur de connexion Google: $e');
+                          }
+                        },
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -206,24 +408,112 @@ class LoginScreen extends ConsumerWidget {
                   children: [
                     const Text(
                       'Pas de compte?',
-                      style: TextStyle(
-                        color: Colors.black87,
-                      ),
+                      style: TextStyle(color: Colors.black, fontSize: 16),
                     ),
                     TextButton(
                       onPressed: () {
-                        // Handle navigation to register page
                         authService.navigateToCreateAccount(context);
                       },
                       child: const Text(
                         "S'inscrire maintenant",
-                        style: TextStyle(color: primaryColor),
+                        style: TextStyle(color: primaryColor, fontSize: 16),
                       ),
                     ),
                   ],
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard({required Widget child}) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      elevation: 8,
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required bool obscureText,
+    Widget? suffixIcon,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      cursorColor: primaryColor,
+      decoration: InputDecoration(
+        labelText: labelText,
+        labelStyle: const TextStyle(color: Colors.black54),
+        filled: true,
+        fillColor: Colors.grey[200],
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: primaryColor),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        suffixIcon: suffixIcon,
+      ),
+      style: const TextStyle(color: Colors.black87),
+    );
+  }
+
+  Widget _buildElevatedButton({
+    required VoidCallback? onPressed,
+    required Widget label,
+    required Color backgroundColor,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: label,
+      ),
+    );
+  }
+
+  Widget _buildSocialButton({
+    required Widget icon,
+    required Color color,
+    required String label,
+    required VoidCallback? onPressed,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: icon,
+        label: Text(
+          label,
+          style: TextStyle(color: Colors.white),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),

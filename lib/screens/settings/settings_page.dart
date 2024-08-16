@@ -98,7 +98,7 @@ class SettingsPage extends ConsumerWidget {
     return Column(
       children: [
         ListTile(
-          leading: Icon(icon, color: Colors.grey),
+          leading: Icon(icon, color: primaryColor),
           title: Text(
             title,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),

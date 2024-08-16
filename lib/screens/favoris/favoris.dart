@@ -91,8 +91,8 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                         padding: const EdgeInsets.all(3.0),
                                         child: CustomCachedNetworkImage(
                                           imageUrl: house.imageUrl,
-                                          width: screenWidth * 0.40,
-                                          height: screenHeight * 0.15,
+                                          width: screenWidth * 0.45,
+                                          height: screenHeight * 0.20,
                                         ),
                                       ),
                                       const SizedBox(width: 10),
@@ -192,14 +192,16 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                                 const Icon(
                                                     Icons.attach_money_outlined,
                                                     color: Colors.grey),
-                                                FormattedPrice(
-                                                  color: Colors.black,
-                                                  price: house.price,
-                                                  suffix: house.offerType[
-                                                              "value"] ==
-                                                          "ALouer"
-                                                      ? '/mois'
-                                                      : '',
+                                                Expanded(
+                                                  child: FormattedPrice(
+                                                    color: Colors.black,
+                                                    price: house.price,
+                                                    suffix: house.offerType[
+                                                                "value"] ==
+                                                            "ALouer"
+                                                        ? '/mois'
+                                                        : '',
+                                                  ),
                                                 ),
                                               ],
                                             ),

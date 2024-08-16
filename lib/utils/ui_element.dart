@@ -226,6 +226,61 @@ class FormattedPrice extends StatelessWidget {
 //   }
 // }
 
+// class CustomCachedNetworkImage extends StatelessWidget {
+//   final String imageUrl;
+//   final double? width;
+//   final double? height;
+
+//   const CustomCachedNetworkImage({
+//     super.key,
+//     required this.imageUrl,
+//     this.width,
+//     this.height,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     // Définir les valeurs par défaut
+//     const double defaultWidth = 150;
+//     const double defaultHeight = 140;
+
+//     return CachedNetworkImage(
+//       imageUrl: imageUrl,
+//       width: width ?? defaultWidth,
+//       height: height ?? defaultHeight,
+//       fit: BoxFit.cover,
+//       placeholder: (context, url) => Shimmer.fromColors(
+//         baseColor: Colors.grey[300]!,
+//         highlightColor: Colors.grey[100]!,
+//         child: Container(
+//           width: width ?? defaultWidth,
+//           height: height ?? defaultHeight,
+//           color: Colors.grey[300],
+//         ),
+//       ),
+//       errorWidget: (context, url, error) => Container(
+//         width: width ?? defaultWidth,
+//         height: height ?? defaultHeight,
+//         color: Colors.grey.shade200,
+//         child: const Column(
+//           crossAxisAlignment: CrossAxisAlignment.center,
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: [
+//             Center(
+//               child: Icon(
+//                 Icons.image_not_supported,
+//                 color: Colors.grey,
+//                 size: 40,
+//               ),
+//             ),
+//             Text('Pas de connexion internet')
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
 class CustomCachedNetworkImage extends StatelessWidget {
   final String imageUrl;
   final double? width;
@@ -244,37 +299,41 @@ class CustomCachedNetworkImage extends StatelessWidget {
     const double defaultWidth = 150;
     const double defaultHeight = 140;
 
-    return CachedNetworkImage(
-      imageUrl: imageUrl,
-      width: width ?? defaultWidth,
-      height: height ?? defaultHeight,
-      fit: BoxFit.cover,
-      placeholder: (context, url) => Shimmer.fromColors(
-        baseColor: Colors.grey[300]!,
-        highlightColor: Colors.grey[100]!,
-        child: Container(
-          width: width ?? defaultWidth,
-          height: height ?? defaultHeight,
-          color: Colors.grey[300],
-        ),
+    return ClipRRect(
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(12),
+        bottomLeft: Radius.circular(12),
       ),
-      errorWidget: (context, url, error) => Container(
+      child: CachedNetworkImage(
+        imageUrl: imageUrl,
         width: width ?? defaultWidth,
         height: height ?? defaultHeight,
-        color: Colors.grey.shade200,
-        child: const Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Center(
-              child: Icon(
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            width: width ?? defaultWidth,
+            height: height ?? defaultHeight,
+            color: Colors.grey[300],
+          ),
+        ),
+        errorWidget: (context, url, error) => Container(
+          width: width ?? defaultWidth,
+          height: height ?? defaultHeight,
+          color: Colors.grey.shade200,
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
                 Icons.image_not_supported,
                 color: Colors.grey,
                 size: 40,
               ),
-            ),
-            Text('Pas de connexion internet')
-          ],
+              Text('Pas de connexion internet')
+            ],
+          ),
         ),
       ),
     );

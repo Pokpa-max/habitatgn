@@ -11,10 +11,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 class HousingDetailPage extends ConsumerStatefulWidget {
   final String houseId;
 
-  const HousingDetailPage({
-    required this.houseId,
-    super.key,
-  });
+  const HousingDetailPage({required this.houseId, super.key});
 
   @override
   ConsumerState<HousingDetailPage> createState() => _HousingDetailPageState();
@@ -24,12 +21,28 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
   House? house;
   bool isLoading = false;
   bool isLiked = false;
+  bool showTitle = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    // _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
     _fetchHouseDetails();
     _checkIfFavorite();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.offset > kToolbarHeight && !showTitle) {
+      setState(() {
+        showTitle = true;
+      });
+    } else if (_scrollController.offset <= kToolbarHeight && showTitle) {
+      setState(() {
+        showTitle = false;
+      });
+    }
   }
 
   Future<void> _fetchHouseDetails() async {
@@ -47,26 +60,16 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
   Future<void> _checkIfFavorite() async {
     final houseListViewModel = ref.read(houseListViewModelProvider);
     isLiked = await houseListViewModel.isFavorite(widget.houseId);
-    setState(() {});
   }
 
   Future<void> _toggleLike() async {
     final houseListViewModel = ref.read(houseListViewModelProvider);
-
-    if (!await houseListViewModel.checkConnectivity()) {
-      _showSnackBar(
-          'Pas de connexion Internet. Veuillez vérifier votre réseau.',
-          Colors.black87);
-      return;
-    }
-
-    final successMessage = isLiked
-        ? '${house?.houseType?.label} retiré des coups de cœur!'
-        : '${house?.houseType?.label} ajouté aux coups de cœur!';
-
     try {
       setState(() => isLiked = !isLiked);
       await houseListViewModel.toggleFavorite(widget.houseId);
+      final successMessage = isLiked
+          ? '${house?.houseType?.label} ajouté à vos coups de cœur !' // 'House added to your coups de cœur!'
+          : '${house?.houseType?.label} retiré de vos coups de cœur!';
       _showSnackBar(successMessage, isLiked ? primaryColor : Colors.black87);
     } catch (e) {
       _showSnackBar('Erreur: Veuillez réessayer plus tard.', Colors.red);
@@ -88,6 +91,13 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
   }
 
   @override
+  void dispose() {
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Scaffold(
@@ -102,16 +112,17 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
       backgroundColor: backgroundColor,
       floatingActionButton: _buildFloatingActionButton(),
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           _buildSliverAppBar(),
           SliverList(
             delegate: SliverChildListDelegate(
               [
                 Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: house != null
-                        ? _buildHouseDetails(house!)
-                        : Container())
+                  padding: const EdgeInsets.all(16.0),
+                  child:
+                      house != null ? _buildHouseDetails(house!) : Container(),
+                ),
               ],
             ),
           ),
@@ -135,7 +146,7 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
           await houseListViewModel.launchPhoneCall("tel:${house!.phoneNumber}");
         }
       },
-      label: const Text("Appeler l'Agence ", style: TextStyle(fontSize: 18)),
+      label: const Text("Appeler l'Agence ", style: TextStyle(fontSize: 16)),
     );
   }
 
@@ -146,77 +157,69 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
     return SliverAppBar(
       backgroundColor: primaryColor,
       expandedHeight: screenHeight,
-      leading: Container(
-        margin: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(5),
+      floating: false,
+      pinned: true, // AppBar reste en haut lors du scroll
+      title: showTitle && house != null
+          ? Text(
+              '${house?.houseType?.label ?? ''} - ${house?.offerType["label"]}',
+              style: const TextStyle(color: Colors.white),
+            )
+          : null,
+      leading: IconButton(
+        icon: const Icon(
+          Icons.arrow_back_ios_outlined,
           color: Colors.white,
         ),
-        child: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_outlined,
-            color: Colors.black87,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      flexibleSpace: FlexibleSpaceBar(
-        background: house != null
-            ? Stack(
-                children: [
-                  ImageCarousel(
-                    imageUrls: [house!.imageUrl, ...house!.houseInsides],
-                  ),
-                  Positioned(
-                    bottom: 0.0,
-                    left: 0.0,
-                    right: 0.0,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Color.fromARGB(300, 0, 0, 0),
-                            Color.fromARGB(0, 0, 0, 0)
-                          ],
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                        ),
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        vertical: screenHeight * 0.01, // 1% of screen height
-                        horizontal: screenWidth * 0.03, // 3% of screen width
-                      ),
-                    ),
-                  ),
-                ],
-              )
-            : const SizedBox.shrink(),
+        onPressed: () => Navigator.pop(context),
       ),
       actions: [
-        Container(
-          margin: const EdgeInsets.all(0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            color: Colors.white,
+        IconButton(
+          icon: Icon(
+            isLiked ? Icons.favorite : Icons.favorite_border,
+            color: isLiked ? Colors.red : Colors.white,
+            size: 30,
           ),
-          child: IconButton(
-            icon: Icon(isLiked ? Icons.favorite : Icons.favorite_border,
-                color: isLiked ? Colors.red : Colors.black87, size: 30),
-            onPressed: _toggleLike,
-          ),
+          onPressed: _toggleLike,
         ),
-        Container(
-          margin: const EdgeInsets.only(right: 5),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            color: Colors.white,
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.share, color: Colors.black87, size: 30),
-            onPressed: () {}, // Add share functionality here
-          ),
+        IconButton(
+          icon: const Icon(Icons.share, color: Colors.white, size: 30),
+          onPressed: () {}, // Add share functionality here
         ),
       ],
+      flexibleSpace: FlexibleSpaceBar(
+        background: FlexibleSpaceBar(
+          background: house != null
+              ? Stack(
+                  children: [
+                    ImageCarousel(
+                      imageUrls: [house!.imageUrl, ...house!.houseInsides],
+                    ),
+                    Positioned(
+                      bottom: 0.0,
+                      left: 0.0,
+                      right: 0.0,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Color.fromARGB(300, 0, 0, 0),
+                              Color.fromARGB(0, 0, 0, 0)
+                            ],
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                          ),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          vertical: screenHeight * 0.01, // 1% of screen height
+                          horizontal: screenWidth * 0.03, // 3% of screen width
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : const SizedBox.shrink(),
+        ),
+      ),
     );
   }
 
@@ -269,7 +272,7 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
           children: [
             ElevatedButton.icon(
               icon: const Icon(
-                Icons.location_on,
+                Icons.map,
               ),
               style: ButtonStyle(
                   padding: const WidgetStatePropertyAll(EdgeInsets.all(8)),
@@ -289,8 +292,7 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
                   ),
                 );
               },
-              label: const Text('Voir la localisation',
-                  style: TextStyle(fontSize: 18)),
+              label: const Text('Localisation', style: TextStyle(fontSize: 16)),
             ),
           ],
         ),

@@ -5,6 +5,7 @@ import 'package:habitatgn/utils/ui_element.dart';
 import 'package:habitatgn/viewmodels/dashbord/dashbord_view_model.dart';
 import 'package:habitatgn/screens/adversting/adversting.dart';
 import 'package:habitatgn/utils/appcolors.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
@@ -71,20 +72,23 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
 
       return house.houseType!.label.toLowerCase().contains(lowerCaseQuery) ||
           house.description.toLowerCase().contains(lowerCaseQuery) ||
-          house.address!.town["label"].toLowerCase().contains(lowerCaseQuery);
+          house.address?.commune["label"]
+              .toLowerCase()
+              .contains(lowerCaseQuery) ||
+          house.address?.town["label"].toLowerCase().contains(lowerCaseQuery) ||
+          house.address!.zone.toLowerCase().contains(lowerCaseQuery);
     }).toList();
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        toolbarHeight: 100,
+        toolbarHeight: screenHeight * 0.12,
         title: _buildSearchBar(),
         backgroundColor: primaryColor,
-        elevation: 4,
       ),
       body: viewModel.isAdverstingLoading
-          ? const Center(child: CircularProgressIndicator(color: primaryColor))
+          ? _buildSkeletonLoader()
           : SingleChildScrollView(
               controller: _scrollController,
               padding: const EdgeInsets.all(16.0),
@@ -94,33 +98,33 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                   SizedBox(
                     height: screenHeight * 0.20,
                     child: viewModel.advertisementData.isEmpty
-                        ? Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [lightPrimary, primaryColor],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                "HABITATGN",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          )
+                        ? _buildSkeletonAdvertisement()
                         : AdvertisementCarousel(
                             adverstingData: viewModel.advertisementData),
                   ),
                   const SizedBox(height: 20),
                   _buildSectionTitle('Nos Services'),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   _buildServicesSection(ref, context),
-                  const SizedBox(height: 20),
-                  _buildSectionTitle('Logements Récents'),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildSectionTitle('Logements Récents'),
+                      TextButton(
+                        onPressed: () {
+                          viewModel.navigateToHouseListPage(context);
+                        },
+                        child: const Text(
+                          'Voir Tout',
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: primaryColor),
+                        ),
+                      )
+                    ],
+                  ),
                   const SizedBox(height: 10),
                   _buildRecentListings(viewModel, filteredHouses),
                   const SizedBox(height: 20),
@@ -133,19 +137,139 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
     );
   }
 
+  Widget _buildSkeletonLoader() {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        _buildSkeletonAdvertisement(),
+        const SizedBox(height: 20),
+        _buildSkeletonServices(),
+        const SizedBox(height: 20),
+        _buildSkeletonRecentListings(),
+        const SizedBox(height: 20),
+        _buildSkeletonViewAllButton(),
+        const SizedBox(height: 20),
+        _buildSkeletonOtherInformation(),
+      ],
+    );
+  }
+
+  Widget _buildSkeletonAdvertisement() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade200,
+      child: Container(
+        width: double.infinity,
+        height: 200,
+        color: Colors.grey.shade300,
+      ),
+    );
+  }
+
+  Widget _buildSkeletonServices() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildSkeletonCard(),
+        _buildSkeletonCard(),
+      ],
+    );
+  }
+
+  Widget _buildSkeletonCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade200,
+      child: Container(
+        height: 100,
+        color: Colors.grey.shade300,
+        margin: const EdgeInsets.all(8.0),
+      ),
+    );
+  }
+
+  Widget _buildSkeletonRecentListings() {
+    return SizedBox(
+      height: 200,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 3, // Display 3 skeleton items for demonstration
+        itemBuilder: (context, index) {
+          return Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade200,
+            child: Container(
+              width: 150,
+              margin: const EdgeInsets.all(8.0),
+              color: Colors.grey.shade300,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSkeletonViewAllButton() {
+    return Center(
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey.shade300,
+        highlightColor: Colors.grey.shade200,
+        child: Container(
+          width: 200,
+          height: 40,
+          color: Colors.grey.shade300,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkeletonOtherInformation() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Shimmer.fromColors(
+          baseColor: Colors.grey.shade300,
+          highlightColor: Colors.grey.shade200,
+          child: Container(
+            width: double.infinity,
+            height: 40,
+            color: Colors.grey.shade300,
+          ),
+        ),
+        const SizedBox(height: 10),
+        for (int i = 0; i < 3; i++)
+          Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade200,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 16.0),
+              height: 60,
+              color: Colors.grey.shade300,
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _buildSearchBar() {
     return Column(
       children: [
         const Center(
           child: Text(
             "Bienvenue sur HABITATGN",
-            style: TextStyle(
-                color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(color: Colors.white, fontSize: 22, shadows: [
+              Shadow(
+                blurRadius: 10.0,
+                color: Colors.black26,
+                offset: Offset(2, 2),
+              ),
+            ]),
           ),
         ),
         const SizedBox(height: 10),
         TextField(
           controller: _searchController,
+          autofocus: false,
           onChanged: (query) {
             setState(() {
               _searchQuery = query.trim();
@@ -155,16 +279,26 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
-            hintText: 'Rechercher ici une maison, un appartement, terrain ...',
-            hintStyle:
-                TextStyle(color: Colors.grey[600]), // Style du texte du hint
-            prefixIcon: const Icon(Icons.search, color: Colors.grey),
+            hintText: 'Trouvez ici votre maison, appartement, ...',
+            prefixIcon: const Icon(Icons.search, color: Colors.black54),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      setState(() {
+                        _searchController.clear();
+                        _searchQuery = '';
+                      });
+                      _performSearch(); // Optionnel : Réinitialisez les résultats de la recherche
+                    },
+                  )
+                : null,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide.none,
             ),
             contentPadding: const EdgeInsets.symmetric(
-                vertical: 16, horizontal: 16), // Augmenter la hauteur du champ
+                vertical: 10, horizontal: 10), // Augmenter la hauteur du champ
           ),
         ),
         const SizedBox(height: 10),
@@ -181,7 +315,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Text(title,
           style: const TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.black87)),
     );
@@ -223,7 +357,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Container(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(14.0),
             decoration: const BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(16)),
               gradient: LinearGradient(
@@ -235,8 +369,8 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 30, color: Colors.white),
-                const SizedBox(height: 10),
+                Icon(icon, color: Colors.white),
+                const SizedBox(height: 5),
                 Text(title,
                     style: const TextStyle(
                         fontSize: 16,
@@ -260,7 +394,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
             ? const Center(
                 child: CircularProgressIndicator(color: primaryColor))
             : SizedBox(
-                height: screenHeight * 0.30,
+                height: screenHeight * 0.35,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: houses.length,
@@ -281,7 +415,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                               borderRadius: BorderRadius.circular(12),
                               side: BorderSide(color: lightPrimary2)),
                           child: Container(
-                            width: screenHeight * 0.25,
+                            width: screenHeight * 0.35,
                             padding: const EdgeInsets.all(8.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,6 +430,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                       child: CustomCachedNetworkImage(
                                         imageUrl: house.imageUrl,
                                         width: double.infinity,
+                                        height: double.infinity,
                                       ),
                                     ),
                                   ),
@@ -310,12 +445,12 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                         Text(
                                             '${house.houseType?.label ?? ''} - ',
                                             style: const TextStyle(
-                                                fontSize: 16,
+                                                fontSize: 20,
                                                 fontWeight: FontWeight.bold)),
                                         const SizedBox(width: 8),
                                         Text(house.offerType["label"],
                                             style: const TextStyle(
-                                                fontSize: 16,
+                                                fontSize: 20,
                                                 fontWeight: FontWeight.bold)),
                                       ],
                                     ),
@@ -331,7 +466,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                     Text(
                                       ' ${house.address!.town["label"]} / ${house.address!.commune["label"]}',
                                       style: TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 16,
                                         color: Colors.grey[700],
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -344,29 +479,19 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                   children: [
                                     const Icon(Icons.attach_money_outlined,
                                         color: Colors.grey),
-                                    FormattedPrice(
-                                      color: Colors.black,
-                                      price: house.price,
-                                      size: 15,
-                                      suffix:
-                                          house.offerType["value"] == "ALouer"
-                                              ? '/mois'
-                                              : '',
+                                    Expanded(
+                                      child: FormattedPrice(
+                                        color: Colors.black,
+                                        price: house.price,
+                                        size: 18,
+                                        suffix:
+                                            house.offerType["value"] == "ALouer"
+                                                ? '/mois'
+                                                : '',
+                                      ),
                                     ),
                                   ],
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 5),
-                                  child: Text(
-                                    house.description,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey[700],
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                )
                               ],
                             ),
                           ),
@@ -387,7 +512,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -421,7 +546,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
           const Text(
             'Autres Informations',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
@@ -471,14 +596,14 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   description,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
                     color: Colors.black54,
                   ),
                 ),
