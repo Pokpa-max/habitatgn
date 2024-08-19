@@ -6,6 +6,7 @@ import 'package:habitatgn/screens/authscreen/loginscreen.dart';
 import 'package:habitatgn/screens/home/dashbord/dashbord.dart';
 import 'package:habitatgn/screens/home/home_screen.dart';
 import 'package:habitatgn/services/authService/auth_service.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 final authViewModelProvider =
     ChangeNotifierProvider((ref) => AuthViewModel(ref));
@@ -26,6 +27,7 @@ class AuthViewModel extends ChangeNotifier {
   AuthViewModel(this._read) {
     _getCurrentUser();
   }
+
   Future<void> signInWithEmailAndPassword(
       BuildContext context, String email, String password) async {
     _setLoading(true);
@@ -50,8 +52,8 @@ class AuthViewModel extends ChangeNotifier {
       } else if (e.code == 'wrong-password') {
         showErrorMessage(context, 'Mot de passe incorrect.');
       } else {
-        showErrorMessage(context,
-            'Une erreur est survenue. Veuillez réessayer. Code d\'erreur: ${e.code}');
+        showErrorMessage(
+            context, 'Une erreur est survenue. Veuillez réessayer.');
       }
     } catch (e) {
       showErrorMessage(
@@ -171,7 +173,7 @@ class AuthViewModel extends ChangeNotifier {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: color,
-        content: Text(message),
+        content: Center(child: Text(message)),
         duration: const Duration(seconds: 3),
       ),
     );

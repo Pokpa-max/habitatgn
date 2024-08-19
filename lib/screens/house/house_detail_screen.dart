@@ -59,22 +59,41 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
 
   Future<void> _checkIfFavorite() async {
     final houseListViewModel = ref.read(houseListViewModelProvider);
-    isLiked = await houseListViewModel.isFavorite(widget.houseId);
+    final liked = await houseListViewModel.isFavorite(widget.houseId);
+    setState(() {
+      isLiked = liked;
+    });
   }
 
   Future<void> _toggleLike() async {
     final houseListViewModel = ref.read(houseListViewModelProvider);
     try {
-      setState(() => isLiked = !isLiked);
       await houseListViewModel.toggleFavorite(widget.houseId);
+      setState(() => isLiked = !isLiked);
       final successMessage = isLiked
-          ? '${house?.houseType?.label} ajouté à vos coups de cœur !' // 'House added to your coups de cœur!'
+          ? '${house?.houseType?.label} ajouté à vos coups de cœur !'
           : '${house?.houseType?.label} retiré de vos coups de cœur!';
       _showSnackBar(successMessage, isLiked ? primaryColor : Colors.black87);
     } catch (e) {
       _showSnackBar('Erreur: Veuillez réessayer plus tard.', Colors.red);
     }
   }
+
+  // Future<void> _toggleLike() async {
+  //   final houseListViewModel = ref.read(houseListViewModelProvider);
+  //   try {
+  //     await houseListViewModel.toggleFavorite(widget.houseId);
+  //     setState(() {
+  //       isLiked = !isLiked;
+  //     });
+  //     final successMessage = isLiked
+  //         ? '${house?.houseType?.label} ajouté à vos coups de cœur !'
+  //         : '${house?.houseType?.label} retiré de vos coups de cœur!';
+  //     _showSnackBar(successMessage, isLiked ? primaryColor : Colors.black87);
+  //   } catch (e) {
+  //     _showSnackBar('Erreur: Veuillez réessayer plus tard.', Colors.red);
+  //   }
+  // }
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -238,6 +257,8 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
           _buildAreaRow(house),
         ],
         const SizedBox(height: 15),
+        _buildBathroomRow(house),
+        const SizedBox(height: 15),
         _buildLocationRow(house),
         const SizedBox(height: 20),
         _buildDescriptionSection(house),
@@ -260,11 +281,11 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
           children: [
             Text('${house.houseType?.label ?? ''} - ',
                 style:
-                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(width: 8),
             Text(house.offerType["label"],
                 style:
-                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           ],
         ),
         Column(
@@ -307,7 +328,7 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
         FormattedPrice(
           color: Colors.black,
           price: house.price,
-          size: 20,
+          size: 18,
           suffix: house.offerType["value"] == "ALouer" ? '/mois' : '',
         ),
       ],
@@ -319,8 +340,8 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
       children: [
         const Icon(Icons.area_chart_sharp, color: Colors.grey),
         const SizedBox(width: 8),
-        Text('${house.area} mm',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text('${house.area} m²',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       ],
     );
   }
@@ -330,8 +351,22 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
       children: [
         const Icon(Icons.king_bed, color: Colors.grey),
         const SizedBox(width: 8),
-        Text('${house.bedrooms} chambres',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text('${house.bedrooms} chambre(s)',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+
+  Widget _buildBathroomRow(House house) {
+    return Row(
+      children: [
+        const Icon(Icons.bathroom_outlined, color: Colors.grey),
+        const SizedBox(width: 8),
+        Text(
+          '${house.bedrooms} toilette(s)',
+          style: const TextStyle(
+              fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+        ),
       ],
     );
   }
@@ -345,7 +380,7 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
             const SizedBox(width: 8),
             Text('${house.address?.town['label']}',
                 style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
         const SizedBox(height: 10),
@@ -355,7 +390,7 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
             const SizedBox(width: 8),
             Text('${house.address?.commune['label']}/${house.address?.zone}',
                 style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
       ],
@@ -463,7 +498,7 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
           height: 15,
           width: 8,
         ),
-        Text(info, style: const TextStyle(fontSize: 18)),
+        Text(info, style: const TextStyle(fontSize: 16)),
       ],
     );
   }

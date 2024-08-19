@@ -110,7 +110,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildSectionTitle('Logements Récents'),
+                      _buildSectionTitle('Nos annonces récentes'),
                       TextButton(
                         onPressed: () {
                           viewModel.navigateToHouseListPage(context);
@@ -443,14 +443,17 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                     Row(
                                       children: [
                                         Text(
-                                            '${house.houseType?.label ?? ''} - ',
+                                            '${house.houseType?.label ?? ''} - '
+                                                .toUpperCase(),
                                             style: const TextStyle(
-                                                fontSize: 20,
+                                                fontSize: 16,
                                                 fontWeight: FontWeight.bold)),
                                         const SizedBox(width: 8),
-                                        Text(house.offerType["label"],
+                                        Text(
+                                            house.offerType["label"]
+                                                .toUpperCase(),
                                             style: const TextStyle(
-                                                fontSize: 20,
+                                                fontSize: 16,
                                                 fontWeight: FontWeight.bold)),
                                       ],
                                     ),
@@ -465,10 +468,10 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                     const SizedBox(width: 5),
                                     Text(
                                       ' ${house.address!.town["label"]} / ${house.address!.commune["label"]}',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 16,
-                                        color: Colors.grey[700],
-                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
@@ -483,7 +486,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                       child: FormattedPrice(
                                         color: Colors.black,
                                         price: house.price,
-                                        size: 18,
+                                        size: 16,
                                         suffix:
                                             house.offerType["value"] == "ALouer"
                                                 ? '/mois'
@@ -575,8 +578,13 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                 'Consultez nos conseils pour tirer le meilleur parti de notre service.'),
           ),
           Divider(thickness: 1, color: Colors.grey[300]),
-          _buildInfoItem(Icons.phone, 'Appelez-nous',
-              'Contactez notre service client par téléphone pour toute assistance.'),
+          InkWell(
+            onTap: () {
+              viewModel.navigateToContactPage(context);
+            },
+            child: _buildInfoItem(Icons.phone, 'Appelez-nous',
+                'Contactez notre service client par téléphone pour toute assistance.'),
+          ),
         ],
       ),
     );
@@ -596,7 +604,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

@@ -91,18 +91,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             builder: (context) => const SettingsPage()));
                   },
                 ),
-                // _buildProfileOption(
-                //   icon: Icons.help,
-                //   title: 'Notifications',
-                //   onTap: () {
-                //     Navigator.push(
-                //         context,
-                //         MaterialPageRoute(
-                //             builder: (context) => HousingPreferencesScreen(
-                //                   userId: user!.uid.toString(),
-                //                 )));
-                //   },
-                // ),
                 _buildProfileOption(
                   icon: Icons.help,
                   title: 'Aide & Support',

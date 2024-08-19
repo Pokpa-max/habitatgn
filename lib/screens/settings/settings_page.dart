@@ -1,4 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitatgn/providers/provider.dart';
@@ -6,15 +8,26 @@ import 'package:habitatgn/screens/authscreen/loginscreen.dart';
 import 'package:habitatgn/screens/preference/preference.dart';
 import 'package:habitatgn/screens/settings/about_page.dart';
 import 'package:habitatgn/utils/appcolors.dart';
-
 import 'package:habitatgn/viewmodels/settings_provider/settings.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    User user = ref.read(settingViewModelProvider.notifier).currentUser!;
+    User? user = ref.read(settingViewModelProvider.notifier).currentUser;
+
+    if (user == null) {
+      // Si l'utilisateur n'est pas connecté, redirigez vers l'écran de connexion
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+        );
+      });
+    }
+
     return Scaffold(
       backgroundColor: lightPrimary,
       appBar: AppBar(
@@ -36,7 +49,9 @@ class SettingsPage extends ConsumerWidget {
             icon: Icons.lock,
             title: 'Changer le mot de passe',
             onTap: () {
-              _showChangePasswordDialog(context, ref);
+              _checkInternetAndExecute(context, ref, () {
+                _showChangePasswordDialog(context, ref);
+              });
             },
           ),
           const SizedBox(height: 20),
@@ -44,27 +59,16 @@ class SettingsPage extends ConsumerWidget {
             icon: Icons.location_on,
             title: 'Préférences de notification',
             onTap: () {
-              Navigator.push(
+              _checkInternetAndExecute(context, ref, () {
+                Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => HousingPreferencesScreen(
-                            userId: user.uid,
-                          )));
-            },
-          ),
-          _buildSettingsOption(
-            icon: Icons.attach_money,
-            title: 'Budget',
-            onTap: () {
-              // TODO: Naviguer vers la page de configuration du budget
-            },
-          ),
-          const SizedBox(height: 20),
-          _buildSettingsOption(
-            icon: Icons.privacy_tip,
-            title: 'Accès aux données',
-            onTap: () {
-              // TODO: Naviguer vers la page d'accès aux données
+                    builder: (context) => HousingPreferencesScreen(
+                      userId: user!.uid,
+                    ),
+                  ),
+                );
+              });
             },
           ),
           const SizedBox(height: 20),
@@ -72,17 +76,21 @@ class SettingsPage extends ConsumerWidget {
             icon: Icons.info,
             title: 'À propos',
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AboutPage()),
-              );
+              _checkInternetAndExecute(context, ref, () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AboutPage()),
+                );
+              });
             },
           ),
           _buildSettingsOption(
             icon: Icons.delete,
             title: 'Supprimer votre compte',
             onTap: () {
-              _showDeleteAccountDialog(context, ref);
+              _checkInternetAndExecute(context, ref, () {
+                _showDeleteAccountDialog(context, ref);
+              });
             },
           ),
         ],
@@ -113,6 +121,26 @@ class SettingsPage extends ConsumerWidget {
         const Divider(height: 1, thickness: 1),
       ],
     );
+  }
+
+  Future<void> _checkInternetAndExecute(
+    BuildContext context,
+    WidgetRef ref,
+    VoidCallback onSuccess,
+  ) async {
+    final connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      // Affichez un message à l'utilisateur si la connexion Internet est absente
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Aucune connexion Internet. Veuillez vérifier votre connexion.'),
+        ),
+      );
+    } else {
+      // Exécutez l'action si la connexion Internet est disponible
+      onSuccess();
+    }
   }
 
   void _showChangePasswordDialog(BuildContext context, WidgetRef ref) {
@@ -162,10 +190,10 @@ class SettingsPage extends ConsumerWidget {
                   style: ButtonStyle(
                       backgroundColor: WidgetStateProperty.all(Colors.grey),
                       foregroundColor: WidgetStateProperty.all(Colors.white)),
-                  onPressed: () async {
+                  onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text('annuler'),
+                  child: const Text('Annuler'),
                 ),
                 ElevatedButton(
                   style: ButtonStyle(
@@ -232,17 +260,19 @@ class SettingsPage extends ConsumerWidget {
           'Supprimer le compte',
           style: TextStyle(fontSize: 20, color: Colors.red),
         ),
-        content: const Text(
-            'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.'),
+        content: const Center(
+          child: Text(
+              'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.'),
+        ),
         actions: [
           ElevatedButton(
             style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(Colors.grey),
                 foregroundColor: WidgetStateProperty.all(Colors.white)),
-            onPressed: () async {
+            onPressed: () {
               Navigator.pop(context);
             },
-            child: const Text('annuler'),
+            child: const Text('Annuler'),
           ),
           ElevatedButton(
             style: ButtonStyle(

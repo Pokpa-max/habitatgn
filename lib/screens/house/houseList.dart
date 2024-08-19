@@ -325,7 +325,7 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                                           height: screenHeight * 0.20,
                                         ),
                                       ),
-                                      const SizedBox(width: 10),
+                                      const SizedBox(width: 5),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
@@ -369,7 +369,20 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                                                 ),
                                               ],
                                             ),
+                                            Row(
+                                              children: [
+                                                if (house.houseType?.label !=
+                                                    "Terrain") ...[
+                                                  _buildBedroomsRow(house),
+                                                ],
+                                                if (house.houseType?.label ==
+                                                    "Terrain") ...[
+                                                  _buildAreaRow(house),
+                                                ],
+                                              ],
+                                            ),
                                             const SizedBox(height: 6),
+
                                             Row(
                                               children: [
                                                 const Icon(Icons.location_on,
@@ -377,25 +390,11 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                                                 const SizedBox(width: 4),
                                                 Text(
                                                   ' ${house.address!.town["label"]} / ${house.address!.commune["label"]}',
-                                                  style: TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.grey[700]),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.home,
-                                                    color: Colors.grey),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  '${house.bedrooms} pièces',
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                       fontSize: 16,
-                                                      color: Colors.grey[700]),
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: Colors.black),
                                                 ),
                                               ],
                                             ),
@@ -408,6 +407,7 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                                                   child: FormattedPrice(
                                                     color: Colors.black,
                                                     price: house.price,
+                                                    size: 16,
                                                     suffix: house.offerType[
                                                                 "value"] ==
                                                             "ALouer"
@@ -417,6 +417,7 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                                                 ),
                                               ],
                                             ),
+                                            // _buildAdditionalInfo(house),
                                           ],
                                         ),
                                       ),
@@ -431,6 +432,28 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBedroomsRow(House house) {
+    return Row(
+      children: [
+        const Icon(Icons.king_bed, color: Colors.grey),
+        const SizedBox(width: 8),
+        Text('${house.bedrooms} chambres',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+
+  Widget _buildAreaRow(House house) {
+    return Row(
+      children: [
+        const Icon(Icons.area_chart_sharp, color: Colors.grey),
+        const SizedBox(width: 8),
+        Text('${house.area} m²',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      ],
     );
   }
 

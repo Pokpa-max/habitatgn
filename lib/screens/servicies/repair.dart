@@ -54,6 +54,15 @@ class RepairServicesScreen extends ConsumerWidget {
                     },
                   ),
                   _buildServiceCard(
+                    icon: Icons.home_repair_service,
+                    title: 'Peinture et nettoyage',
+                    description:
+                        "Services de peinture intérieure et extérieure, ainsi que le nettoyage complet d'habitat",
+                    onTap: () {
+                      _showServiceRequestForm(context, ref, 'Général');
+                    },
+                  ),
+                  _buildServiceCard(
                     icon: Icons.electrical_services,
                     title: 'Électricité',
                     description: 'Réparations et installations électriques.',
@@ -162,10 +171,13 @@ class RepairServicesScreen extends ConsumerWidget {
     final formKey = GlobalKey<FormState>();
     final nameController = TextEditingController();
     final addressController = TextEditingController();
-    final phoneController = TextEditingController();
+    final phoneController =
+        TextEditingController(text: '+224'); // Prérempli avec +224
+    final descriptionController = TextEditingController();
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       builder: (BuildContext context) {
         return Consumer(
           builder: (context, watch, child) {
@@ -213,19 +225,42 @@ class RepairServicesScreen extends ConsumerWidget {
                       },
                     ),
                     const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: phoneController,
+                            decoration: const InputDecoration(
+                              labelText: 'Téléphone',
+                              border: OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.phone,
+                            validator: (value) {
+                              if (value == null ||
+                                  value.isEmpty ||
+                                  value == '+224') {
+                                return 'Veuillez entrer votre numéro de téléphone';
+                              }
+                              if (!RegExp(r'^\+224\d{9}$').hasMatch(value)) {
+                                return 'Veuillez entrer un numéro de téléphone valide';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
                     TextFormField(
-                      controller: phoneController,
+                      controller: descriptionController,
                       decoration: const InputDecoration(
-                        labelText: 'Téléphone',
+                        labelText: 'Description',
                         border: OutlineInputBorder(),
                       ),
-                      keyboardType: TextInputType.phone,
+                      maxLines: 3,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Veuillez entrer votre numéro de téléphone';
-                        }
-                        if (!RegExp(r'^\+?\d{10,15}$').hasMatch(value)) {
-                          return 'Veuillez entrer un numéro de téléphone valide';
+                          return 'Veuillez fournir une petite description';
                         }
                         return null;
                       },
@@ -241,6 +276,7 @@ class RepairServicesScreen extends ConsumerWidget {
                                   name: nameController.text,
                                   address: addressController.text,
                                   phone: phoneController.text,
+                                  description: descriptionController.text,
                                   userId: ref
                                       .read(authServiceProvider)
                                       .getCurrentUser()!
@@ -277,12 +313,12 @@ class RepairServicesScreen extends ConsumerWidget {
                             horizontal: 32, vertical: 12),
                       ),
                       child: viewModel is AsyncLoading
-                          ? const SpinKitFadingCircle(
+                          ? const CircularProgressIndicator(
                               color: Colors.white,
-                              size: 30.0,
                             )
                           : const Text('Soumettre la demande'),
                     ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),

@@ -46,6 +46,12 @@ class HelpSupportPage extends StatelessWidget {
               answer:
                   "Dans la fiche détaillée du logement, vous trouverez une option pour l'ajouter à vos favoris.",
             ),
+            _buildFAQItem(
+              question:
+                  'Comment puis-je gérer mes préférences de notification ?',
+              answer:
+                  'Vous pouvez gérer vos préférences de notification dans les paramètres de votre compte, en sélectionnant les types de notifications que vous souhaitez recevoir.',
+            ),
             const SizedBox(height: 20),
             _buildSectionTitle('Support technique'),
             const SizedBox(height: 10),

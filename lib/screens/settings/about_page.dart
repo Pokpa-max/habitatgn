@@ -2,44 +2,58 @@
 
 import 'package:flutter/material.dart';
 import 'package:habitatgn/utils/appcolors.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
-class AboutPage extends StatelessWidget {
+class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
+
+  @override
+  State<AboutPage> createState() => _AboutPageState();
+}
+
+class _AboutPageState extends State<AboutPage> {
+  // initialisation de webView controller
+
+  final controller = WebViewController()
+    ..setJavaScriptMode(JavaScriptMode.disabled)
+    ..loadRequest(Uri.parse('https://www.example.com'));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_outlined),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_outlined),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          iconTheme: const IconThemeData(color: Colors.white),
+          centerTitle: true,
+          title: const Text(
+            'À propos',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: primaryColor,
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        centerTitle: true,
-        title: const Text(
-          'À propos',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: primaryColor,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-            _buildAppLogo(),
-            const SizedBox(height: 20),
-            _buildAppDescription(),
-            const SizedBox(height: 20),
-            _buildVersionInfo(),
-          ],
-        ),
-      ),
-    );
+        body: WebViewWidget(controller: controller)
+
+        // SingleChildScrollView(
+        //   padding: const EdgeInsets.all(16.0),
+        //   child: Column(
+        //     crossAxisAlignment: CrossAxisAlignment.start,
+        //     children: [
+        //       const SizedBox(height: 20),
+        //       _buildAppLogo(),
+        //       const SizedBox(height: 20),
+        //       _buildAppDescription(),
+        //       const SizedBox(height: 20),
+        //       _buildVersionInfo(),
+        //     ],
+        //   ),
+        // ),
+        );
   }
 
   Widget _buildAppLogo() {

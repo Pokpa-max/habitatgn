@@ -2,12 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:habitatgn/models/adversting.dart';
 import 'package:habitatgn/models/house_result_model.dart';
+import 'package:habitatgn/screens/home/dashbord/call/call_screen.dart';
 import 'package:habitatgn/screens/house/houseList.dart';
 import 'package:habitatgn/screens/house/house_detail_screen.dart';
 import 'package:habitatgn/screens/seach/seach_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitatgn/screens/servicies/moving.dart';
 import 'package:habitatgn/screens/servicies/repair.dart';
+import 'package:habitatgn/screens/settings/contact_page.dart';
 import 'package:habitatgn/screens/settings/helpsupport_page.dart';
 import 'package:habitatgn/services/advertisement/advertisement_service.dart';
 import 'package:habitatgn/services/houses/house_service.dart';
@@ -363,6 +365,13 @@ class DashbordViewModel extends ChangeNotifier {
     );
   }
 
+  void navigateToContactPage(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const CallPage(),
+      ),
+    );
+  }
   // Future<void> navigateToUrl(String url, WebViewController _controller) async {
   //   if (await _controller.canGoBack()) {
   //     await _controller.goBack();

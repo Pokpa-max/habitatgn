@@ -64,7 +64,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                             House house =
                                 houseListViewModel.favoriteHouses[index];
                             return Padding(
-                              padding: const EdgeInsets.all(5.0),
+                              padding: const EdgeInsets.all(0.0),
                               child: Card(
                                 color: Colors.white,
                                 elevation: 0.5,
@@ -89,13 +89,25 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                     children: [
                                       Padding(
                                         padding: const EdgeInsets.all(3.0),
-                                        child: CustomCachedNetworkImage(
-                                          imageUrl: house.imageUrl,
-                                          width: screenWidth * 0.45,
-                                          height: screenHeight * 0.20,
+                                        child: Stack(
+                                          children: [
+                                            CustomCachedNetworkImage(
+                                              imageUrl: house.imageUrl,
+                                              width: screenWidth * 0.45,
+                                              height: screenHeight * 0.20,
+                                            ),
+                                            const Positioned(
+                                              top: 8,
+                                              left: 8,
+                                              child: Icon(
+                                                Icons.favorite,
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      const SizedBox(width: 10),
+                                      const SizedBox(width: 5),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
@@ -140,53 +152,38 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                                 ),
                                               ],
                                             ),
-                                            const SizedBox(height: 6),
                                             Row(
                                               mainAxisAlignment:
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                Row(
-                                                  children: [
-                                                    const Icon(
-                                                        Icons.location_on,
-                                                        size: 16,
-                                                        color: Colors.grey),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      house.address!
-                                                          .town["label"],
-                                                      style: const TextStyle(
-                                                          fontSize: 14,
-                                                          color: Colors.black),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const Padding(
-                                                  padding: EdgeInsets.only(
-                                                      right: 30),
-                                                  child: Icon(
-                                                    Icons.favorite,
-                                                    color: Colors.red,
-                                                  ),
-                                                ),
+                                                if (house.houseType?.label !=
+                                                    "Terrain") ...[
+                                                  _buildBedroomsRow(house),
+                                                ],
+                                                if (house.houseType?.label ==
+                                                    "Terrain") ...[
+                                                  _buildAreaRow(house),
+                                                ],
                                               ],
                                             ),
                                             const SizedBox(height: 6),
                                             Row(
                                               children: [
-                                                const Icon(Icons.home,
-                                                    size: 16,
+                                                const Icon(Icons.location_on,
                                                     color: Colors.grey),
                                                 const SizedBox(width: 4),
                                                 Text(
-                                                  '${house.bedrooms} pièces',
+                                                  ' ${house.address!.town["label"]} / ${house.address!.commune["label"]}',
                                                   style: const TextStyle(
-                                                      fontSize: 14,
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                       color: Colors.black),
                                                 ),
                                               ],
                                             ),
+                                            const SizedBox(height: 6),
                                             Row(
                                               children: [
                                                 const Icon(
@@ -196,6 +193,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                                   child: FormattedPrice(
                                                     color: Colors.black,
                                                     price: house.price,
+                                                    size: 16,
                                                     suffix: house.offerType[
                                                                 "value"] ==
                                                             "ALouer"
@@ -205,6 +203,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                                 ),
                                               ],
                                             ),
+                                            // _buildAdditionalInfo(house),
                                           ],
                                         ),
                                       ),
@@ -219,6 +218,28 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                     ],
                   ),
                 ),
+    );
+  }
+
+  Widget _buildBedroomsRow(House house) {
+    return Row(
+      children: [
+        const Icon(Icons.king_bed, color: Colors.grey),
+        const SizedBox(width: 8),
+        Text('${house.bedrooms} chambres',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+
+  Widget _buildAreaRow(House house) {
+    return Row(
+      children: [
+        const Icon(Icons.area_chart_sharp, color: Colors.grey),
+        const SizedBox(width: 8),
+        Text('${house.area} m²',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      ],
     );
   }
 }

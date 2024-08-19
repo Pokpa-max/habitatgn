@@ -41,44 +41,36 @@ class HousingPreferencesScreen extends ConsumerWidget {
             'Duplex',
             'Appartement',
             'Chantier',
+            'Tous',
           ];
 
-          bool isAnyPreferenceSelected =
-              housingTypes.any((type) => preferences[type] == true);
+          bool isAnyPreferenceSelected = housingTypes
+              .where((type) => type != 'Tous')
+              .any((type) => preferences[type] == true);
 
-          if (!isAnyPreferenceSelected) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _showNoSelectionDialog(context);
-            });
-          }
+          bool isNotificationsEnabled =
+              preferences['notificationsEnabled'] ?? false;
 
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Center(
-                  child: Text(
-                    'Sélectionnez vos préférences de logement pour recevoir des notifications.',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20.0),
                 SwitchListTile(
                   title: const Text(
-                      "Autoriser l'envoi de notifications concernant vos préférences de logement"),
-                  value: preferences['notificationsEnabled'] ?? false,
+                      "Activer les notifications pour vos préférences de logement"),
+                  value: isAnyPreferenceSelected && isNotificationsEnabled,
                   activeColor: primaryColor,
                   onChanged: (bool value) {
-                    ref.read(updatePreferenceProvider({
-                      'userId': userId,
-                      'type': 'notificationsEnabled',
-                      'value': value,
-                    }));
-                    ref.refresh(userPreferencesProvider(userId));
+                    if (isAnyPreferenceSelected) {
+                      ref.read(updatePreferenceProvider({
+                        'userId': userId,
+                        'type': 'notificationsEnabled',
+                        'value': value,
+                      }));
+                    } else {
+                      _showNoSelectionDialog(context);
+                    }
                   },
                 ),
                 const SizedBox(height: 20.0),
@@ -107,11 +99,58 @@ class HousingPreferencesScreen extends ConsumerWidget {
                             value: preferences[type] ?? false,
                             onChanged: (bool? value) {
                               if (value != null) {
+                                if (type == 'Tous') {
+                                  // Gestion de la case 'Tous'
+                                  bool newValue = value;
+                                  // Coche ou décoche toutes les autres préférences
+                                  for (var housingType in housingTypes) {
+                                    if (housingType != 'Tous') {
+                                      ref.read(updatePreferenceProvider({
+                                        'userId': userId,
+                                        'type': housingType,
+                                        'value': newValue,
+                                      }));
+                                    }
+                                  }
+                                  // Active ou désactive les notifications
+                                  ref.read(updatePreferenceProvider({
+                                    'userId': userId,
+                                    'type': 'notificationsEnabled',
+                                    'value': newValue,
+                                  }));
+                                } else {
+                                  // Mise à jour d'une préférence spécifique
+                                  ref.read(updatePreferenceProvider({
+                                    'userId': userId,
+                                    'type': type,
+                                    'value': value,
+                                  }));
+                                }
+                                // Mise à jour de la case 'Tous'
+                                bool allSelectedExceptAll = housingTypes
+                                    .where((type) => type != 'Tous')
+                                    .every(
+                                        (type) => preferences[type] ?? false);
+
                                 ref.read(updatePreferenceProvider({
                                   'userId': userId,
-                                  'type': type,
-                                  'value': value,
+                                  'type': 'Tous',
+                                  'value': allSelectedExceptAll,
                                 }));
+
+                                // Mise à jour des notifications en fonction de la sélection
+                                bool anySelected = housingTypes
+                                    .where((type) => type != 'Tous')
+                                    .any((type) => preferences[type] ?? false);
+
+                                ref.read(updatePreferenceProvider({
+                                  'userId': userId,
+                                  'type': 'notificationsEnabled',
+                                  'value': anySelected,
+                                }));
+
+                                // Actualiser les préférences
+                                ref.refresh(userPreferencesProvider(userId));
                               }
                             },
                           ),
@@ -124,7 +163,8 @@ class HousingPreferencesScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () =>
+            const Center(child: CircularProgressIndicator(color: primaryColor)),
         error: (e, st) => Center(child: Text('Erreur: $e')),
       ),
     );
@@ -137,19 +177,16 @@ class HousingPreferencesScreen extends ConsumerWidget {
         return AlertDialog(
           title: const Text('Aucune Sélection'),
           content: const Text(
-              'Veuillez sélectionner au moins un type de logement et activer la notification pour recevoir des notifications.'),
+              'Veuillez sélectionner au moins un type de logement pour activer les notifications.'),
           actions: <Widget>[
             ElevatedButton(
-              style: ButtonStyle(
-                  padding: const WidgetStatePropertyAll(
-                    EdgeInsets.all(8.0),
-                  ),
-                  backgroundColor: WidgetStateProperty.all(primaryColor),
-                  foregroundColor: WidgetStateProperty.all(Colors.white)),
-              onPressed: () async {
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+              ),
+              onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('Ok !'),
+              child: const Text('Ok !', style: TextStyle(color: Colors.white)),
             ),
           ],
         );

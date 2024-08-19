@@ -25,6 +25,8 @@ class UserPreferencesService {
         'Terrain',
         'Duplex',
         'Appartement',
+        'Chantier',
+        'Tous',
       ];
 
       return {
@@ -49,6 +51,7 @@ class UserPreferencesService {
         'Duplex': false,
         'Appartement': false,
         'Chantier': false,
+        'Tous': false,
         'notificationsEnabled': false,
       });
     }
