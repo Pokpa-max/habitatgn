@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -83,9 +84,19 @@ class RepairServicesScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () {
-                _launchPhoneCall(
-                    'tel:+1234567890'); // Remplacez par le numéro de téléphone réel
+              onPressed: () async {
+                // Appeler la fonction pour récupérer le numéro de téléphone
+                final phoneNumber = await _getAgentPhoneNumber(ref);
+                if (phoneNumber != null) {
+                  _launchPhoneCall('tel:$phoneNumber');
+                } else {
+                  // Afficher un message d'erreur si le numéro de téléphone n'est pas disponible
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Numéro de téléphone non disponible.'),
+                    ),
+                  );
+                }
               },
               icon: const Icon(Icons.phone),
               label: const Text(
@@ -152,7 +163,7 @@ class RepairServicesScreen extends ConsumerWidget {
                     Text(
                       description,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         color: Colors.black87,
                       ),
                     ),
@@ -333,5 +344,24 @@ class RepairServicesScreen extends ConsumerWidget {
     if (!await launchUrl(Uri.parse(url))) {
       throw Exception('Could not launch $url');
     }
+  }
+
+  Future<String?> _getAgentPhoneNumber(WidgetRef ref) async {
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('services')
+          .where('type', isEqualTo: 'repair')
+          .limit(1) // Limite le résultat à un seul document
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        // On suppose que le premier document est celui que nous voulons
+        final document = querySnapshot.docs.first;
+        return document.data()['phoneNumber'] as String?;
+      }
+    } catch (e) {
+      print('Erreur lors de la récupération du numéro de téléphone: $e');
+    }
+    return null;
   }
 }

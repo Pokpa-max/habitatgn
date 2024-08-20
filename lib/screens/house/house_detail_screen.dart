@@ -7,6 +7,7 @@ import 'package:habitatgn/utils/ui_element.dart';
 import 'package:habitatgn/widgets/dashbord/dashbord.dart';
 import 'package:habitatgn/viewmodels/housings/house_list.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:fluttertoast/fluttertoast.dart'; // Pour afficher un toast
 
 class HousingDetailPage extends ConsumerStatefulWidget {
   final String houseId;
@@ -67,45 +68,32 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
 
   Future<void> _toggleLike() async {
     final houseListViewModel = ref.read(houseListViewModelProvider);
+
+    // Vérifiez l'état de la connexion Internet
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      _showshowToast('Connexion Internet indisponible.', Colors.red);
+      return; // Ne continuez pas si aucune connexion n'est disponible
+    }
+
     try {
       await houseListViewModel.toggleFavorite(widget.houseId);
       setState(() => isLiked = !isLiked);
       final successMessage = isLiked
           ? '${house?.houseType?.label} ajouté à vos coups de cœur !'
           : '${house?.houseType?.label} retiré de vos coups de cœur!';
-      _showSnackBar(successMessage, isLiked ? primaryColor : Colors.black87);
+      _showshowToast(successMessage, isLiked ? primaryColor : Colors.black87);
     } catch (e) {
-      _showSnackBar('Erreur: Veuillez réessayer plus tard.', Colors.red);
+      _showshowToast('Erreur: Veuillez réessayer plus tard.', Colors.red);
     }
   }
 
-  // Future<void> _toggleLike() async {
-  //   final houseListViewModel = ref.read(houseListViewModelProvider);
-  //   try {
-  //     await houseListViewModel.toggleFavorite(widget.houseId);
-  //     setState(() {
-  //       isLiked = !isLiked;
-  //     });
-  //     final successMessage = isLiked
-  //         ? '${house?.houseType?.label} ajouté à vos coups de cœur !'
-  //         : '${house?.houseType?.label} retiré de vos coups de cœur!';
-  //     _showSnackBar(successMessage, isLiked ? primaryColor : Colors.black87);
-  //   } catch (e) {
-  //     _showSnackBar('Erreur: Veuillez réessayer plus tard.', Colors.red);
-  //   }
-  // }
-
-  void _showSnackBar(String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Center(
-            child: Text(
-          message,
-          style: const TextStyle(fontSize: 16),
-        )),
-        backgroundColor: color,
-        duration: const Duration(seconds: 2),
-      ),
+  void _showshowToast(String message, Color color) {
+    Fluttertoast.showToast(
+      backgroundColor: color,
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.TOP,
     );
   }
 
@@ -300,6 +288,13 @@ class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
                   backgroundColor: WidgetStateProperty.all(primaryColor),
                   foregroundColor: WidgetStateProperty.all(Colors.white)),
               onPressed: () async {
+                var connectivityResult =
+                    await Connectivity().checkConnectivity();
+                if (connectivityResult == ConnectivityResult.none) {
+                  _showshowToast(
+                      'Connexion Internet indisponible.', Colors.red);
+                  return;
+                }
                 Navigator.push(
                   context,
                   MaterialPageRoute(

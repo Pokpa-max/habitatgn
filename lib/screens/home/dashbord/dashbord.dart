@@ -556,21 +556,6 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
           ),
           const SizedBox(height: 10),
           InkWell(
-            onTap: () async {
-              try {
-                await navigateToUrl('https://www.example.com');
-              } catch (e) {
-                print('Failed to open URL: $e');
-              }
-            },
-            child: _buildInfoItem(
-              Icons.trending_up,
-              'Maximisez vos chances',
-              'Découvrez comment améliorer votre annonce pour attirer plus de potentiels locataires.',
-            ),
-          ),
-          Divider(thickness: 1, color: Colors.grey[300]),
-          InkWell(
             onTap: () {
               viewModel.navigateToSupportPage(context);
             },
@@ -584,6 +569,21 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
             },
             child: _buildInfoItem(Icons.phone, 'Appelez-nous',
                 'Contactez notre service client par téléphone pour toute assistance.'),
+          ),
+          Divider(thickness: 1, color: Colors.grey[300]),
+          InkWell(
+            onTap: () async {
+              try {
+                await navigateToUrl('https://www.example.com');
+              } catch (e) {
+                print('Failed to open URL: $e');
+              }
+            },
+            child: _buildInfoItem(
+              Icons.trending_up,
+              'Maximisez vos chances',
+              'Découvrez comment améliorer votre annonce pour attirer plus de potentiels locataires.',
+            ),
           ),
         ],
       ),
@@ -604,14 +604,14 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   description,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     color: Colors.black54,
                   ),
                 ),

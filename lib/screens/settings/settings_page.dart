@@ -133,8 +133,10 @@ class SettingsPage extends ConsumerWidget {
       // Affichez un message à l'utilisateur si la connexion Internet est absente
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-              'Aucune connexion Internet. Veuillez vérifier votre connexion.'),
+          content: Center(
+            child: Text(
+                'Aucune connexion Internet. Veuillez vérifier votre connexion.'),
+          ),
         ),
       );
     } else {

@@ -34,7 +34,7 @@ class HelpSupportPage extends StatelessWidget {
               question:
                   'Comment puis-je rechercher des logements disponibles ?',
               answer:
-                  'Vous pouvez utiliser notre barre de recherche pour spécifier vos critères et affiner les résultats.',
+                  'Vous pouvez utiliser notre barre de recherche ou le filtre  pour spécifier vos critères et affiner les résultats.',
             ),
             _buildFAQItem(
               question: 'Comment contacter un propriétaire pour une visite ?',
@@ -102,14 +102,14 @@ class HelpSupportPage extends StatelessWidget {
         collapsedIconColor: primaryColor,
         title: Text(
           question,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Text(
               answer,
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 18),
             ),
           ),
         ],
@@ -149,7 +149,7 @@ class HelpSupportPage extends StatelessWidget {
                   Text(
                     description,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       color: Colors.black87,
                     ),
                   ),
