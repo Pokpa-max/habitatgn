@@ -6,39 +6,38 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitatgn/screens/authscreen/loginscreen.dart';
 import 'package:habitatgn/screens/home/home_screen.dart';
 import 'package:habitatgn/services/authService/auth_service.dart';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 final splashScreenViewModelProvider =
     ChangeNotifierProvider((ref) => SplashScreenViewModel(ref));
 final splashScreenService = Provider((ref) => AuthService());
 
+// Constants for notification
+const String kChannelId = 'com.example.habitatgn';
+const String kChannelName = 'habitatgn';
+const String kChannelDescription = "Nouvelle annonce de logement";
+
 class SplashScreenViewModel extends ChangeNotifier {
-  final Ref _read;
-
-  SplashScreenViewModel(this._read);
-
-  // Notifications
-  final FirebaseFirestore db = FirebaseFirestore.instance;
-  static const String channelId = 'com.example.habitatgn';
-  static const String channelName = 'habitatgn';
-
+  final Ref _ref;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  String? fcmToken;
+  SplashScreenViewModel(this._ref) {
+    _initialize();
+  }
 
-  void checkLoggedIn(BuildContext context) {
-    final splashModel = _read.read(splashScreenService);
+  Future<void> _initialize() async {
+    await _createNotificationChannel();
+    // await _requestPermission();
 
-    // bool isLoggedIn = _read.read(splashScreenService).checkIfLoggedIn();
-    if (splashModel.checkIfLoggedIn()) {
-      requestPermission();
-      listenToTokenChanges(splashModel.getCurrentUser()!.uid);
-      saveTokenToDatabase(splashModel.getCurrentUser()!.uid);
-      configure();
+    _configureNotificationHandling();
+  }
+
+  void checkLoggedIn(BuildContext context) async {
+    final authService = _ref.read(splashScreenService);
+
+    if (authService.checkIfLoggedIn()) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
@@ -49,85 +48,60 @@ class SplashScreenViewModel extends ChangeNotifier {
     }
   }
 
-  // notification with fcm token
-  Future<void> saveTokenToDatabase(String userId) async {
-    String? token = await _firebaseMessaging.getToken();
-    if (token != null) {
-      DocumentReference docRef = db.collection('userPreferences').doc(userId);
-      DocumentSnapshot docSnapshot = await docRef.get();
-      if (!docSnapshot.exists) {
-        await docRef.set({
-          'fcmToken': token,
-        });
-      } else {
-        await docRef.update({
-          'fcmToken': token,
-        });
-      }
-    }
-  }
+  // Notifications
 
-  // Ecouteur pour détecter les changements de token
-  void listenToTokenChanges(String userId) {
-    _firebaseMessaging.onTokenRefresh.listen((newToken) {
-      saveTokenToDatabase(userId);
-    });
-  }
+  // Future<void> _requestPermission() async {
+  //   await _firebaseMessaging.requestPermission(
+  //     alert: true,
+  //     badge: true,
+  //     sound: true,
+  //   );
+  // }
 
-  void requestPermission() async {
-    await _firebaseMessaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-  }
-
-  void configure() {
+  void _configureNotificationHandling() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
-        displayNotification(message);
+        _displayNotification(message);
       }
     });
   }
 
-  Future createTheAppChannel() async {
-    AndroidNotificationChannel channel = const AndroidNotificationChannel(
-      channelId,
-      channelName,
-      description: "Nouvelle annonce de logement",
+  Future<void> _createNotificationChannel() async {
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      kChannelId,
+      kChannelName,
+      description: kChannelDescription,
       importance: Importance.high,
       sound: RawResourceAndroidNotificationSound('sound_notification'),
     );
-    await flutterLocalNotificationsPlugin
+    await _localNotificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
   }
 
-  Future<void> displayNotification(RemoteMessage message) async {
-    RemoteNotification notification = message.notification!;
+  Future<void> _displayNotification(RemoteMessage message) async {
+    RemoteNotification? notification = message.notification;
+    if (notification == null) return;
+
     int notificationId = int.parse(message.data['messageId']);
-    var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
-      channelId, channelName,
-      channelDescription: "Nouvelle annonce de logement",
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      kChannelId,
+      kChannelName,
+      channelDescription: kChannelDescription,
       importance: Importance.max,
       priority: Priority.high,
       playSound: false,
-      // icon: '@mipmap/ic_launcher'
     );
+    const NotificationDetails platformDetails =
+        NotificationDetails(android: androidDetails);
 
-    var platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await flutterLocalNotificationsPlugin.show(
+    await _localNotificationsPlugin.show(
       notificationId,
       notification.title,
       notification.body,
-      platformChannelSpecifics,
+      platformDetails,
       payload: message.data['orderId'],
     );
   }

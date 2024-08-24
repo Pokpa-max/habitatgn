@@ -24,6 +24,11 @@ class HouseService {
     }
   }
 
+  // recuperation de lutilisateur courant
+  Future<User?> getCurrentUser() async {
+    return _auth.currentUser;
+  }
+
   /// Récupère les logements récents.
   Future<List<House>> getRecentHouses({int limit = 10}) async {
     try {

@@ -7,11 +7,10 @@ import 'package:flutter/services.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:habitatgn/screens/splash_screen.dart';
 import 'package:habitatgn/utils/appcolors.dart';
+import 'package:habitatgn/viewmodels/splashScreen/splashscreen_provider.dart';
 
 import 'firebase_options.dart';
 import 'package:habitatgn/screens/house/house_detail_screen.dart';
-
-//function to listen to background changes
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +31,7 @@ Future<void> main() async {
 // Gestion des messages en arrière-plan
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  print("Handling a background message🎯🎯🎯🎯🎯🎯🎯: ${message.messageId}");
+  print("Handling a background message: ${message.messageId}");
 }
 
 class MyApp extends StatefulWidget {
@@ -49,13 +48,13 @@ class _MyAppState extends State<MyApp> {
 
     // Gestion des messages en premier plan
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Received a message while in the foreground!🎯🎯🎯🎯');
-      _showNotificationDialog(message);
+      print('Received a message while in the foreground!');
+      _navigateToHouseDetails(message);
     });
 
     // Gérer les messages lorsque l'application est ouverte via une notification
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Message clicked!🎯🎯🎯🎯🎯🎯');
+      print('Message clicked!');
       _navigateToHouseDetails(message);
     });
 
@@ -67,26 +66,6 @@ class _MyAppState extends State<MyApp> {
         _navigateToHouseDetails(message);
       }
     });
-  }
-
-  void _showNotificationDialog(RemoteMessage message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(message.notification?.title ?? 'Notification'),
-          content: Text(message.notification?.body ?? 'No message body'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   void _navigateToHouseDetails(RemoteMessage message) {
