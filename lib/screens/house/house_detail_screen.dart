@@ -9,16 +9,16 @@ import 'package:habitatgn/viewmodels/housings/house_list.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fluttertoast/fluttertoast.dart'; // Pour afficher un toast
 
-class HousingDetailPage extends ConsumerStatefulWidget {
+class HouseDetailScreen extends ConsumerStatefulWidget {
   final String houseId;
 
-  const HousingDetailPage({required this.houseId, super.key});
+  const HouseDetailScreen({required this.houseId, super.key});
 
   @override
-  ConsumerState<HousingDetailPage> createState() => _HousingDetailPageState();
+  ConsumerState<HouseDetailScreen> createState() => _HouseDetailScreenState();
 }
 
-class _HousingDetailPageState extends ConsumerState<HousingDetailPage> {
+class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen> {
   House? house;
   bool isLoading = false;
   bool isLiked = false;

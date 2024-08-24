@@ -42,7 +42,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = ref.read(dashbordViewModelProvider);
-      viewModel.setWebViewController(_controller);
+      // viewModel.setWebViewController(_controller);
     });
   }
 
@@ -189,8 +189,9 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
   }
 
   Widget _buildSkeletonRecentListings() {
+    double screenHeight = MediaQuery.of(context).size.height;
     return SizedBox(
-      height: 200,
+      height: screenHeight * 0.25,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: 3, // Display 3 skeleton items for demonstration
@@ -199,7 +200,8 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
             baseColor: Colors.grey.shade300,
             highlightColor: Colors.grey.shade200,
             child: Container(
-              width: 150,
+              width: 250,
+              height: double.infinity,
               margin: const EdgeInsets.all(8.0),
               color: Colors.grey.shade300,
             ),

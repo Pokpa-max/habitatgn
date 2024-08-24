@@ -307,7 +307,7 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => HousingDetailPage(
+                                        builder: (context) => HouseDetailScreen(
                                           houseId: house.id,
                                         ),
                                       ),

@@ -1,31 +1,3 @@
-// // lib/models/user_preferences.dart
-
-// class UserPreferences {
-//   final bool receiveNotifications;
-//   final String preferredCategory;
-
-//   UserPreferences({
-//     required this.receiveNotifications,
-//     required this.preferredCategory,
-//   });
-
-//   factory UserPreferences.fromMap(Map<String, dynamic> map) {
-//     return UserPreferences(
-//       receiveNotifications: map['receiveNotifications'] ?? true,
-//       preferredCategory: map['preferredCategory'] ?? 'All',
-//     );
-//   }
-
-//   Map<String, dynamic> toMap() {
-//     return {
-//       'receiveNotifications': receiveNotifications,
-//       'preferredCategory': preferredCategory,
-//     };
-//   }
-// }
-
-// lib/models/preference/user_preferences.dart
-
 class UserPreferences {
   final bool receiveNotifications;
   final String preferredCategory;

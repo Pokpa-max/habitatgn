@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:habitatgn/screens/seach/seach_screen.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'package:intl/intl.dart';
@@ -299,12 +300,20 @@ class CustomCachedNetworkImage extends StatelessWidget {
     const double defaultWidth = 150;
     const double defaultHeight = 140;
 
+    final customCacheManager = CacheManager(Config(
+      'customCacheKey',
+      stalePeriod: const Duration(days: 15),
+      maxNrOfCacheObjects: 100,
+    ));
+    // add flutter_cache_manager:
+
     return ClipRRect(
-      borderRadius: BorderRadius.only(
-        topLeft: Radius.circular(12),
-        bottomLeft: Radius.circular(12),
-      ),
+      // borderRadius: const BorderRadius.only(
+      //   topLeft: Radius.circular(12),
+      //   bottomLeft: Radius.circular(12),
+      // ),
       child: CachedNetworkImage(
+        cacheManager: customCacheManager,
         imageUrl: imageUrl,
         width: width ?? defaultWidth,
         height: height ?? defaultHeight,
@@ -322,30 +331,30 @@ class CustomCachedNetworkImage extends StatelessWidget {
           width: width ?? defaultWidth,
           height: height ?? defaultHeight,
           color: Colors.grey.shade200,
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.image_not_supported,
-                color: Colors.grey,
-                size: 40,
-              ),
-              Text('Pas de connexion internet')
-            ],
-          ),
+
+          // child:
+          // const Column(
+          //   crossAxisAlignment: CrossAxisAlignment.center,
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: [
+          //     Icon(
+          //       Icons.image_not_supported,
+          //       color: Colors.grey,
+          //       size: 40,
+          //     ),
+          //     Text('Pas de connexion internet')
+          //   ],
+          // ),
         ),
       ),
     );
   }
 }
 
-
-
- // Navigator.pushAndRemoveUntil(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (context) => const HomeScreen(),
-                      //   ),
-                      //   (route) => false, // Supprime toutes les autres routes
-                      // );
+// Navigator.pushAndRemoveUntil(
+//   context,
+//   MaterialPageRoute(
+//     builder: (context) => const HomeScreen(),
+//   ),
+//   (route) => false, // Supprime toutes les autres routes
+// );

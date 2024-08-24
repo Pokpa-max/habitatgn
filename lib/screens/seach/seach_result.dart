@@ -49,7 +49,7 @@ class SearchResultPage extends ConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => HousingDetailPage(
+                                builder: (context) => HouseDetailScreen(
                                   houseId: house.id,
                                 ),
                               ),
