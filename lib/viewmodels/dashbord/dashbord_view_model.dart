@@ -18,6 +18,7 @@ import 'package:habitatgn/screens/settings/helpsupport_page.dart';
 import 'package:habitatgn/services/advertisement/advertisement_service.dart';
 import 'package:habitatgn/services/houses/house_service.dart';
 import 'package:habitatgn/utils/appcolors.dart';
+import 'package:habitatgn/viewmodels/notification/notification.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 final houseServiceProvider = Provider((ref) => HouseService());
@@ -28,8 +29,7 @@ final dashbordViewModelProvider =
     ChangeNotifierProvider((ref) => DashbordViewModel(ref));
 
 class DashbordViewModel extends ChangeNotifier {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  NotificationViewModel notificationViewModel = NotificationViewModel();
   // house element
 
   final HouseService _houseService = HouseService();
@@ -60,10 +60,12 @@ class DashbordViewModel extends ChangeNotifier {
   bool get hasMore => _hasMore;
 
   DashbordViewModel(this._read) {
-    _requestPermission();
+    notificationViewModel.requestUserPermission();
+    notificationViewModel.initializeAndListenForTokenChanges(
+        FirebaseAuth.instance.currentUser!.uid);
+    notificationViewModel.configureNotificationHandling();
     fetchAdvertisementData();
     fetchRecentHouses(); // Fetch recent houses initially
-    initializeAndListenForTokenChanges(FirebaseAuth.instance.currentUser!.uid);
   }
 
   // Ajout de la méthode resetHouses
@@ -191,38 +193,5 @@ class DashbordViewModel extends ChangeNotifier {
           house.address!.town["label"].toLowerCase().contains(lowerCaseQuery);
       return titleMatches || descriptionMatches || addressMatches;
     }).toList();
-  }
-
-  // save token to database
-
-  Future<void> _requestPermission() async {
-    await _firebaseMessaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-  }
-
-  Future<void> initializeAndListenForTokenChanges(String userId) async {
-    try {
-      // Obtenez le jeton initial et enregistrez-le dans la base de données
-      await _saveOrUpdateToken(userId);
-
-      // Écoutez les changements de jeton et mettez à jour la base de données
-      _firebaseMessaging.onTokenRefresh.listen((newToken) async {
-        await _saveOrUpdateToken(userId);
-      });
-    } catch (e) {
-      // Gérer les erreurs
-      print("Error managing FCM token: $e");
-    }
-  }
-
-  Future<void> _saveOrUpdateToken(String userId) async {
-    String? token = await _firebaseMessaging.getToken();
-    if (token != null) {
-      DocumentReference docRef = _db.collection('userPreferences').doc(userId);
-      await docRef.set({'fcmToken': token}, SetOptions(merge: true));
-    }
   }
 }

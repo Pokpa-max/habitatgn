@@ -26,24 +26,6 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
   @override
   void initState() {
     super.initState();
-    late final PlatformWebViewControllerCreationParams params;
-    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-      params = WebKitWebViewControllerCreationParams();
-    } else {
-      params = const PlatformWebViewControllerCreationParams();
-    }
-
-    _controller = WebViewController.fromPlatformCreationParams(params);
-
-    _controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..loadRequest(Uri.parse('https://flutter.dev'));
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final viewModel = ref.read(dashbordViewModelProvider);
-      // viewModel.setWebViewController(_controller);
-    });
   }
 
   Future<void> navigateToUrl(String url) async {

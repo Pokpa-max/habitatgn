@@ -177,7 +177,8 @@ class HousingPreferencesScreen extends ConsumerWidget {
         return AlertDialog(
           title: const Text('Aucune Sélection'),
           content: const Text(
-              'Veuillez sélectionner au moins un type de logement pour activer les notifications.'),
+              'Veuillez sélectionner au moins un type de logement pour activer les notifications.',
+              style: TextStyle(fontSize: 16)),
           actions: <Widget>[
             ElevatedButton(
               style: ElevatedButton.styleFrom(

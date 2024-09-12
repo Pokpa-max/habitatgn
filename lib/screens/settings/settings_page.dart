@@ -262,10 +262,9 @@ class SettingsPage extends ConsumerWidget {
           'Supprimer le compte',
           style: TextStyle(fontSize: 20, color: Colors.red),
         ),
-        content: const Center(
-          child: Text(
-              'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.'),
-        ),
+        content: const Text(
+            'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.',
+            style: TextStyle(fontSize: 16)),
         actions: [
           ElevatedButton(
             style: ButtonStyle(

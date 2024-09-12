@@ -12,27 +12,10 @@ final splashScreenViewModelProvider =
     ChangeNotifierProvider((ref) => SplashScreenViewModel(ref));
 final splashScreenService = Provider((ref) => AuthService());
 
-// Constants for notification
-const String kChannelId = 'com.example.habitatgn';
-const String kChannelName = 'habitatgn';
-const String kChannelDescription = "Nouvelle annonce de logement";
-
 class SplashScreenViewModel extends ChangeNotifier {
   final Ref _ref;
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
 
-  SplashScreenViewModel(this._ref) {
-    _initialize();
-  }
-
-  Future<void> _initialize() async {
-    await _createNotificationChannel();
-    // await _requestPermission();
-
-    _configureNotificationHandling();
-  }
+  SplashScreenViewModel(this._ref);
 
   void checkLoggedIn(BuildContext context) async {
     final authService = _ref.read(splashScreenService);
@@ -46,63 +29,5 @@ class SplashScreenViewModel extends ChangeNotifier {
         MaterialPageRoute(builder: (context) => LoginScreen()),
       );
     }
-  }
-
-  // Notifications
-
-  // Future<void> _requestPermission() async {
-  //   await _firebaseMessaging.requestPermission(
-  //     alert: true,
-  //     badge: true,
-  //     sound: true,
-  //   );
-  // }
-
-  void _configureNotificationHandling() {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (message.notification != null) {
-        _displayNotification(message);
-      }
-    });
-  }
-
-  Future<void> _createNotificationChannel() async {
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      kChannelId,
-      kChannelName,
-      description: kChannelDescription,
-      importance: Importance.high,
-      sound: RawResourceAndroidNotificationSound('sound_notification'),
-    );
-    await _localNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-  }
-
-  Future<void> _displayNotification(RemoteMessage message) async {
-    RemoteNotification? notification = message.notification;
-    if (notification == null) return;
-
-    int notificationId = int.parse(message.data['messageId']);
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-      kChannelId,
-      kChannelName,
-      channelDescription: kChannelDescription,
-      importance: Importance.max,
-      priority: Priority.high,
-      playSound: false,
-    );
-    const NotificationDetails platformDetails =
-        NotificationDetails(android: androidDetails);
-
-    await _localNotificationsPlugin.show(
-      notificationId,
-      notification.title,
-      notification.body,
-      platformDetails,
-      payload: message.data['orderId'],
-    );
   }
 }
