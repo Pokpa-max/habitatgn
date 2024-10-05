@@ -34,22 +34,53 @@ class CallPage extends StatelessWidget {
     await launchUrl(launchUri);
   }
 
-  void _launchWhatsApp(String phoneNumber) async {
+  // void _launchWhatsApp(String phoneNumber) async {
+  //   final Uri whatsappUri = Uri(
+  //     scheme: 'https',
+  //     host: 'wa.me', // Utilisation du schéma WA.ME
+  //     path: phoneNumber, // Numéro de téléphone sans les caractères spéciaux
+  //   );
+
+  //   if (await canLaunchUrl(whatsappUri)) {
+  //     await launchUrl(whatsappUri);
+  //   } else {
+  //     Fluttertoast.showToast(
+  //       msg: "Veuillez installer WhatsApp",
+  //       toastLength: Toast.LENGTH_SHORT,
+  //       gravity: ToastGravity.BOTTOM,
+  //     );
+  //     // throw 'Could not launch WhatsApp';
+  //   }
+  // }
+
+  void _launchWhatsApp(String phoneNumber, String message) async {
+    // Encodage du message pour l'URI
+    final encodedMessage = Uri.encodeComponent(message);
+
+    // Construction de l'URI WhatsApp
     final Uri whatsappUri = Uri(
       scheme: 'https',
-      host: 'wa.me', // Utilisation du schéma WA.ME
+      host: 'wa.me',
       path: phoneNumber, // Numéro de téléphone sans les caractères spéciaux
+      query: 'text=$encodedMessage', // Message à envoyer
     );
 
-    if (await canLaunchUrl(whatsappUri)) {
-      await launchUrl(whatsappUri);
-    } else {
+    try {
+      if (await canLaunchUrl(whatsappUri)) {
+        await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+      } else {
+        Fluttertoast.showToast(
+          msg: "Veuillez installer WhatsApp",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+        );
+      }
+    } catch (e) {
       Fluttertoast.showToast(
-        msg: "Veuillez installer WhatsApp",
+        msg: "Erreur lors de l'ouverture de WhatsApp: $e",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
       );
-      // throw 'Could not launch WhatsApp';
     }
   }
 
@@ -125,9 +156,9 @@ class CallPage extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            CircleAvatar(
-                              backgroundColor: contact['color'],
-                              child: const FaIcon(FontAwesomeIcons.phoneFlip,
+                            const CircleAvatar(
+                              backgroundColor: primaryColor,
+                              child: FaIcon(FontAwesomeIcons.phone,
                                   color: Colors.white),
                             ),
                             const SizedBox(width: 16),
@@ -169,7 +200,9 @@ class CallPage extends StatelessWidget {
 
                 ElevatedButton(
                   onPressed: () => _launchWhatsApp(
-                      '628610357'), // Remplacez par le numéro WhatsApp
+                      "224123456789", "Bonjour, j'aimerais en savoir plus."),
+                  //  _launchWhatsApp(
+                  //     '628610357'), // Remplacez par le numéro WhatsApp
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green, // Couleur de fond du bouton
                     padding: const EdgeInsets.symmetric(

@@ -23,8 +23,12 @@ class LoginScreen extends ConsumerWidget {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [lightPrimary2, primaryColor], // Dégradé
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
         ),
         child: Center(
           child: SingleChildScrollView(
@@ -105,6 +109,7 @@ class LoginScreen extends ConsumerWidget {
                                 if (emailController.text.isEmpty ||
                                     passwordController.text.isEmpty) {
                                   authViewModel.showErrorMessage(
+                                    color: primaryColor,
                                     context,
                                     "Veuillez remplir tous les champs.",
                                   );
@@ -135,7 +140,7 @@ class LoginScreen extends ConsumerWidget {
                 const SizedBox(height: 20),
                 const Text(
                   "Ou connectez-vous avec",
-                  style: TextStyle(color: Colors.black, fontSize: 18),
+                  style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
                 const SizedBox(height: 20),
                 _buildSocialButton(
@@ -194,7 +199,7 @@ class LoginScreen extends ConsumerWidget {
                   children: [
                     const Text(
                       'Pas de compte?',
-                      style: TextStyle(color: Colors.black, fontSize: 16),
+                      style: TextStyle(color: Colors.white, fontSize: 14),
                     ),
                     TextButton(
                       onPressed: () {
@@ -202,7 +207,7 @@ class LoginScreen extends ConsumerWidget {
                       },
                       child: const Text(
                         "S'inscrire maintenant",
-                        style: TextStyle(color: primaryColor, fontSize: 16),
+                        style: TextStyle(color: Colors.white, fontSize: 14),
                       ),
                     ),
                   ],
@@ -221,7 +226,7 @@ class LoginScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12.0),
       ),
       elevation: 8,
-      color: Colors.white,
+      color: lightPrimary2,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: child,
@@ -270,7 +275,7 @@ class LoginScreen extends ConsumerWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          padding: const EdgeInsets.symmetric(vertical: 0.0),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -297,7 +302,7 @@ class LoginScreen extends ConsumerWidget {
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          padding: const EdgeInsets.symmetric(vertical: 0.0),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

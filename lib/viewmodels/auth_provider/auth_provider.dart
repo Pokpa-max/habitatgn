@@ -13,6 +13,7 @@ final authViewModelProvider =
 final authServiceProvider = Provider((ref) => AuthService());
 
 class AuthViewModel extends ChangeNotifier {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   Map<String, dynamic>? _userProfile;
   Map<String, dynamic>? get userProfile => _userProfile;
   User? _user;
@@ -132,6 +133,11 @@ class AuthViewModel extends ChangeNotifier {
     } finally {
       _setCreatingAccount(false);
     }
+  }
+
+  bool checkIfLoggedIn() {
+    final user = _auth.currentUser;
+    return user != null;
   }
 
   void _getCurrentUser() {

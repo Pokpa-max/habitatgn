@@ -100,7 +100,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                         child: const Text(
                           'Voir tout',
                           style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: primaryColor),
                         ),
@@ -300,9 +300,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Text(title,
           style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87)),
+              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
     );
   }
 
@@ -431,14 +429,14 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                             '${house.houseType?.label ?? ''} - '
                                                 .toUpperCase(),
                                             style: const TextStyle(
-                                                fontSize: 14,
+                                                fontSize: 16,
                                                 fontWeight: FontWeight.bold)),
                                         const SizedBox(width: 8),
                                         Text(
                                             house.offerType["label"]
                                                 .toUpperCase(),
                                             style: const TextStyle(
-                                                fontSize: 14,
+                                                fontSize: 16,
                                                 fontWeight: FontWeight.bold)),
                                       ],
                                     ),
@@ -471,7 +469,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                       child: FormattedPrice(
                                         color: Colors.black,
                                         price: house.price,
-                                        size: 14,
+                                        size: 16,
                                         suffix:
                                             house.offerType["value"] == "ALouer"
                                                 ? '/mois'

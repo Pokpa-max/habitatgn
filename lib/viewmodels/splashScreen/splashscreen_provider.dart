@@ -17,10 +17,23 @@ class SplashScreenViewModel extends ChangeNotifier {
 
   SplashScreenViewModel(this._ref);
 
+  // void checkLoggedIn(BuildContext context) async {
+  //   final authService = _ref.read(splashScreenService);
+
+  //   if (authService.checkIfLoggedIn()) {
+  //     Navigator.of(context).pushReplacement(
+  //       MaterialPageRoute(builder: (context) => const HomeScreen()),
+  //     );
+  //   } else {
+  //     Navigator.of(context).pushReplacement(
+  //       MaterialPageRoute(builder: (context) => LoginScreen()),
+  //     );
+  //   }
+  // }
   void checkLoggedIn(BuildContext context) async {
     final authService = _ref.read(splashScreenService);
 
-    if (authService.checkIfLoggedIn()) {
+    if (authService != null && authService.checkIfLoggedIn()) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );

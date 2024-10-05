@@ -153,7 +153,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen> {
           await houseListViewModel.launchPhoneCall("tel:${house!.phoneNumber}");
         }
       },
-      label: const Text("Appeler l'Agence ", style: TextStyle(fontSize: 16)),
+      label: const Text("Appeler l'Agence ", style: TextStyle(fontSize: 14)),
     );
   }
 
@@ -308,7 +308,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen> {
                   ),
                 );
               },
-              label: const Text('Localisation', style: TextStyle(fontSize: 16)),
+              label: const Text('Localisation', style: TextStyle(fontSize: 14)),
             ),
           ],
         ),
@@ -397,7 +397,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Description:',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
         Divider(
           color: Colors.grey[200],
         ),
@@ -412,7 +412,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Équipements:',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
         Divider(
           color: Colors.grey[200],
         ),
@@ -434,7 +434,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Informations supplémentaires:',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
         Divider(
           color: Colors.grey[200],
         ),
