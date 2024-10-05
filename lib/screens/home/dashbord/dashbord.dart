@@ -98,9 +98,9 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                           viewModel.navigateToHouseListPage(context);
                         },
                         child: const Text(
-                          'Voir Tout',
+                          'Voir tout',
                           style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: primaryColor),
                         ),
@@ -241,7 +241,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
         const Center(
           child: Text(
             "Bienvenue sur HABITATGN",
-            style: TextStyle(color: Colors.white, fontSize: 22, shadows: [
+            style: TextStyle(color: Colors.white, fontSize: 20, shadows: [
               Shadow(
                 blurRadius: 10.0,
                 color: Colors.black26,
@@ -263,6 +263,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
+            labelStyle: const TextStyle(color: Colors.black54, fontSize: 10),
             hintText: 'Trouvez ici votre maison, appartement, ...',
             prefixIcon: const Icon(Icons.search, color: Colors.black54),
             suffixIcon: _searchQuery.isNotEmpty
@@ -299,7 +300,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Text(title,
           style: const TextStyle(
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.black87)),
     );
@@ -357,7 +358,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                 const SizedBox(height: 5),
                 Text(title,
                     style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.white)),
               ],
@@ -430,14 +431,14 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                             '${house.houseType?.label ?? ''} - '
                                                 .toUpperCase(),
                                             style: const TextStyle(
-                                                fontSize: 16,
+                                                fontSize: 14,
                                                 fontWeight: FontWeight.bold)),
                                         const SizedBox(width: 8),
                                         Text(
                                             house.offerType["label"]
                                                 .toUpperCase(),
                                             style: const TextStyle(
-                                                fontSize: 16,
+                                                fontSize: 14,
                                                 fontWeight: FontWeight.bold)),
                                       ],
                                     ),
@@ -453,7 +454,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                     Text(
                                       ' ${house.address!.town["label"]} / ${house.address!.commune["label"]}',
                                       style: const TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         color: Colors.black,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -470,7 +471,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                                       child: FormattedPrice(
                                         color: Colors.black,
                                         price: house.price,
-                                        size: 16,
+                                        size: 14,
                                         suffix:
                                             house.offerType["value"] == "ALouer"
                                                 ? '/mois'
@@ -506,7 +507,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
         ),
         child: const Text(
           'Voir Toutes les Annonces',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -533,7 +534,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
           const Text(
             'Autres Informations',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
@@ -588,14 +589,14 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   description,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 14,
                     color: Colors.black54,
                   ),
                 ),

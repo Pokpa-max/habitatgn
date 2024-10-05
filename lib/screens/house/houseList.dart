@@ -470,7 +470,7 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
           },
           decoration: InputDecoration(
             filled: true,
-
+            labelStyle: TextStyle(color: Colors.black54, fontSize: 14),
             fillColor: Colors.grey.withOpacity(0.2),
             hintText: 'Trouvez ici votre maison, appartement, ou terrain...',
             prefixIcon: const Icon(Icons.search, color: Colors.grey),
