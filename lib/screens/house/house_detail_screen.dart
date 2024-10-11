@@ -8,6 +8,7 @@ import 'package:habitatgn/widgets/dashbord/dashbord.dart';
 import 'package:habitatgn/viewmodels/housings/house_list.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fluttertoast/fluttertoast.dart'; // Pour afficher un toast
+// import 'package:share_plus/share_plus.dart';
 
 class HouseDetailScreen extends ConsumerStatefulWidget {
   final String houseId;
@@ -157,6 +158,18 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen> {
     );
   }
 
+  // void _shareHouse() {
+  //   String message =
+  //       'Découvrez ce logement: ${house?.offerType["label"]?.toString() ?? 'Type inconnu'} '
+  //       // 'situé à ${house.address?.toString() ?? 'Adresse non spécifiée'}.\n'
+  //       ' situé à ${house?.address?.commune['label']?.toString()}/${house?.address?.zone}'
+  //       'Superficie: ${house?.area} m²\n'
+  //       'Prix: ${house?.price} GNF\n'
+  //       'Pour plus de détails, contactez le ${house?.phoneNumber}.';
+
+  //   Share.share(message);
+  // }
+
   SliverAppBar _buildSliverAppBar() {
     double screenHeight = MediaQuery.of(context).size.height * 0.40;
     double screenWidth = MediaQuery.of(context).size.width;
@@ -190,7 +203,9 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen> {
         ),
         IconButton(
           icon: const Icon(Icons.share, color: Colors.white, size: 30),
-          onPressed: () {}, // Add share functionality here
+          onPressed: () {
+            // _shareHouse();
+          }, // Add share functionality here
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
@@ -402,7 +417,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen> {
           color: Colors.grey[200],
         ),
         const SizedBox(height: 8),
-        Text(house.description, style: const TextStyle(fontSize: 18)),
+        Text(house.description, style: const TextStyle(fontSize: 16)),
       ],
     );
   }
@@ -412,7 +427,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Équipements:',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
         Divider(
           color: Colors.grey[200],
         ),

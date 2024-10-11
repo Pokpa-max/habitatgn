@@ -94,6 +94,9 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'HabitatGN',
       theme: ThemeData(
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: primaryColor, // Couleur du curseur
+        ),
         primarySwatch: Colors.cyan,
         scrollbarTheme: ScrollbarThemeData(
           thumbColor: WidgetStateProperty.all(primaryColor),

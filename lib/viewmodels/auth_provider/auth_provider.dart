@@ -29,6 +29,22 @@ class AuthViewModel extends ChangeNotifier {
     _getCurrentUser();
   }
 
+  //reset password
+  Future<void> resetPassword(BuildContext context, String email) async {
+    try {
+      await _read.read(authServiceProvider).resetPassword(email);
+      showErrorMessage(
+          context, 'Un email de rót de mot de passe a été envoyé.');
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        showErrorMessage(context, 'Cet utilisateur n\'existe pas.');
+      } else {
+        showErrorMessage(
+            context, 'Une erreur est survenue. Veuillez réessayer.');
+      }
+    }
+  }
+
   Future<void> signInWithEmailAndPassword(
       BuildContext context, String email, String password) async {
     _setLoading(true);
@@ -101,17 +117,12 @@ class AuthViewModel extends ChangeNotifier {
     String email,
     String password,
     String displayName,
-    String phoneNumber,
   ) async {
     try {
       _setCreatingAccount(true);
-      final User? user =
-          await _read.read(authServiceProvider).createUserWithEmailAndPassword(
-                email,
-                password,
-                displayName,
-                phoneNumber,
-              );
+      final User? user = await _read
+          .read(authServiceProvider)
+          .createUserWithEmailAndPassword(email, password, displayName);
       if (user != null) {
         await user.reload();
         _user = _read.watch(authServiceProvider).getCurrentUser();
@@ -189,6 +200,13 @@ class AuthViewModel extends ChangeNotifier {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => CreateAccountPage()),
+    );
+  }
+
+  void navigateToLogin(BuildContext context) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
     );
   }
 

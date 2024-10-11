@@ -17,6 +17,11 @@ class AuthService {
     return user != null;
   }
 
+//reset password
+  Future<void> resetPassword(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
+  }
+
   // Authentification avec Facebook
   Future<User?> signInWithFacebook() async {
     try {
@@ -99,8 +104,11 @@ class AuthService {
   }
 
   // Création de compte par email et mot de passe
-  Future<User?> createUserWithEmailAndPassword(String email, String password,
-      String displayName, String? phoneNumber) async {
+  Future<User?> createUserWithEmailAndPassword(
+    String email,
+    String password,
+    String displayName,
+  ) async {
     UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
@@ -114,7 +122,6 @@ class AuthService {
       await _firestore.collection('users').doc(user!.uid).set({
         'displayName': displayName,
         'email': email,
-        'phoneNumber': phoneNumber ?? '',
         'createdAt': Timestamp.now(),
         'updatedAt': Timestamp.now(),
       });
