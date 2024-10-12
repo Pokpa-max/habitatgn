@@ -46,8 +46,11 @@ class DashbordViewModel extends ChangeNotifier {
   List<House> _recentHouses = [];
   List<House> get recentHouses => _recentHouses;
 
-  final List<House> _houses = [];
+  List<House> _houses = [];
   List<House> get houses => _houses;
+
+  List<House> _housesFilter = [];
+  List<House> get housefilter => _housesFilter;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -71,8 +74,12 @@ class DashbordViewModel extends ChangeNotifier {
   // Ajout de la méthode resetHouses
   void resetHouses() async {
     _houses.clear();
+    _housesFilter.clear();
+    _housesFilter.clear();
     _lastDocument = null;
+    // elements ajoutes
     _hasMore = true;
+    _isLoading = false;
   }
 
   Future<void> fetchRecentHouses() async {
@@ -111,6 +118,43 @@ class DashbordViewModel extends ChangeNotifier {
         .fetchAdvertisementDatas();
     _isAdverstingLoading = false;
     notifyListeners();
+  }
+
+  //  house filter in firebase
+  // Future<List<House>> filterHousesFromFirebase(String housingType) async {
+  //   return await _houseService.searchHouses(housingType);
+  // }
+
+  Future<void> fetchFilteredHouses({
+    // required double minPrice,
+    // required double maxPrice,
+    // required String needType,
+    required String propertyType,
+    // required String ville,
+    // required int bedrooms,
+  }) async {
+    print("voir ici⛪⛪⛪⛪⛪⛪⛪");
+    print(propertyType);
+
+    try {
+      if (isLoading) return;
+      _isLoading = true;
+
+      _housesFilter = await _houseService.fetchFilteredHouses(
+        // minPrice: minPrice,
+        // maxPrice: maxPrice,
+        // needType: needType,
+        propertyType: propertyType,
+        // ville: ville,
+        // bedrooms: bedrooms,
+      );
+
+      _isLoading = false;
+      // _hasMore = _houses.isNotEmpty;
+      notifyListeners();
+    } catch (e) {
+      // Gérer les erreurs ici
+    }
   }
 
   void navigateToHousingDetailPage(BuildContext context, String houseId) {
@@ -195,3 +239,16 @@ class DashbordViewModel extends ChangeNotifier {
     }).toList();
   }
 }
+
+
+
+
+
+
+// class DashbordViewModel extends StateNotifier<DashbordState> {
+//   final DashbordService _dashbordService;
+
+//   DashbordViewModel(this._dashbordService) : super(DashbordState.initial());
+
+  
+// }

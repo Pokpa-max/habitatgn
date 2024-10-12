@@ -177,7 +177,7 @@ class CreateAccountPage extends ConsumerWidget {
                       child: authProvider.isCreatingAccount
                           ? const SpinKitFadingCircle(
                               color: primaryColor,
-                              size: 30.0,
+                              size: 20.0,
                             )
                           : const Text(
                               'Créez votre compte',

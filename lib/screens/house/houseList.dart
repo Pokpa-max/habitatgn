@@ -78,6 +78,11 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                   _bedrooms = bedrooms;
                   _hasChanges = hasChanges;
                 });
+                // to do apply filter from firebase
+
+                ref
+                    .read(dashbordViewModelProvider.notifier)
+                    .fetchFilteredHouses(propertyType: propertyType);
               },
             ),
           ),
@@ -98,6 +103,7 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
     // afficher tous les
 
     final houseListViewModel = ref.watch(dashbordViewModelProvider);
+    List<House> filteredHouses = [];
 
     final lowerCaseQuery = _searchQuery.trim().toLowerCase();
     final lowerCaseZone = _ville.toLowerCase();
@@ -142,9 +148,23 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
               (_needType == 'Tous' || house.bedrooms == _bedrooms));
     }
 
-    final filteredHouses = houseListViewModel.houses.where((house) {
-      return matchesQuery(house) && matchesFilter(house);
-    }).toList();
+    if (_hasChanges) {
+      filteredHouses = houseListViewModel.housefilter;
+    } else {
+      filteredHouses = houseListViewModel.houses.where((house) {
+        return matchesQuery(house) && matchesFilter(house);
+      }).toList();
+    }
+
+//     // Use housefilter if it's not empty, otherwise use houses
+//     final housesToFilter = houseListViewModel.housefilter.isNotEmpty
+//         ? houseListViewModel.housefilter
+//         : houseListViewModel.houses;
+
+// // Apply the matchesQuery and matchesFilter functions on the selected list
+//     final filteredHouses = housesToFilter.where((house) {
+//       return matchesQuery(house) && matchesFilter(house);
+//     }).toList();
 
     double screenHeight = MediaQuery.of(context).size.height;
 
@@ -470,7 +490,7 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
           },
           decoration: InputDecoration(
             filled: true,
-            labelStyle: TextStyle(color: Colors.black54, fontSize: 14),
+            labelStyle: const TextStyle(color: Colors.black54, fontSize: 14),
             fillColor: Colors.grey.withOpacity(0.2),
             hintText: 'Trouvez ici votre maison, appartement, ou terrain...',
             prefixIcon: const Icon(Icons.search, color: Colors.grey),
@@ -587,16 +607,16 @@ class _FilterModalState extends State<FilterModal> {
                   value: 'Tous',
                   label: Text(
                     'Tous',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 15),
                   ),
                 ),
                 ButtonSegment(
                   value: 'Louer',
-                  label: Text('Louer', style: TextStyle(fontSize: 16)),
+                  label: Text('Louer', style: TextStyle(fontSize: 15)),
                 ),
                 ButtonSegment(
                   value: 'Acheter',
-                  label: Text('Acheter', style: TextStyle(fontSize: 16)),
+                  label: Text('Acheter', style: TextStyle(fontSize: 15)),
                 ),
               ],
               selected: <String>{_needType},
@@ -831,6 +851,9 @@ class _FilterModalState extends State<FilterModal> {
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: primaryColor),
                       ),
+                      contentPadding: EdgeInsets.symmetric(
+                          vertical: 10.0,
+                          horizontal: 10.0), // Réduit le padding
                     ),
                     keyboardType: TextInputType.number,
                   ),
@@ -847,6 +870,9 @@ class _FilterModalState extends State<FilterModal> {
                       focusedBorder: OutlineInputBorder(
                         borderSide: BorderSide(color: primaryColor),
                       ),
+                      contentPadding: EdgeInsets.symmetric(
+                          vertical: 10.0,
+                          horizontal: 10.0), // Réduit le padding
                     ),
                     keyboardType: TextInputType.number,
                   ),

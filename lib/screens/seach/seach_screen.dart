@@ -609,7 +609,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         icon: searchState.isLoading
             ? const SpinKitFadingCircle(
                 color: Colors.white,
-                size: 40.0,
+                size: 20.0,
               )
             : const Icon(
                 Icons.search,

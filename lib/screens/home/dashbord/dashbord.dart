@@ -49,27 +49,20 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
   Widget build(BuildContext context) {
     final viewModel = ref.watch(dashbordViewModelProvider);
 
-    final filteredHouses = viewModel.recentHouses.where((house) {
-      final lowerCaseQuery = _searchQuery.toLowerCase();
+    final filteredHouses = viewModel.recentHouses;
 
-      return house.houseType!.label.toLowerCase().contains(lowerCaseQuery) ||
-          house.description.toLowerCase().contains(lowerCaseQuery) ||
-          house.address?.commune["label"]
-              .toLowerCase()
-              .contains(lowerCaseQuery) ||
-          house.address?.town["label"].toLowerCase().contains(lowerCaseQuery) ||
-          house.address!.zone.toLowerCase().contains(lowerCaseQuery);
-    }).toList();
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        toolbarHeight: screenHeight * 0.12,
-        title: _buildSearchBar(),
+        toolbarHeight: screenHeight * 0.10,
+        title: _buildSearchBar(
+          viewModel,
+        ),
         backgroundColor: primaryColor,
       ),
-      body: viewModel.isAdverstingLoading
+      body: viewModel.isAdverstingLoading || viewModel.isRecentLoading
           ? _buildSkeletonLoader()
           : SingleChildScrollView(
               controller: _scrollController,
@@ -84,11 +77,11 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                         : AdvertisementCarousel(
                             adverstingData: viewModel.advertisementData),
                   ),
-                  const SizedBox(height: 20),
-                  _buildSectionTitle('Nos Services'),
-                  const SizedBox(height: 8),
-                  _buildServicesSection(ref, context),
                   const SizedBox(height: 10),
+                  _buildSectionTitle('Nos Services'),
+                  const SizedBox(height: 5),
+                  _buildServicesSection(ref, context),
+                  const SizedBox(height: 5),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -100,7 +93,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
                         child: const Text(
                           'Voir tout',
                           style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: primaryColor),
                         ),
@@ -235,49 +228,24 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(
+    DashbordViewModel viewModel,
+  ) {
     return Column(
       children: [
-        const Center(
-          child: Text(
-            "Bienvenue sur HABITATGN",
-            style: TextStyle(color: Colors.white, fontSize: 20, shadows: [
-              Shadow(
-                blurRadius: 10.0,
-                color: Colors.black26,
-                offset: Offset(2, 2),
-              ),
-            ]),
-          ),
-        ),
-        const SizedBox(height: 10),
         TextField(
           controller: _searchController,
           autofocus: false,
-          onChanged: (query) {
-            setState(() {
-              _searchQuery = query.trim();
-            });
-            _performSearch();
+          onTap: () {
+            viewModel.navigateToHouseListPage(context);
           },
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
             labelStyle: const TextStyle(color: Colors.black54, fontSize: 10),
-            hintText: 'Trouvez ici votre maison, appartement, ...',
+            hintText: 'Trouvez ici votre logement selon vos besoins ...',
             prefixIcon: const Icon(Icons.search, color: Colors.black54),
-            suffixIcon: _searchQuery.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      setState(() {
-                        _searchController.clear();
-                        _searchQuery = '';
-                      });
-                      _performSearch(); // Optionnel : Réinitialisez les résultats de la recherche
-                    },
-                  )
-                : null,
+
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide.none,
@@ -289,10 +257,6 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
         const SizedBox(height: 10),
       ],
     );
-  }
-
-  void _performSearch() {
-    setState(() {});
   }
 
   Widget _buildSectionTitle(String title) {
@@ -373,120 +337,112 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
         ? houseCategoryListEmpty(
             title: 'Aucun résultat trouvé',
           )
-        : viewModel.isRecentLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: primaryColor))
-            : SizedBox(
-                height: screenHeight * 0.35,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: houses.length,
-                  itemBuilder: (context, index) {
-                    final house = houses[index];
-                    return InkWell(
-                      onTap: () {
-                        viewModel.navigateToHousingDetailPage(
-                            context, house.id);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Card(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          elevation: 0.5,
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(color: lightPrimary2)),
-                          child: Container(
-                            width: screenHeight * 0.35,
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(3),
-                                      child: CustomCachedNetworkImage(
-                                        imageUrl: house.imageUrl,
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                      ),
-                                    ),
+        : SizedBox(
+            height: screenHeight * 0.35,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: houses.length,
+              itemBuilder: (context, index) {
+                final house = houses[index];
+                return InkWell(
+                  onTap: () {
+                    viewModel.navigateToHousingDetailPage(context, house.id);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Card(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      elevation: 0.5,
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: lightPrimary2)),
+                      child: Container(
+                        width: screenHeight * 0.35,
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(3),
+                                  child: CustomCachedNetworkImage(
+                                    imageUrl: house.imageUrl,
+                                    width: double.infinity,
+                                    height: double.infinity,
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                            '${house.houseType?.label ?? ''} - '
-                                                .toUpperCase(),
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold)),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                            house.offerType["label"]
-                                                .toUpperCase(),
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold)),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
                                 Row(
                                   children: [
-                                    const Icon(
-                                      Icons.location_on,
-                                      color: Colors.grey,
-                                    ),
-                                    const SizedBox(width: 5),
                                     Text(
-                                      ' ${house.address!.town["label"]} / ${house.address!.commune["label"]}',
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.attach_money_outlined,
-                                        color: Colors.grey),
-                                    Expanded(
-                                      child: FormattedPrice(
-                                        color: Colors.black,
-                                        price: house.price,
-                                        size: 16,
-                                        suffix:
-                                            house.offerType["value"] == "ALouer"
-                                                ? '/mois'
-                                                : '',
-                                      ),
-                                    ),
+                                        '${house.houseType?.label ?? ''} - '
+                                            .toUpperCase(),
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold)),
+                                    const SizedBox(width: 8),
+                                    Text(house.offerType["label"].toUpperCase(),
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold)),
                                   ],
                                 ),
                               ],
                             ),
-                          ),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.location_on,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  ' ${house.address!.town["label"]} / ${house.address!.commune["label"]}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                const Icon(Icons.attach_money_outlined,
+                                    color: Colors.grey),
+                                Expanded(
+                                  child: FormattedPrice(
+                                    color: Colors.black,
+                                    price: house.price,
+                                    size: 16,
+                                    suffix: house.offerType["value"] == "ALouer"
+                                        ? '/mois'
+                                        : '',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                    );
-                  },
-                ),
-              );
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
   }
 
   Widget _buildViewAllButton(DashbordViewModel viewModel) {

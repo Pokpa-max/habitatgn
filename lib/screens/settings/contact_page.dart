@@ -146,8 +146,8 @@ class _ContactPageState extends ConsumerState<ContactPage> {
                 ),
                 child: contactState is AsyncLoading
                     ? const SpinKitFadingCircle(
-                        color: Colors.white,
-                        size: 25.0, // Smaller size to fit within the button
+                        color: primaryColor,
+                        size: 20.0, // Smaller size to fit within the button
                       )
                     : const Text('Envoyer'),
               ),

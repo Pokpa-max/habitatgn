@@ -157,7 +157,7 @@ class _ForgotUserPasswordScreenState
                         child: isLoading
                             ? const SpinKitFadingCircle(
                                 color: primaryColor,
-                                size: 30.0,
+                                size: 20.0,
                               )
                             : const Text(
                                 'Réinitialiser le mot de passe',

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:habitatgn/models/house_result_model.dart';
@@ -75,6 +77,42 @@ class HouseService {
       print('Error fetching houses: $e');
       return [];
     }
+  }
+
+  Future<List<House>> fetchFilteredHouses({
+    // required double minPrice,
+    // required double maxPrice,
+    // required String needType,
+    required String propertyType,
+    // required String ville,
+    // required int bedrooms,
+  }) async {
+    Query query = _firestore.collection('houses');
+
+    // Applique les filtres un par un
+    // if (minPrice > 0) {
+    //   query = query.where('price', isGreaterThanOrEqualTo: minPrice);
+    // }
+    // if (maxPrice < double.infinity) {
+    //   query = query.where('price', isLessThanOrEqualTo: maxPrice);
+    // }
+    // if (needType != 'Tous') {
+    //   query = query.where('offerType.value',
+    //       isEqualTo: needType == "Acheter" ? "AVendre" : "ALouer");
+    // }
+    if (propertyType != 'Tous') {
+      query = query.where('houseType.label', isEqualTo: propertyType);
+    }
+    // if (ville.isNotEmpty) {
+    //   query = query.where('address.town.label', isEqualTo: ville);
+    // }
+    // if (bedrooms > 0) {
+    //   query = query.where('bedrooms', isEqualTo: bedrooms);
+    // }
+
+    // Exécute la requête
+    final querySnapshot = await query.get();
+    return querySnapshot.docs.map((doc) => House.fromFirestore(doc)).toList();
   }
 
   Future<void> addFavorite(String houseId) async {

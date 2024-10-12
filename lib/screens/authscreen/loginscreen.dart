@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -9,6 +11,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:habitatgn/viewmodels/auth_provider/auth_provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'dart:math' as math;
 
 class LoginScreen extends ConsumerWidget {
   final TextEditingController emailController = TextEditingController();
@@ -134,7 +137,7 @@ class LoginScreen extends ConsumerWidget {
                                   if (emailController.text.isEmpty ||
                                       passwordController.text.isEmpty) {
                                     authViewModel.showErrorMessage(
-                                      color: primaryColor,
+                                      color: Colors.blueGrey,
                                       context,
                                       "Veuillez remplir tous les champs.",
                                     );
@@ -154,14 +157,14 @@ class LoginScreen extends ConsumerWidget {
                                   await authViewModel
                                       .signInWithEmailAndPassword(
                                     context,
-                                    emailController.text,
+                                    emailController.text.trim(),
                                     passwordController.text,
                                   );
                                 },
                           label: isLoading
                               ? const SpinKitFadingCircle(
                                   color: primaryColor,
-                                  size: 30.0,
+                                  size: 20.0,
                                 )
                               : const Text(
                                   'Se connecter',
@@ -353,23 +356,78 @@ class HousingSearchIcon extends StatelessWidget {
       width: size,
       height: size,
       child: CustomPaint(
-        painter: _HousingSearchIconPainter(color: color),
+        painter: _HousingSearchIconPainter(
+            mainColor: color, toolColor: Colors.yellow[700]!),
       ),
     );
   }
 }
 
-class _HousingSearchIconPainter extends CustomPainter {
-  final Color color;
+// class _HousingSearchIconPainter extends CustomPainter {
+//   final Color color;
 
-  _HousingSearchIconPainter({required this.color});
+//   _HousingSearchIconPainter({required this.color});
+
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     final Paint paint = Paint()
+//       ..color = color
+//       ..style = PaintingStyle.stroke
+//       ..strokeWidth = size.width / 12;
+
+//     // Dessiner la maison
+//     final Path housePath = Path()
+//       ..moveTo(size.width * 0.2, size.height * 0.5)
+//       ..lineTo(size.width * 0.2, size.height * 0.8)
+//       ..lineTo(size.width * 0.8, size.height * 0.8)
+//       ..lineTo(size.width * 0.8, size.height * 0.5)
+//       ..lineTo(size.width * 0.5, size.height * 0.3)
+//       ..close();
+
+//     canvas.drawPath(housePath, paint);
+
+//     // Dessiner la loupe
+//     final double magnifierCenter = size.width * 0.7;
+//     final double magnifierRadius = size.width * 0.2;
+//     canvas.drawCircle(
+//       Offset(magnifierCenter, magnifierCenter),
+//       magnifierRadius,
+//       paint,
+//     );
+
+//     // Dessiner le manche de la loupe
+//     canvas.drawLine(
+//       Offset(magnifierCenter + magnifierRadius * 0.7,
+//           magnifierCenter + magnifierRadius * 0.7),
+//       Offset(size.width * 0.95, size.height * 0.95),
+//       paint,
+//     );
+//   }
+
+//   @override
+//   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+// }
+
+class _HousingSearchIconPainter extends CustomPainter {
+  final Color mainColor;
+  final Color toolColor;
+
+  _HousingSearchIconPainter({
+    required this.mainColor,
+    this.toolColor = Colors.yellow,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..color = color
+    final Paint mainPaint = Paint()
+      ..color = mainColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width / 12;
+      ..strokeWidth = size.width / 20;
+
+    final Paint toolPaint = Paint()
+      ..color = toolColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width / 20;
 
     // Dessiner la maison
     final Path housePath = Path()
@@ -379,8 +437,7 @@ class _HousingSearchIconPainter extends CustomPainter {
       ..lineTo(size.width * 0.8, size.height * 0.5)
       ..lineTo(size.width * 0.5, size.height * 0.3)
       ..close();
-
-    canvas.drawPath(housePath, paint);
+    canvas.drawPath(housePath, mainPaint);
 
     // Dessiner la loupe
     final double magnifierCenter = size.width * 0.7;
@@ -388,7 +445,7 @@ class _HousingSearchIconPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(magnifierCenter, magnifierCenter),
       magnifierRadius,
-      paint,
+      mainPaint,
     );
 
     // Dessiner le manche de la loupe
@@ -396,7 +453,28 @@ class _HousingSearchIconPainter extends CustomPainter {
       Offset(magnifierCenter + magnifierRadius * 0.7,
           magnifierCenter + magnifierRadius * 0.7),
       Offset(size.width * 0.95, size.height * 0.95),
-      paint,
+      mainPaint,
+    );
+
+    // Dessiner l'outil de réparation (marteau) en jaune
+    final double toolStartX = size.width * 0.25;
+    final double toolStartY = size.height * 0.85;
+
+    // Manche du marteau
+    canvas.drawLine(
+      Offset(toolStartX, toolStartY),
+      Offset(toolStartX, toolStartY - size.height * 0.08),
+      toolPaint,
+    );
+
+    // Tête du marteau
+    canvas.drawRect(
+      Rect.fromCenter(
+        center: Offset(toolStartX, toolStartY - size.height * 0.1),
+        width: size.width * 0.08,
+        height: size.height * 0.04,
+      ),
+      toolPaint,
     );
   }
 
