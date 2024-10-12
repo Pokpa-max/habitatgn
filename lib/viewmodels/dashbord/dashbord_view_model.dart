@@ -126,27 +126,24 @@ class DashbordViewModel extends ChangeNotifier {
   // }
 
   Future<void> fetchFilteredHouses({
-    // required double minPrice,
-    // required double maxPrice,
-    // required String needType,
+    required double minPrice,
+    required double maxPrice,
+    required String needType,
     required String propertyType,
-    // required String ville,
-    // required int bedrooms,
+    required String ville,
+    required int bedrooms,
   }) async {
-    print("voir ici⛪⛪⛪⛪⛪⛪⛪");
-    print(propertyType);
-
     try {
       if (isLoading) return;
       _isLoading = true;
 
       _housesFilter = await _houseService.fetchFilteredHouses(
-        // minPrice: minPrice,
-        // maxPrice: maxPrice,
-        // needType: needType,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        needType: needType,
         propertyType: propertyType,
-        // ville: ville,
-        // bedrooms: bedrooms,
+        ville: ville,
+        bedrooms: bedrooms,
       );
 
       _isLoading = false;

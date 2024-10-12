@@ -79,38 +79,121 @@ class HouseService {
     }
   }
 
+  // Future<List<House>> fetchFilteredHouses({
+  //   required double minPrice,
+  //   required double maxPrice,
+  //   required String needType,
+  //   required String propertyType,
+  //   required String ville,
+  //   required int bedrooms,
+  // }) async {
+  //   print(
+  //       'minPrice: $minPrice, maxPrice: $maxPrice, needType: $needType, propertyType: $propertyType, ville: $ville, bedrooms: $bedrooms');
+  //   Query query = _firestore.collection('houses');
+
+  //   // Applique les filtres un par un
+  //   if (minPrice > 0) {
+  //     query = query.where('price', isGreaterThanOrEqualTo: minPrice.toInt());
+  //   }
+  //   if (maxPrice < double.infinity) {
+  //     query = query.where('price', isLessThanOrEqualTo: maxPrice.toInt());
+  //   }
+  //   if (needType != 'Tous') {
+  //     query = query.where('offerType.value',
+  //         isEqualTo: needType == "Acheter" ? "Vendre" : "Louer");
+  //   }
+  //   if (propertyType != 'Tous') {
+  //     query =
+  //         query.where('houseType.value', isEqualTo: propertyType.toLowerCase());
+  //   }
+  //   // if (ville.isNotEmpty) {
+  //   //   query = query.where('address.town.label', isEqualTo: ville.toLowerCase());
+  //   // }
+  //   // if (ville.isNotEmpty) {
+  //   //   query =
+  //   //       query.where('address.commune.label', isEqualTo: ville.toLowerCase());
+  //   // }
+
+  //   if (bedrooms > 0) {
+  //     query = query.where('bedrooms', isEqualTo: bedrooms);
+  //   }
+
+  //   // Exécute la requête
+  //   final querySnapshot = await query.get();
+  //   return querySnapshot.docs.map((doc) => House.fromFirestore(doc)).toList();
+  // }
+
+// nouvelle forme de recuperation des logements
+
+//😋😋😋😋😋😋😋😋😋 to do : town est pour tous et commune est pour conakry
+
   Future<List<House>> fetchFilteredHouses({
-    // required double minPrice,
-    // required double maxPrice,
-    // required String needType,
+    required double minPrice,
+    required double maxPrice,
+    required String needType,
     required String propertyType,
-    // required String ville,
-    // required int bedrooms,
+    required String ville,
+    required int bedrooms,
   }) async {
+    print(
+        'minPrice: $minPrice, maxPrice: $maxPrice, needType: $needType, propertyType: $propertyType, ville: $ville, bedrooms: $bedrooms');
     Query query = _firestore.collection('houses');
 
     // Applique les filtres un par un
-    // if (minPrice > 0) {
-    //   query = query.where('price', isGreaterThanOrEqualTo: minPrice);
-    // }
-    // if (maxPrice < double.infinity) {
-    //   query = query.where('price', isLessThanOrEqualTo: maxPrice);
-    // }
-    // if (needType != 'Tous') {
-    //   query = query.where('offerType.value',
-    //       isEqualTo: needType == "Acheter" ? "AVendre" : "ALouer");
-    // }
-    if (propertyType != 'Tous') {
-      query = query.where('houseType.label', isEqualTo: propertyType);
+    if (minPrice > 0) {
+      query = query.where('price', isGreaterThanOrEqualTo: minPrice.toInt());
     }
-    // if (ville.isNotEmpty) {
-    //   query = query.where('address.town.label', isEqualTo: ville);
-    // }
-    // if (bedrooms > 0) {
-    //   query = query.where('bedrooms', isEqualTo: bedrooms);
-    // }
+    if (maxPrice < double.infinity) {
+      query = query.where('price', isLessThanOrEqualTo: maxPrice.toInt());
+    }
+    if (needType != 'Tous') {
+      query = query.where('offerType.value',
+          isEqualTo: needType == "Acheter" ? "Vendre" : "Louer");
+    }
+    if (propertyType != 'Tous') {
+      query =
+          query.where('houseType.value', isEqualTo: propertyType.toLowerCase());
+    }
 
-    // Exécute la requête
+    // Gestion du filtre par ville
+    if (ville.isNotEmpty) {
+      query = query.where('address.town.value', isEqualTo: ville.toLowerCase());
+
+      // Exécute la requête pour la ville
+      final villeTownQuerySnapshot = await query.get();
+      List<House> houses = villeTownQuerySnapshot.docs
+          .map((doc) => House.fromFirestore(doc))
+          .toList();
+
+      // Si aucun résultat trouvé, essaie avec 'address.commune.label'
+      if (houses.isEmpty) {
+        query = _firestore.collection('houses');
+        // Réapplique tous les filtres précédents
+        if (minPrice > 0) {
+          query =
+              query.where('price', isGreaterThanOrEqualTo: minPrice.toInt());
+        }
+        if (maxPrice < double.infinity) {
+          query = query.where('price', isLessThanOrEqualTo: maxPrice.toInt());
+        }
+        if (needType != 'Tous') {
+          query = query.where('offerType.value',
+              isEqualTo: needType == "Acheter" ? "Vendre" : "Louer");
+        }
+        if (propertyType != 'Tous') {
+          query = query.where('houseType.value',
+              isEqualTo: propertyType.toLowerCase());
+        }
+        query = query.where('address.commune.value',
+            isEqualTo: ville.toLowerCase());
+      }
+    }
+
+    if (bedrooms > 0) {
+      query = query.where('bedrooms', isEqualTo: bedrooms);
+    }
+
+    // Exécute la requête finale
     final querySnapshot = await query.get();
     return querySnapshot.docs.map((doc) => House.fromFirestore(doc)).toList();
   }

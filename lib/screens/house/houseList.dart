@@ -80,9 +80,19 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                 });
                 // to do apply filter from firebase
 
+                // affiche tous
+                print(
+                    "minPrice ⛪⛪😋😋😋: $_minPrice, maxPrice: $_maxPrice, needType: $_needType, propertyType: $_propertyType, ville: $_ville, bedrooms: $_bedrooms");
+
                 ref
                     .read(dashbordViewModelProvider.notifier)
-                    .fetchFilteredHouses(propertyType: propertyType);
+                    .fetchFilteredHouses(
+                        propertyType: propertyType,
+                        ville: ville,
+                        minPrice: minPrice,
+                        maxPrice: maxPrice,
+                        needType: needType,
+                        bedrooms: bedrooms);
               },
             ),
           ),
@@ -155,16 +165,6 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
         return matchesQuery(house) && matchesFilter(house);
       }).toList();
     }
-
-//     // Use housefilter if it's not empty, otherwise use houses
-//     final housesToFilter = houseListViewModel.housefilter.isNotEmpty
-//         ? houseListViewModel.housefilter
-//         : houseListViewModel.houses;
-
-// // Apply the matchesQuery and matchesFilter functions on the selected list
-//     final filteredHouses = housesToFilter.where((house) {
-//       return matchesQuery(house) && matchesFilter(house);
-//     }).toList();
 
     double screenHeight = MediaQuery.of(context).size.height;
 
@@ -607,16 +607,16 @@ class _FilterModalState extends State<FilterModal> {
                   value: 'Tous',
                   label: Text(
                     'Tous',
-                    style: TextStyle(fontSize: 15),
+                    style: TextStyle(fontSize: 14),
                   ),
                 ),
                 ButtonSegment(
                   value: 'Louer',
-                  label: Text('Louer', style: TextStyle(fontSize: 15)),
+                  label: Text('Louer', style: TextStyle(fontSize: 14)),
                 ),
                 ButtonSegment(
                   value: 'Acheter',
-                  label: Text('Acheter', style: TextStyle(fontSize: 15)),
+                  label: Text('Acheter', style: TextStyle(fontSize: 14)),
                 ),
               ],
               selected: <String>{_needType},
@@ -646,8 +646,8 @@ class _FilterModalState extends State<FilterModal> {
                 });
               },
             ),
-            const SizedBox(height: 16),
-            const Text("Type de propriété", style: TextStyle(fontSize: 18)),
+            const SizedBox(height: 15),
+            const Text("Type de propriété", style: TextStyle(fontSize: 16)),
             const SizedBox(height: 16),
             Wrap(
               spacing: 5,
@@ -660,7 +660,7 @@ class _FilterModalState extends State<FilterModal> {
                   label: Text(
                     'Tous',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       color:
                           _propertyType == 'Tous' ? Colors.white : Colors.black,
                     ),
@@ -680,7 +680,7 @@ class _FilterModalState extends State<FilterModal> {
                   label: Text(
                     'Villa',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       color: _propertyType == 'Villa'
                           ? Colors.white
                           : Colors.black,
@@ -700,7 +700,7 @@ class _FilterModalState extends State<FilterModal> {
                   label: Text(
                     'Maison',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       color: _propertyType == 'Maison'
                           ? Colors.white
                           : Colors.black,
@@ -720,7 +720,7 @@ class _FilterModalState extends State<FilterModal> {
                   label: Text(
                     'Appartement',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       color: _propertyType == 'Appartement'
                           ? Colors.white
                           : Colors.black,
@@ -740,7 +740,7 @@ class _FilterModalState extends State<FilterModal> {
                   label: Text(
                     'Studio',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       color: _propertyType == 'Studio'
                           ? Colors.white
                           : Colors.black,
@@ -760,7 +760,7 @@ class _FilterModalState extends State<FilterModal> {
                   label: Text(
                     'Hôtel',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       color: _propertyType == 'Hôtel'
                           ? Colors.white
                           : Colors.black,
@@ -780,7 +780,7 @@ class _FilterModalState extends State<FilterModal> {
                   label: Text(
                     'Terrain',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       color: _propertyType == 'Terrain'
                           ? Colors.white
                           : Colors.black,
@@ -800,7 +800,7 @@ class _FilterModalState extends State<FilterModal> {
                   label: Text(
                     'Commerce',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       color: _propertyType == 'commerce'
                           ? Colors.white
                           : Colors.black,
@@ -820,7 +820,7 @@ class _FilterModalState extends State<FilterModal> {
                   label: Text(
                     'Bureau',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       color: _propertyType == 'Bureau'
                           ? Colors.white
                           : Colors.black,

@@ -21,8 +21,6 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen> {
   final TextEditingController _searchController = TextEditingController();
   late final WebViewController _controller;
 
-  String _searchQuery = '';
-
   @override
   void initState() {
     super.initState();
