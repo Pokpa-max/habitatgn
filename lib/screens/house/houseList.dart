@@ -78,17 +78,12 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                   _bedrooms = bedrooms;
                   _hasChanges = hasChanges;
                 });
-                // to do apply filter from firebase
-
-                // affiche tous
-                print(
-                    "minPrice ⛪⛪😋😋😋: $_minPrice, maxPrice: $_maxPrice, needType: $_needType, propertyType: $_propertyType, ville: $_ville, bedrooms: $_bedrooms");
-
+                // afficher les filtres
                 ref
                     .read(dashbordViewModelProvider.notifier)
                     .fetchFilteredHouses(
-                        propertyType: propertyType,
-                        ville: ville,
+                        propertyType: propertyType.toLowerCase(),
+                        ville: ville.toLowerCase().trim(),
                         minPrice: minPrice,
                         maxPrice: maxPrice,
                         needType: needType,
@@ -880,28 +875,35 @@ class _FilterModalState extends State<FilterModal> {
               ],
             ),
             const SizedBox(height: 16),
-            const Text("Nombre de chambres", style: TextStyle(fontSize: 18)),
-            Row(
-              children: [
-                const Text("Chambres", style: TextStyle(fontSize: 16)),
-                IconButton(
-                  icon: const Icon(Icons.remove),
-                  onPressed: () => setState(() {
-                    _bedrooms = _bedrooms > 0
-                        ? _bedrooms - 1
-                        : 0; // Empêche d'aller en dessous de 0
-                  }),
-                ),
-                Text(_bedrooms.toString(),
-                    style: const TextStyle(fontSize: 18)),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () => setState(() {
-                    _bedrooms++; // Incrémente la valeur
-                  }),
-                ),
-              ],
-            ),
+            if (_propertyType != 'Terrain')
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Nombre de chambres",
+                      style: TextStyle(fontSize: 18)),
+                  Row(
+                    children: [
+                      const Text("Chambres", style: TextStyle(fontSize: 16)),
+                      IconButton(
+                        icon: const Icon(Icons.remove),
+                        onPressed: () => setState(() {
+                          _bedrooms = _bedrooms > 0
+                              ? _bedrooms - 1
+                              : 0; // Empêche d'aller en dessous de 0
+                        }),
+                      ),
+                      Text(_bedrooms.toString(),
+                          style: const TextStyle(fontSize: 18)),
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        onPressed: () => setState(() {
+                          _bedrooms++; // Incrémente la valeur
+                        }),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
