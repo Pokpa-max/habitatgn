@@ -34,7 +34,10 @@ class LoginScreen extends ConsumerWidget {
 
     return Scaffold(
       body: Container(
-        color: primaryColor,
+        color: const Color.fromARGB(223, 0, 30, 40),
+        // lightPrimary,
+        // lightPrimary2,
+        // const Color.fromARGB(223, 1, 34, 44),
         child: Center(
           child: SingleChildScrollView(
             padding:
@@ -45,10 +48,9 @@ class LoginScreen extends ConsumerWidget {
                 const SizedBox(
                     width: 100,
                     height: 100,
-                    child: HousingSearchIcon(
-                      size: 48.0,
-                      color: lightPrimary,
-                    )),
+                    child: HousingSearchIcon(size: 48.0, color: Colors.white
+                        //  lightPrimary,
+                        )),
                 const SizedBox(height: 20),
                 Text(
                   "HABITATGN",
@@ -61,14 +63,18 @@ class LoginScreen extends ConsumerWidget {
                 Text(
                   "Explorez,Découvrez,Vivez",
                   style: TextStyle(
-                    color: Colors.teal[100],
+                    color:
+                        //  primaryColor,
+                        Colors.teal[100],
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 30),
                 Card(
-                  color: Colors.white,
+                  color:
+                      // lightPrimary2,
+                      Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -121,23 +127,11 @@ class LoginScreen extends ConsumerWidget {
                           onPressed: isLoading
                               ? null
                               : () async {
-                                  // Vérification de la connectivité
-                                  final connectivityResult =
-                                      await Connectivity().checkConnectivity();
-                                  if (connectivityResult ==
-                                      ConnectivityResult.none) {
-                                    authViewModel.showErrorMessage(
-                                      context,
-                                      "Pas de connexion Internet. Veuillez vérifier votre connexion.",
-                                    );
-                                    return;
-                                  }
-
                                   // Validation des champs
                                   if (emailController.text.isEmpty ||
                                       passwordController.text.isEmpty) {
                                     authViewModel.showErrorMessage(
-                                      color: Colors.blueGrey,
+                                      color: primaryColor,
                                       context,
                                       "Veuillez remplir tous les champs.",
                                     );
@@ -146,20 +140,31 @@ class LoginScreen extends ConsumerWidget {
 
                                   // Validation de l'email
                                   if (!_isValidEmail(emailController.text)) {
-                                    authViewModel.showErrorMessage(
-                                      context,
-                                      "Veuillez entrer une adresse email valide.",
-                                    );
+                                    authViewModel.showErrorMessage(context,
+                                        "Veuillez entrer une adresse email valide.",
+                                        color: Colors.blueGrey);
                                     return;
                                   }
-
-                                  // Tentative de connexion
-                                  await authViewModel
-                                      .signInWithEmailAndPassword(
-                                    context,
-                                    emailController.text.trim(),
-                                    passwordController.text,
-                                  );
+                                  // Vérification de la connectivité
+                                  final List<ConnectivityResult>
+                                      connectivityResult = await (Connectivity()
+                                          .checkConnectivity());
+                                  // Vérifiez l'état de la connexion Internet
+                                  if ((connectivityResult
+                                      .contains(ConnectivityResult.none))) {
+                                    authViewModel.showErrorMessage(context,
+                                        'Connexion Internet indisponible.',
+                                        color: Colors.red);
+                                    return; // Ne continuez pas si aucune connexion n'est disponible
+                                  } else {
+                                    // Tentative de connexion
+                                    await authViewModel
+                                        .signInWithEmailAndPassword(
+                                      context,
+                                      emailController.text.trim(),
+                                      passwordController.text,
+                                    );
+                                  }
                                 },
                           label: isLoading
                               ? const SpinKitFadingCircle(
@@ -204,19 +209,21 @@ class LoginScreen extends ConsumerWidget {
                                   ? null
                                   : () async {
                                       try {
-                                        final connectivityResult =
-                                            await Connectivity()
-                                                .checkConnectivity();
-                                        if (connectivityResult ==
-                                            ConnectivityResult.none) {
+                                        // Vérification de la connectivité
+                                        final List<ConnectivityResult>
+                                            connectivityResult =
+                                            await (Connectivity()
+                                                .checkConnectivity());
+                                        if ((connectivityResult.contains(
+                                            ConnectivityResult.none))) {
                                           authViewModel.showErrorMessage(
-                                            context,
-                                            "Pas de connexion Internet. Veuillez vérifier votre connexion.",
-                                          );
-                                          return;
+                                              context,
+                                              'Connexion Internet indisponible.',
+                                              color: Colors.red);
+                                        } else {
+                                          await authViewModel
+                                              .signInWithFacebook(context);
                                         }
-                                        await authViewModel
-                                            .signInWithFacebook(context);
                                       } catch (e) {
                                         print(
                                             'Erreur de connexion Facebook: $e');
@@ -234,19 +241,22 @@ class LoginScreen extends ConsumerWidget {
                                   ? null
                                   : () async {
                                       try {
-                                        final connectivityResult =
-                                            await Connectivity()
-                                                .checkConnectivity();
-                                        if (connectivityResult ==
-                                            ConnectivityResult.none) {
+                                        // Vérification de la connectivité
+
+                                        final List<ConnectivityResult>
+                                            connectivityResult =
+                                            await (Connectivity()
+                                                .checkConnectivity());
+                                        if ((connectivityResult.contains(
+                                            ConnectivityResult.none))) {
                                           authViewModel.showErrorMessage(
-                                            context,
-                                            "Pas de connexion Internet. Veuillez vérifier votre connexion.",
-                                          );
-                                          return;
+                                              context,
+                                              'Connexion Internet indisponible.',
+                                              color: Colors.red);
+                                        } else {
+                                          await authViewModel
+                                              .signInWithGoogle(context);
                                         }
-                                        await authViewModel
-                                            .signInWithGoogle(context);
                                       } catch (e) {
                                         print('Erreur de connexion Google: $e');
                                       }
@@ -297,7 +307,7 @@ Widget _buildTextField({
             : null,
         border: InputBorder.none,
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       ),
     ),
   );
@@ -317,7 +327,7 @@ Widget _buildElevatedButton({
         borderRadius: BorderRadius.circular(30),
         side: BorderSide(color: borderColor),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 15),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       minimumSize: const Size(double.infinity, 0),
     ),
     child: label,

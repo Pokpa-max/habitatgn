@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitatgn/utils/appColors.dart';
@@ -53,7 +54,7 @@ class CreateAccountPage extends ConsumerWidget {
                     const Text(
                       "Créez votre compte",
                       style: TextStyle(
-                        fontSize: 25,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -152,24 +153,44 @@ class CreateAccountPage extends ConsumerWidget {
                               // Vérification si les mots de passe correspondent
                               if (passwordController.text !=
                                   confirmPasswordController.text) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                        'Les mots de passe ne correspondent pas.'),
-                                  ),
+                                authProvider.showErrorMessage(
+                                  context,
+                                  "Les mots de passe ne correspondent pas.",
                                 );
                                 return;
                               }
 
-                              await authProvider.createUserWithEmailAndPassword(
+                              // Validation de la longueur du mot de passe
+                              if (passwordController.text.length < 6) {
+                                authProvider.showErrorMessage(
                                   context,
-                                  emailController.text,
-                                  passwordController.text,
-                                  nameController.text);
+                                  "Le mot de passe doit contenir au moins 6 caractères.",
+                                );
+                                return;
+                              }
+
+                              final List<ConnectivityResult>
+                                  connectivityResult =
+                                  await (Connectivity().checkConnectivity());
+                              // Vérifiez l'état de la connexion Internet
+                              if ((connectivityResult
+                                  .contains(ConnectivityResult.none))) {
+                                authProvider.showErrorMessage(
+                                    context, 'Connexion Internet indisponible.',
+                                    color: Colors.red);
+                                return;
+                              } else {
+                                await authProvider
+                                    .createUserWithEmailAndPassword(
+                                        context,
+                                        emailController.text,
+                                        passwordController.text,
+                                        nameController.text);
+                              }
                             },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),
@@ -238,7 +259,7 @@ class CreateAccountPage extends ConsumerWidget {
               : null,
           border: InputBorder.none,
           contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
         ),
       ),
     );

@@ -6,6 +6,7 @@ import 'package:habitatgn/utils/appcolors.dart';
 import 'package:habitatgn/utils/skleton/house_list_skleton.dart';
 import 'package:habitatgn/utils/ui_element.dart';
 import 'package:habitatgn/viewmodels/housings/house_list.dart';
+import 'package:fluttertoast/fluttertoast.dart'; // Pour afficher un toast
 
 class FavoritesPage extends ConsumerStatefulWidget {
   const FavoritesPage({super.key});
@@ -26,6 +27,12 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
     await houseListViewModel.fetchFavorites();
   }
 
+  Future<void> _removeFavorite(House house) async {
+    final houseListViewModel = ref.read(houseListViewModelProvider.notifier);
+    await houseListViewModel
+        .toggleFavorite(house.id); // Assurez-vous d'avoir une méthode pour cela
+  }
+
   @override
   Widget build(BuildContext context) {
     final houseListViewModel = ref.watch(houseListViewModelProvider);
@@ -34,9 +41,16 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
       backgroundColor: lightPrimary,
       appBar: AppBar(
         centerTitle: true,
-        title: const CustomTitle(
-          text: "Mes coups de cœur",
-          textColor: Colors.white,
+        title: const Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CustomTitle(
+              text: "Mes coups de cœur",
+              textColor: Colors.white,
+            ),
+            Icon(Icons.favorite, color: Colors.red),
+          ],
         ),
         backgroundColor: primaryColor,
       ),
@@ -95,14 +109,6 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                               imageUrl: house.imageUrl,
                                               width: screenWidth * 0.45,
                                               height: screenHeight * 0.20,
-                                            ),
-                                            const Positioned(
-                                              top: 8,
-                                              left: 8,
-                                              child: Icon(
-                                                Icons.favorite,
-                                                color: Colors.red,
-                                              ),
                                             ),
                                           ],
                                         ),
@@ -203,7 +209,21 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                                                 ),
                                               ],
                                             ),
-                                            // _buildAdditionalInfo(house),
+                                            Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                        Icons.delete,
+                                                        color: Colors.red),
+                                                    onPressed: () {
+                                                      _removeFavorite(house);
+                                                    },
+                                                  ),
+                                                ])
                                           ],
                                         ),
                                       ),
@@ -218,6 +238,15 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                     ],
                   ),
                 ),
+    );
+  }
+
+  void _showshowToast(String message, Color color) {
+    Fluttertoast.showToast(
+      backgroundColor: color,
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.TOP,
     );
   }
 

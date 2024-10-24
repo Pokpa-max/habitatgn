@@ -46,7 +46,7 @@ class DashbordViewModel extends ChangeNotifier {
   List<House> _recentHouses = [];
   List<House> get recentHouses => _recentHouses;
 
-  List<House> _houses = [];
+  final List<House> _houses = [];
   List<House> get houses => _houses;
 
   List<House> _housesFilter = [];
@@ -119,11 +119,6 @@ class DashbordViewModel extends ChangeNotifier {
     _isAdverstingLoading = false;
     notifyListeners();
   }
-
-  //  house filter in firebase
-  // Future<List<House>> filterHousesFromFirebase(String housingType) async {
-  //   return await _houseService.searchHouses(housingType);
-  // }
 
   Future<void> fetchFilteredHouses({
     required double minPrice,
@@ -236,16 +231,3 @@ class DashbordViewModel extends ChangeNotifier {
     }).toList();
   }
 }
-
-
-
-
-
-
-// class DashbordViewModel extends StateNotifier<DashbordState> {
-//   final DashbordService _dashbordService;
-
-//   DashbordViewModel(this._dashbordService) : super(DashbordState.initial());
-
-  
-// }

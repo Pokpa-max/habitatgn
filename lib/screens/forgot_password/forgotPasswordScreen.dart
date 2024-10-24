@@ -89,7 +89,7 @@ class _ForgotUserPasswordScreenState
                     const Text(
                       "Mot de passe oublié ?",
                       style: TextStyle(
-                        fontSize: 25,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -137,6 +137,8 @@ class _ForgotUserPasswordScreenState
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30.0),
                         ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 10),
                       ),
                       keyboardType: TextInputType.emailAddress,
                     ),
@@ -149,7 +151,7 @@ class _ForgotUserPasswordScreenState
                             : resetPassword,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),

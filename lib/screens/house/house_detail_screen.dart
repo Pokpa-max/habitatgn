@@ -69,10 +69,10 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen> {
 
   Future<void> _toggleLike() async {
     final houseListViewModel = ref.read(houseListViewModelProvider);
-
+    final List<ConnectivityResult> connectivityResult =
+        await (Connectivity().checkConnectivity());
     // Vérifiez l'état de la connexion Internet
-    var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
+    if ((connectivityResult.contains(ConnectivityResult.none))) {
       _showshowToast('Connexion Internet indisponible.', Colors.red);
       return; // Ne continuez pas si aucune connexion n'est disponible
     }

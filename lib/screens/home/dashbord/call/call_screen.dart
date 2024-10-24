@@ -5,23 +5,61 @@ import 'package:habitatgn/utils/appcolors.dart';
 import 'package:habitatgn/utils/ui_element.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CallPage extends StatelessWidget {
   const CallPage({super.key});
 
   Future<List<Map<String, dynamic>>> _fetchContacts() async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final QuerySnapshot snapshot =
-        await firestore.collection('callPhoneOperators').get();
-    return snapshot.docs.map((doc) {
-      final data = doc.data() as Map<String, dynamic>;
-      final operatorColor =
-          OperatorInfo.fromName(data['operatorName']).colorValue;
 
+    try {
+      final QuerySnapshot snapshot =
+          await firestore.collection('callPhoneOperators').get();
+      final contacts = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        final operatorColor =
+            OperatorInfo.fromName(data['operatorName']).colorValue;
+
+        return {
+          'operatorName': data['operatorName'],
+          'phoneNumber': data['phoneNumber'],
+          'color': operatorColor,
+        };
+      }).toList();
+
+      // Sauvegarde des contacts en local
+      _saveContactsLocally(contacts);
+      return contacts;
+    } catch (e) {
+      // Si une erreur se produit, récupérez les contacts sauvegardés localement
+      return _loadContactsLocally();
+    }
+  }
+
+  Future<void> _saveContactsLocally(List<Map<String, dynamic>> contacts) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString(
+        'contacts',
+        contacts
+            .map(
+                (c) => '${c['operatorName']},${c['phoneNumber']},${c['color']}')
+            .join(';'));
+  }
+
+  // List<Map<String, dynamic>>
+  _loadContactsLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    final contactsString = prefs.getString('contacts') ?? '';
+
+    if (contactsString.isEmpty) return [];
+
+    return contactsString.split(';').map((s) {
+      final parts = s.split(',');
       return {
-        'operatorName': data['operatorName'],
-        'phoneNumber': data['phoneNumber'],
-        'color': operatorColor,
+        'operatorName': parts[0],
+        'phoneNumber': parts[1],
+        'color': Color(int.parse(parts[2])),
       };
     }).toList();
   }
@@ -32,56 +70,6 @@ class CallPage extends StatelessWidget {
       path: phoneNumber,
     );
     await launchUrl(launchUri);
-  }
-
-  // void _launchWhatsApp(String phoneNumber) async {
-  //   final Uri whatsappUri = Uri(
-  //     scheme: 'https',
-  //     host: 'wa.me', // Utilisation du schéma WA.ME
-  //     path: phoneNumber, // Numéro de téléphone sans les caractères spéciaux
-  //   );
-
-  //   if (await canLaunchUrl(whatsappUri)) {
-  //     await launchUrl(whatsappUri);
-  //   } else {
-  //     Fluttertoast.showToast(
-  //       msg: "Veuillez installer WhatsApp",
-  //       toastLength: Toast.LENGTH_SHORT,
-  //       gravity: ToastGravity.BOTTOM,
-  //     );
-  //     // throw 'Could not launch WhatsApp';
-  //   }
-  // }
-
-  void _launchWhatsApp(String phoneNumber, String message) async {
-    // Encodage du message pour l'URI
-    final encodedMessage = Uri.encodeComponent(message);
-
-    // Construction de l'URI WhatsApp
-    final Uri whatsappUri = Uri(
-      scheme: 'https',
-      host: 'wa.me',
-      path: phoneNumber, // Numéro de téléphone sans les caractères spéciaux
-      query: 'text=$encodedMessage', // Message à envoyer
-    );
-
-    try {
-      if (await canLaunchUrl(whatsappUri)) {
-        await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
-      } else {
-        Fluttertoast.showToast(
-          msg: "Veuillez installer WhatsApp",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-        );
-      }
-    } catch (e) {
-      Fluttertoast.showToast(
-        msg: "Erreur lors de l'ouverture de WhatsApp: $e",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-      );
-    }
   }
 
   @override
@@ -110,9 +98,7 @@ class CallPage extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-                child: CircularProgressIndicator(
-              color: primaryColor,
-            ));
+                child: CircularProgressIndicator(color: primaryColor));
           }
           if (snapshot.hasError) {
             print('snapshot.error: ${snapshot.error}');
@@ -198,36 +184,6 @@ class CallPage extends StatelessWidget {
                       ),
                     )),
 
-                ElevatedButton(
-                  onPressed: () => _launchWhatsApp(
-                      "224123456789", "Bonjour, j'aimerais en savoir plus."),
-                  //  _launchWhatsApp(
-                  //     '628610357'), // Remplacez par le numéro WhatsApp
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green, // Couleur de fond du bouton
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16, horizontal: 24),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0.5,
-                  ),
-                  child: const Row(
-                    children: [
-                      FaIcon(FontAwesomeIcons.whatsapp,
-                          color: Colors.white), // Icône WhatsApp
-                      SizedBox(width: 16),
-                      Text(
-                        'WhatsApp',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 const Spacer(),
                 Center(
                   child: Text(
@@ -275,14 +231,3 @@ enum OperatorInfo {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-// Placez ce code dans votre FutureBuilder ou là où vous voulez afficher le bouton WhatsApp

@@ -7,7 +7,9 @@ import 'package:flutter/material.dart';
 //2 const Color primaryColor = Color.fromARGB(255, 8, 42, 46);
 
 // const Color primaryColor = Color.fromARGB(223, 1, 21, 28);
-const Color primaryColor = Color.fromARGB(223, 2, 46, 61);
+const Color primaryColor = Color.fromARGB(223, 0, 30, 40);
+const Color primaryColor2 = Color.fromARGB(223, 2, 46, 61);
+// Color.fromARGB(223, 2, 46, 61);
 
 const Color lightPrimary = Colors.white;
 final Color lightPrimaryInput = Colors.grey.shade50;
