@@ -14,7 +14,16 @@ class ServiceRequestViewModel extends StateNotifier<AsyncValue<void>> {
       await _serviceRequestService.submitRequest(request);
     } catch (e) {
       throw Exception('Erreur lors de la soumission: $e');
-    } finally {}
+    }
+  }
+
+  Future<String?> getAgentPhoneNumber(String serviceType) async {
+    try {
+      return await _serviceRequestService.getAgentPhoneNumber(serviceType);
+    } catch (e) {
+      print('Erreur lors de la récupération du numéro de téléphone: $e');
+      return null;
+    }
   }
 }
 

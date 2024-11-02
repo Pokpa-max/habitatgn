@@ -308,10 +308,6 @@ class CustomCachedNetworkImage extends StatelessWidget {
     // add flutter_cache_manager:
 
     return ClipRRect(
-      // borderRadius: const BorderRadius.only(
-      //   topLeft: Radius.circular(12),
-      //   bottomLeft: Radius.circular(12),
-      // ),
       child: CachedNetworkImage(
         cacheManager: customCacheManager,
         imageUrl: imageUrl,
@@ -331,20 +327,6 @@ class CustomCachedNetworkImage extends StatelessWidget {
           width: width ?? defaultWidth,
           height: height ?? defaultHeight,
           color: Colors.grey.shade200,
-
-          // child:
-          // const Column(
-          //   crossAxisAlignment: CrossAxisAlignment.center,
-          //   mainAxisAlignment: MainAxisAlignment.center,
-          //   children: [
-          //     Icon(
-          //       Icons.image_not_supported,
-          //       color: Colors.grey,
-          //       size: 40,
-          //     ),
-          //     Text('Pas de connexion internet')
-          //   ],
-          // ),
         ),
       ),
     );

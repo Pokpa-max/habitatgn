@@ -38,216 +38,275 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
     final houseListViewModel = ref.watch(houseListViewModelProvider);
 
     return Scaffold(
-      backgroundColor: lightPrimary,
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CustomTitle(
-              text: "Mes coups de cœur",
-              textColor: Colors.white,
-            ),
-            Icon(Icons.favorite, color: Colors.red),
-          ],
+        backgroundColor: lightPrimary,
+        appBar: AppBar(
+          centerTitle: true,
+          title: const Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CustomTitle(
+                text: "Mes coups de cœur",
+                textColor: Colors.white,
+              ),
+              Icon(Icons.favorite, color: Colors.red),
+            ],
+          ),
+          backgroundColor: primaryColor,
         ),
-        backgroundColor: primaryColor,
-      ),
-      body: houseListViewModel.isLoading
-          ? ListView.builder(
-              itemCount: 10,
-              itemBuilder: (context, index) => const LoadingSkeleton(),
-            )
-          : houseListViewModel.favoriteHouses.isEmpty
-              ? houseCategoryListEmpty()
-              : Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        body: houseListViewModel.isLoading
+            ? ListView.builder(
+                itemCount: 10,
+                itemBuilder: (context, index) => const LoadingSkeleton(),
+              )
+            : houseListViewModel.favoriteHouses.isEmpty
+                ? houseCategoryListEmpty()
+                : Column(
                     children: [
                       Expanded(
-                        child: ListView.builder(
-                          itemCount: houseListViewModel.favoriteHouses.length,
-                          itemBuilder: (context, index) {
-                            double screenWidth =
-                                MediaQuery.of(context).size.width;
-                            double screenHeight =
-                                MediaQuery.of(context).size.height;
+                        child: houseListViewModel.isLoading
+                            ? ListView.builder(
+                                itemCount: 10,
+                                itemBuilder: (context, index) =>
+                                    const LoadingSkeleton(),
+                              )
+                            : houseListViewModel.favoriteHouses.isEmpty
+                                ? houseCategoryListEmpty()
+                                : NotificationListener<ScrollNotification>(
+                                    onNotification:
+                                        (ScrollNotification scrollInfo) {
+                                      if (!houseListViewModel.isLoading &&
+                                          scrollInfo.metrics.pixels ==
+                                              scrollInfo
+                                                  .metrics.maxScrollExtent &&
+                                          houseListViewModel.hasMore) {
+                                        houseListViewModel.fetchHouses();
+                                      }
+                                      return false;
+                                    },
+                                    child: ListView.builder(
+                                      itemCount: houseListViewModel
+                                          .favoriteHouses.length,
+                                      itemBuilder: (context, index) {
+                                        // double screenWidth =
+                                        //     MediaQuery.of(context).size.width;
+                                        double screenHeight =
+                                            MediaQuery.of(context).size.height;
+                                        House house = houseListViewModel
+                                            .favoriteHouses[index];
 
-                            House house =
-                                houseListViewModel.favoriteHouses[index];
-                            return Padding(
-                              padding: const EdgeInsets.all(0.0),
-                              child: Card(
-                                color: Colors.white,
-                                elevation: 0.5,
-                                clipBehavior: Clip.antiAlias,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    side: BorderSide(color: lightPrimary2)),
-                                child: InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => HouseDetailScreen(
-                                          houseId: house.id,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(3.0),
-                                        child: Stack(
-                                          children: [
-                                            CustomCachedNetworkImage(
-                                              imageUrl: house.imageUrl,
-                                              width: screenWidth * 0.45,
-                                              height: screenHeight * 0.20,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 5),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                  house.houseType!.label
-                                                      .toUpperCase(),
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 8),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.1),
+                                                  spreadRadius: 0,
+                                                  blurRadius: 10,
+                                                  offset: const Offset(0, 2),
                                                 ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                      vertical: 4,
-                                                      horizontal: 8,
-                                                    ),
-                                                    decoration: BoxDecoration(
-                                                      color: primaryColor,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                    ),
-                                                    child: Text(
-                                                      house.offerType["label"],
-                                                      style: const TextStyle(
-                                                        fontSize: 16,
-                                                        color: Colors.white,
-                                                      ),
+                                              ],
+                                            ),
+                                            child: InkWell(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        HouseDetailScreen(
+                                                      houseId: house.id,
                                                     ),
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                if (house.houseType?.label !=
-                                                    "Terrain") ...[
-                                                  _buildBedroomsRow(house),
-                                                ],
-                                                if (house.houseType?.label ==
-                                                    "Terrain") ...[
-                                                  _buildAreaRow(house),
-                                                ],
-                                              ],
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.location_on,
-                                                    color: Colors.grey),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  ' ${house.address!.town["label"]} / ${house.address!.commune["label"]}',
-                                                  style: const TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color: Colors.black),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Row(
-                                              children: [
-                                                const Icon(
-                                                    Icons.attach_money_outlined,
-                                                    color: Colors.grey),
-                                                Expanded(
-                                                  child: FormattedPrice(
-                                                    color: Colors.black,
-                                                    price: house.price,
-                                                    size: 16,
-                                                    suffix: house.offerType[
-                                                                "value"] ==
-                                                            "ALouer"
-                                                        ? '/mois'
-                                                        : '',
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
+                                                );
+                                              },
+                                              child: Column(
                                                 crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.end,
+                                                    CrossAxisAlignment.start,
                                                 children: [
-                                                  IconButton(
-                                                    icon: const Icon(
-                                                        Icons.delete,
-                                                        color: Colors.red),
-                                                    onPressed: () {
-                                                      _removeFavorite(house);
-                                                    },
+                                                  // Section image avec badges
+                                                  Stack(
+                                                    children: [
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            const BorderRadius
+                                                                .vertical(
+                                                          top: Radius.circular(
+                                                              16),
+                                                        ),
+                                                        child:
+                                                            CustomCachedNetworkImage(
+                                                          imageUrl:
+                                                              house.imageUrl,
+                                                          width:
+                                                              double.infinity,
+                                                          height: screenHeight *
+                                                              0.22,
+                                                        ),
+                                                      ),
+                                                      // Badge type d'offre
+                                                      Positioned(
+                                                        top: 12,
+                                                        right: 12,
+                                                        child: Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                            horizontal: 12,
+                                                            vertical: 6,
+                                                          ),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: primaryColor,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        20),
+                                                          ),
+                                                          child: Text(
+                                                            house.offerType[
+                                                                "label"],
+                                                            style:
+                                                                const TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 14,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      // Bouton suppression
+                                                      Positioned(
+                                                        top: 12,
+                                                        left: 12,
+                                                        child: Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.white
+                                                                .withOpacity(
+                                                                    0.8),
+                                                            shape:
+                                                                BoxShape.circle,
+                                                          ),
+                                                          child: IconButton(
+                                                            icon: const Icon(
+                                                              Icons.delete,
+                                                              color: Colors.red,
+                                                              size: 20,
+                                                            ),
+                                                            onPressed: () =>
+                                                                _removeFavorite(
+                                                                    house),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ])
-                                          ],
-                                        ),
-                                      ),
-                                    ],
+                                                  // Section informations
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            14),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Text(
+                                                              house.houseType!
+                                                                  .label
+                                                                  .toUpperCase(),
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontSize: 18,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: Colors
+                                                                    .black87,
+                                                              ),
+                                                            ),
+                                                            FormattedPrice(
+                                                              color:
+                                                                  primaryColor,
+                                                              price:
+                                                                  house.price,
+                                                              size: 18,
+                                                              suffix: house.offerType[
+                                                                          "value"] ==
+                                                                      "ALouer"
+                                                                  ? '/mois'
+                                                                  : '',
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        Row(
+                                                          children: [
+                                                            const Icon(
+                                                              Icons.location_on,
+                                                              color:
+                                                                  Colors.grey,
+                                                              size: 20,
+                                                            ),
+                                                            const SizedBox(
+                                                                width: 4),
+                                                            Expanded(
+                                                              child: Text(
+                                                                '${house.address!.town["label"]} / ${house.address!.commune["label"]}',
+                                                                style:
+                                                                    const TextStyle(
+                                                                  fontSize: 16,
+                                                                  color: Colors
+                                                                      .black87,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                ),
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 10),
+                                                        if (house.houseType
+                                                                ?.label !=
+                                                            "Terrain")
+                                                          _buildBedroomsRow(
+                                                              house)
+                                                        else
+                                                          _buildAreaRow(house),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
                       ),
                     ],
-                  ),
-                ),
-    );
-  }
-
-  void _showshowToast(String message, Color color) {
-    Fluttertoast.showToast(
-      backgroundColor: color,
-      msg: message,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.TOP,
-    );
+                  ));
   }
 
   Widget _buildBedroomsRow(House house) {

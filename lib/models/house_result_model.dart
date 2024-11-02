@@ -44,6 +44,7 @@ enum FurnishingEnum {
 class House {
   final String id;
   final String phoneNumber;
+  final String rentalStatus;
   final bool isAvailable;
   final int bedrooms;
   final double rentalDeposit;
@@ -72,6 +73,7 @@ class House {
     required this.bedrooms,
     required this.rentalDeposit,
     required this.housingDeposit,
+    required this.rentalStatus,
     this.address,
     required this.offerType,
     required this.furnishing,
@@ -95,6 +97,7 @@ class House {
     return House(
       id: doc.id,
       phoneNumber: data['phoneNumber'] ?? '',
+      rentalStatus: data['rentalStatus'] ?? '',
       isAvailable: data['isAvailable'] ?? false,
       bedrooms: data['bedrooms'] ?? 0,
       rentalDeposit: (data['rentalDeposit'] as num).toDouble(),
@@ -147,6 +150,7 @@ class House {
       'price': price,
       'commodites': commodites,
       'imageUrl': imageUrl,
+      'rentalStatus': rentalStatus,
       'description': description,
       'houseType': houseType?.toMap(),
       'houseInsides': houseInsides,

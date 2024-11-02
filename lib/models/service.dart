@@ -5,11 +5,11 @@ class ServiceRequestModel {
   final String serviceType;
   final String name;
   final String address;
-
   final String description;
-
   final String phone;
   final String userId;
+  final String scheduledDate;
+  final String scheduledTime;
 
   ServiceRequestModel({
     required this.serviceType,
@@ -18,6 +18,8 @@ class ServiceRequestModel {
     required this.description,
     required this.phone,
     required this.userId,
+    required this.scheduledDate,
+    required this.scheduledTime,
   });
 
   Map<String, dynamic> toJson() {
@@ -29,6 +31,8 @@ class ServiceRequestModel {
       'userId': userId,
       'description': description,
       'status': 'En attente',
+      'scheduledDate': scheduledDate,
+      'scheduledTime': scheduledTime,
       'createdAt': Timestamp.now(),
     };
   }
@@ -41,6 +45,8 @@ class ServiceRequestModel {
       phone: json['phone'] as String,
       userId: json['userId'] as String,
       description: json['description'] as String,
+      scheduledDate: json['scheduledDate'] as String,
+      scheduledTime: json['scheduledTime'] as String,
     );
   }
 }

@@ -10,7 +10,7 @@ import 'package:habitatgn/screens/splash_screen.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:habitatgn/viewmodels/notification/notification.dart';
 import 'package:habitatgn/viewmodels/splashScreen/splashscreen_provider.dart';
-
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'firebase_options.dart';
 import 'package:habitatgn/screens/house/house_detail_screen.dart';
 
@@ -92,6 +92,16 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('fr', 'FR'), // Français
+        Locale('en', 'US'), // Anglais
+      ],
+      locale: const Locale('fr', 'FR'), // Défi
       title: 'HabitatGN',
       theme: ThemeData(
         textSelectionTheme: const TextSelectionThemeData(

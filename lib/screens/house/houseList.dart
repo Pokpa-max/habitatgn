@@ -197,82 +197,163 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
         children: [
           // En-tête de la liste
           Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        ToggleButtons(
-                          isSelected: [
-                            !_isFilterApplied,
-                            _isFilterApplied
-                          ], // Notez le changement ici
-                          onPressed: (int index) {
-                            setState(() {
-                              _isFilterApplied = index ==
-                                  1; // Mise à jour pour sélectionner le filtre
-                            });
-                            if (index == 1) {
-                              showFilterModal(); // Ouvrir le modal lorsque le filtre est sélectionné
-                            }
-                          },
+                    Expanded(
+                      child: Container(
+                        height: 45,
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          selectedColor: Colors.white,
-                          fillColor: primaryColor,
-                          color: Colors.black,
-
-                          borderColor: lightPrimary2,
-                          children: const [
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16),
-                              child:
-                                  Text("Tous", style: TextStyle(fontSize: 18)),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.filter_list,
-                                    color: Colors.white,
+                          border: Border.all(color: primaryColor, width: 1.5),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: !_isFilterApplied
+                                      ? primaryColor
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.horizontal(
+                                      left: Radius.circular(11)),
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        _isFilterApplied = false;
+                                      });
+                                    },
+                                    borderRadius: BorderRadius.horizontal(
+                                        left: Radius.circular(11)),
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        "Tous",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          color: !_isFilterApplied
+                                              ? Colors.white
+                                              : Colors.black,
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                  Text("Appliquer les filtres",
-                                      style: TextStyle(fontSize: 18)),
-                                ],
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: 1.5,
+                              color: primaryColor,
+                            ),
+                            Expanded(
+                              flex: 3,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: _isFilterApplied
+                                      ? primaryColor
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.horizontal(
+                                      right: Radius.circular(11)),
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        _isFilterApplied = true;
+                                      });
+                                      showFilterModal();
+                                    },
+                                    borderRadius: BorderRadius.horizontal(
+                                        right: Radius.circular(11)),
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.filter_list,
+                                            size: 20,
+                                            color: _isFilterApplied
+                                                ? Colors.white
+                                                : Colors.black,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            "Filtres",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                              color: _isFilterApplied
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.refresh, color: primaryColor),
-                      onPressed: () {
-                        setState(() {
-                          _isFilterApplied = false;
-                          _hasChanges = false;
-                          _searchQuery = "";
-                          _searchController.clear();
-                          _needType = "Tous";
-                          _propertyType = "Tous";
-                          _ville = "";
-                          _bedrooms = 0;
-                          _minPrice = 0;
-                          _maxPrice = 0;
-                        });
-                      },
-                    )
+                    const SizedBox(width: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: primaryColor, width: 1.5),
+                      ),
+                      child: IconButton(
+                        icon:
+                            Icon(Icons.refresh, color: primaryColor, size: 22),
+                        onPressed: () {
+                          setState(() {
+                            _isFilterApplied = false;
+                            _hasChanges = false;
+                            _searchQuery = "";
+                            _searchController.clear();
+                            _needType = "Tous";
+                            _propertyType = "Tous";
+                            _ville = "";
+                            _bedrooms = 0;
+                            _minPrice = 0;
+                            _maxPrice = 0;
+                          });
+                        },
+                        padding: const EdgeInsets.all(12),
+                      ),
+                    ),
                   ],
                 ),
               ],
             ),
           ),
-          // Liste des maisons
+
           Expanded(
             child: houseListViewModel.isLoading
                 ? ListView.builder(
@@ -296,28 +377,41 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                           itemBuilder: (context, index) {
                             if (index == filteredHouses.length) {
                               return houseListViewModel.hasMore
-                                  ? const Center(
-                                      child: CircularProgressIndicator(
-                                      color: primaryColor,
-                                    ))
+                                  ? const Padding(
+                                      padding: EdgeInsets.all(16.0),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          color: primaryColor,
+                                        ),
+                                      ),
+                                    )
                                   : Container();
                             }
-                            double screenWidth =
-                                MediaQuery.of(context).size.width;
+
+                            // double screenWidth =
+                            //     MediaQuery.of(context).size.width;
                             double screenHeight =
                                 MediaQuery.of(context).size.height;
-
                             House house = filteredHouses[index];
+
                             return Padding(
-                              padding: const EdgeInsets.all(5.0),
-                              child: Card(
-                                color: Colors.white,
-                                elevation: 0.5,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(color: lightPrimary2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.1),
+                                      spreadRadius: 0,
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
                                 child: InkWell(
+                                  borderRadius: BorderRadius.circular(16),
                                   onTap: () {
                                     Navigator.push(
                                       context,
@@ -328,20 +422,53 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                                       ),
                                     );
                                   },
-                                  child: Row(
+                                  child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(5.0),
-                                        child: CustomCachedNetworkImage(
-                                          imageUrl: house.imageUrl,
-                                          width: screenWidth * 0.45,
-                                          height: screenHeight * 0.20,
-                                        ),
+                                      // Image section avec badge overlay
+                                      Stack(
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius:
+                                                const BorderRadius.vertical(
+                                              top: Radius.circular(16),
+                                            ),
+                                            child: CustomCachedNetworkImage(
+                                              imageUrl: house.imageUrl,
+                                              width: double.infinity,
+                                              height: screenHeight * 0.22,
+                                            ),
+                                          ),
+                                          Positioned(
+                                            top: 12,
+                                            right: 12,
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 6,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: primaryColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: Text(
+                                                house.offerType["label"],
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(width: 5),
-                                      Expanded(
+                                      // Informations section
+                                      Padding(
+                                        padding: const EdgeInsets.all(16),
                                         child: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
@@ -355,84 +482,52 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                                                   house.houseType!.label
                                                       .toUpperCase(),
                                                   style: const TextStyle(
-                                                    fontSize: 16,
+                                                    fontSize: 18,
                                                     fontWeight: FontWeight.bold,
+                                                    color: Colors.black87,
                                                   ),
                                                 ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        vertical: 4,
-                                                        horizontal: 8),
-                                                    decoration: BoxDecoration(
-                                                      color: primaryColor,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                    ),
-                                                    child: Text(
-                                                      house.offerType["label"],
-                                                      style: const TextStyle(
-                                                        fontSize: 16,
-                                                        color: Colors.white,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              children: [
-                                                if (house.houseType?.label !=
-                                                    "Terrain") ...[
-                                                  _buildBedroomsRow(house),
-                                                ],
-                                                if (house.houseType?.label ==
-                                                    "Terrain") ...[
-                                                  _buildAreaRow(house),
-                                                ],
-                                              ],
-                                            ),
-                                            const SizedBox(height: 6),
-
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.location_on,
-                                                    color: Colors.grey),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  ' ${house.address!.town["label"]} / ${house.address!.commune["label"]}',
-                                                  style: const TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      color: Colors.black),
+                                                FormattedPrice(
+                                                  color: primaryColor,
+                                                  price: house.price,
+                                                  size: 18,
+                                                  suffix: house.offerType[
+                                                              "value"] ==
+                                                          "ALouer"
+                                                      ? '/mois'
+                                                      : '',
                                                 ),
                                               ],
                                             ),
                                             Row(
                                               children: [
                                                 const Icon(
-                                                    Icons.attach_money_outlined,
-                                                    color: Colors.grey),
+                                                  Icons.location_on,
+                                                  color: Colors.grey,
+                                                  size: 20,
+                                                ),
+                                                const SizedBox(width: 4),
                                                 Expanded(
-                                                  child: FormattedPrice(
-                                                    color: Colors.black,
-                                                    price: house.price,
-                                                    size: 16,
-                                                    suffix: house.offerType[
-                                                                "value"] ==
-                                                            "ALouer"
-                                                        ? '/mois'
-                                                        : '',
+                                                  child: Text(
+                                                    '${house.address!.town["label"]} / ${house.address!.commune["label"]}',
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                      color: Colors.black87,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                               ],
                                             ),
-                                            // _buildAdditionalInfo(house),
+                                            const SizedBox(height: 12),
+                                            if (house.houseType?.label !=
+                                                "Terrain")
+                                              _buildBedroomsRow(house)
+                                            else
+                                              _buildAreaRow(house),
                                           ],
                                         ),
                                       ),
@@ -444,7 +539,7 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                           },
                         ),
                       ),
-          ),
+          )
         ],
       ),
     );
@@ -531,9 +626,13 @@ class _FilterModalState extends State<FilterModal> {
   final TextEditingController _minPriceController = TextEditingController();
   final TextEditingController _maxPriceController = TextEditingController();
   final TextEditingController _villeController = TextEditingController();
-
   int _bedrooms = 0;
   bool _hasChanges = false;
+
+  // Couleurs personnalisées
+
+  final backgroundColor = Colors.white;
+  final surfaceColor = const Color(0xFFF3F4F6); // Gray-100
 
   @override
   void dispose() {
@@ -543,371 +642,30 @@ class _FilterModalState extends State<FilterModal> {
     super.dispose();
   }
 
-  void _onApplyFilter() {
-    double minPrice = double.tryParse(_minPriceController.text) ?? 0;
-    double maxPrice =
-        double.tryParse(_maxPriceController.text) ?? double.infinity;
-    widget.onApplyFilter(minPrice, maxPrice, _needType, _propertyType,
-        _villeController.text, _bedrooms, _hasChanges);
-    Navigator.of(context).pop();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
+          children: [
+            // En-tête
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   "J'ai besoin de ?",
-                  style: TextStyle(fontSize: 18),
-                ),
-                IconButton(
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.black,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    }),
-              ],
-            ),
-            SegmentedButton<String>(
-              style: ButtonStyle(
-                foregroundColor: WidgetStateProperty.resolveWith<Color>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return Colors.white;
-                    }
-                    return Colors.black;
-                  },
-                ),
-                backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return primaryColor;
-                    }
-                    return Colors.white;
-                  },
-                ),
-              ),
-              segments: const [
-                ButtonSegment(
-                  value: 'Tous',
-                  label: Text(
-                    'Tous',
-                    style: TextStyle(fontSize: 14),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF1F2937),
                   ),
                 ),
-                ButtonSegment(
-                  value: 'Louer',
-                  label: Text('Louer', style: TextStyle(fontSize: 14)),
-                ),
-                ButtonSegment(
-                  value: 'Acheter',
-                  label: Text('Acheter', style: TextStyle(fontSize: 14)),
-                ),
-              ],
-              selected: <String>{_needType},
-              onSelectionChanged: (Set<String> newSelection) {
-                setState(() {
-                  _needType = newSelection.first;
-                  _hasChanges = true;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            const Text("Emplacement", style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _villeController,
-              decoration: const InputDecoration(
-                labelText: 'Ville ,commune , quartier ..',
-                labelStyle: TextStyle(color: Colors.black),
-                border: OutlineInputBorder(),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: primaryColor),
-                ),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _hasChanges = true;
-                });
-              },
-            ),
-            const SizedBox(height: 15),
-            const Text("Type de propriété", style: TextStyle(fontSize: 16)),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 5,
-              runSpacing: 5,
-              children: [
-                FilterChip(
-                  selectedColor: primaryColor,
-                  backgroundColor: Colors.white,
-                  checkmarkColor: Colors.white,
-                  label: Text(
-                    'Tous',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color:
-                          _propertyType == 'Tous' ? Colors.white : Colors.black,
-                    ),
-                  ),
-                  selected: _propertyType == 'Tous',
-                  onSelected: (bool selected) {
-                    setState(() {
-                      _propertyType = 'Tous';
-                      _hasChanges = true;
-                    });
-                  },
-                ),
-                FilterChip(
-                  selectedColor: primaryColor,
-                  checkmarkColor: Colors.white,
-                  backgroundColor: Colors.white,
-                  label: Text(
-                    'Villa',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: _propertyType == 'Villa'
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                  selected: _propertyType == 'Villa',
-                  onSelected: (bool selected) {
-                    setState(() {
-                      _propertyType = 'Villa';
-                    });
-                  },
-                ),
-                FilterChip(
-                  selectedColor: primaryColor,
-                  checkmarkColor: Colors.white,
-                  backgroundColor: Colors.white,
-                  label: Text(
-                    'Maison',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: _propertyType == 'Maison'
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                  selected: _propertyType == 'Maison',
-                  onSelected: (bool selected) {
-                    setState(() {
-                      _propertyType = 'Maison';
-                    });
-                  },
-                ),
-                FilterChip(
-                  selectedColor: primaryColor,
-                  checkmarkColor: Colors.white,
-                  backgroundColor: Colors.white,
-                  label: Text(
-                    'Appartement',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: _propertyType == 'Appartement'
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                  selected: _propertyType == 'Appartement',
-                  onSelected: (bool selected) {
-                    setState(() {
-                      _propertyType = 'Appartement';
-                    });
-                  },
-                ),
-                FilterChip(
-                  selectedColor: primaryColor,
-                  checkmarkColor: Colors.white,
-                  backgroundColor: Colors.white,
-                  label: Text(
-                    'Studio',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: _propertyType == 'Studio'
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                  selected: _propertyType == 'Studio',
-                  onSelected: (bool selected) {
-                    setState(() {
-                      _propertyType = 'Studio';
-                    });
-                  },
-                ),
-                FilterChip(
-                  selectedColor: primaryColor,
-                  checkmarkColor: Colors.white,
-                  backgroundColor: Colors.white,
-                  label: Text(
-                    'Hôtel',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: _propertyType == 'Hôtel'
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                  selected: _propertyType == 'Hôtel',
-                  onSelected: (bool selected) {
-                    setState(() {
-                      _propertyType = 'Hôtel';
-                    });
-                  },
-                ),
-                FilterChip(
-                  selectedColor: primaryColor,
-                  checkmarkColor: Colors.white,
-                  backgroundColor: Colors.white,
-                  label: Text(
-                    'Terrain',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: _propertyType == 'Terrain'
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                  selected: _propertyType == 'Terrain',
-                  onSelected: (bool selected) {
-                    setState(() {
-                      _propertyType = 'Terrain';
-                    });
-                  },
-                ),
-                FilterChip(
-                  selectedColor: primaryColor,
-                  checkmarkColor: Colors.white,
-                  backgroundColor: Colors.white,
-                  label: Text(
-                    'Commerce',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: _propertyType == 'commerce'
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                  selected: _propertyType == 'commerce',
-                  onSelected: (bool selected) {
-                    setState(() {
-                      _propertyType = 'commerce';
-                    });
-                  },
-                ),
-                FilterChip(
-                  selectedColor: primaryColor,
-                  checkmarkColor: Colors.white,
-                  backgroundColor: Colors.white,
-                  label: Text(
-                    'Bureau',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: _propertyType == 'Bureau'
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                  selected: _propertyType == 'Bureau',
-                  onSelected: (bool selected) {
-                    setState(() {
-                      _propertyType = 'Bureau';
-                    });
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Text("Plage de prix", style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    cursorColor: Colors.black54,
-                    controller: _minPriceController,
-                    decoration: const InputDecoration(
-                      labelText: 'Prix minimal',
-                      labelStyle: TextStyle(color: Colors.black),
-                      border: OutlineInputBorder(),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: primaryColor),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(
-                          vertical: 10.0,
-                          horizontal: 10.0), // Réduit le padding
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextField(
-                    cursorColor: Colors.black54,
-                    controller: _maxPriceController,
-                    decoration: const InputDecoration(
-                      labelText: 'Prix maximal',
-                      labelStyle: TextStyle(color: Colors.black),
-                      border: OutlineInputBorder(),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: primaryColor),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(
-                          vertical: 10.0,
-                          horizontal: 10.0), // Réduit le padding
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (_propertyType != 'Terrain')
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("Nombre de chambres",
-                      style: TextStyle(fontSize: 18)),
-                  Row(
-                    children: [
-                      const Text("Chambres", style: TextStyle(fontSize: 16)),
-                      IconButton(
-                        icon: const Icon(Icons.remove),
-                        onPressed: () => setState(() {
-                          _bedrooms = _bedrooms > 0
-                              ? _bedrooms - 1
-                              : 0; // Empêche d'aller en dessous de 0
-                        }),
-                      ),
-                      Text(_bedrooms.toString(),
-                          style: const TextStyle(fontSize: 18)),
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () => setState(() {
-                          _bedrooms++; // Incrémente la valeur
-                        }),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
                 TextButton(
                   onPressed: () {
                     setState(() {
@@ -920,23 +678,314 @@ class _FilterModalState extends State<FilterModal> {
                       _hasChanges = false;
                     });
                   },
-                  child: const Text(
-                    'Réinitialiser tout',
-                    style: TextStyle(fontSize: 18, color: primaryColor),
+                  child: Text(
+                    'Réinitialiser',
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-                ElevatedButton(
-                  onPressed: _onApplyFilter,
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      foregroundColor: Colors.white),
-                  child:
-                      const Text('Appliquer', style: TextStyle(fontSize: 16)),
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            Row(
+              children: ['Tous', 'Louer', 'Acheter'].map((type) {
+                final isSelected = _needType == type;
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          _needType = type;
+                          _hasChanges = true;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected ? primaryColor : surfaceColor,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Center(
+                          child: Text(
+                            type,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.black87,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 12),
+
+            // Section Emplacement
+            const Text(
+              "Emplacement",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _villeController,
+              decoration: InputDecoration(
+                hintText: 'Ville, commune, quartier...',
+                prefixIcon: const Icon(Icons.location_on_outlined),
+                filled: true,
+                fillColor: surfaceColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: primaryColor),
+                ),
+              ),
+              onChanged: (_) => setState(() => _hasChanges = true),
+            ),
+            const SizedBox(height: 12),
+
+            // Section Type de propriété
+            const Text(
+              "Type de propriété",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildPropertyTypeChip('Tous', Icons.dashboard_outlined),
+                _buildPropertyTypeChip('Villa', Icons.villa_outlined),
+                _buildPropertyTypeChip('Maison', Icons.home_outlined),
+                _buildPropertyTypeChip('Appartement', Icons.apartment_outlined),
+                _buildPropertyTypeChip('Studio', Icons.single_bed_outlined),
+                _buildPropertyTypeChip('Hôtel', Icons.hotel_outlined),
+                _buildPropertyTypeChip('Terrain', Icons.landscape_outlined),
+                _buildPropertyTypeChip('Commerce', Icons.storefront_outlined),
+                _buildPropertyTypeChip('Bureau', Icons.business_outlined),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Section Budget
+            const Text(
+              "Budget",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _minPriceController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Prix min',
+                      prefixIcon: const Icon(Icons.attach_money_outlined),
+                      filled: true,
+                      fillColor: surfaceColor,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: primaryColor),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: _maxPriceController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Prix max',
+                      prefixIcon: const Icon(Icons.attach_money_outlined),
+                      filled: true,
+                      fillColor: surfaceColor,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: primaryColor),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Section Nombre de chambres
+            if (_propertyType != 'Terrain') ...[
+              const Text(
+                "Nombre de chambres",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: surfaceColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildCircularButton(
+                      icon: Icons.remove,
+                      onPressed: () {
+                        if (_bedrooms > 0) {
+                          setState(() {
+                            _bedrooms--;
+                            _hasChanges = true;
+                          });
+                        }
+                      },
+                    ),
+                    Text(
+                      '$_bedrooms',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    _buildCircularButton(
+                      icon: Icons.add,
+                      onPressed: () {
+                        setState(() {
+                          _bedrooms++;
+                          _hasChanges = true;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+
+            // Bouton Appliquer
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  double minPrice =
+                      double.tryParse(_minPriceController.text) ?? 0;
+                  double maxPrice = double.tryParse(_maxPriceController.text) ??
+                      double.infinity;
+                  widget.onApplyFilter(
+                    minPrice,
+                    maxPrice,
+                    _needType,
+                    _propertyType,
+                    _villeController.text,
+                    _bedrooms,
+                    _hasChanges,
+                  );
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Appliquer les filtres',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPropertyTypeChip(String label, IconData icon) {
+    final isSelected = _propertyType == label;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _propertyType = label;
+          _hasChanges = true;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? primaryColor : surfaceColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: isSelected ? Colors.white : Colors.black87,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.black87,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCircularButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        onPressed: onPressed,
+        icon: Icon(icon),
+        color: Colors.black87,
+        padding: const EdgeInsets.all(5),
       ),
     );
   }
