@@ -65,14 +65,14 @@ class RepairServicesScreen extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.emergency, color: Colors.white, size: 32),
+          const Icon(Icons.emergency, color: Colors.white, size: 30),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 Text(
-                  'Une réparation urgente ?',
+                  'Réparation urgente ?',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

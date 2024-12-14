@@ -82,18 +82,24 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> signInWithFacebook(BuildContext context) async {
-    _setLoading(true);
-    final User? user =
-        await _read.read(authServiceProvider).signInWithFacebook();
-    if (user != null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    } else {
-      showErrorMessage(context, 'Échec de la connexion avec Facebook.');
+    try {
+      _setLoading(true);
+      final User? user =
+          await _read.read(authServiceProvider).signInWithFacebook();
+      if (user != null) {
+        _user = user;
+        await fetchUserProfile(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        showErrorMessage(context, 'Échec de la connexion avec Facebook.');
+      }
+      _setLoading(false);
+    } catch (e) {
+      print('Error signing in with Facebook⛪⛪⛪⛪⛪⛪: $e');
     }
-    _setLoading(false);
   }
 
   Future<void> signInWithGoogle(BuildContext context) async {

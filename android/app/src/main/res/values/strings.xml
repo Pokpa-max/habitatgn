@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HabitatGN</string>
+    <string name="facebook_app_id">2451400308398820</string>
+    <string name="fb_login_protocol_scheme">fb2451400308398820</string>
+    <string name="facebook_client_token">3be040110c93779ce79fe8aec5a9946b</string>
+</resources>

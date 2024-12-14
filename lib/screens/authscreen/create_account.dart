@@ -5,225 +5,259 @@ import 'package:habitatgn/utils/appColors.dart';
 import 'package:habitatgn/viewmodels/auth_provider/auth_provider.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-class CreateAccountPage extends ConsumerWidget {
+class CreateAccountPage extends ConsumerStatefulWidget {
+  const CreateAccountPage({super.key});
+
+  @override
+  ConsumerState<CreateAccountPage> createState() => _CreateAccountPageState();
+}
+
+class _CreateAccountPageState extends ConsumerState<CreateAccountPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
+  bool _acceptedTerms = false; // State pour les conditions d'utilisation
 
-  CreateAccountPage({super.key});
   bool _isValidEmail(String email) {
-    final emailRegex =
-        RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
-    return emailRegex.hasMatch(email);
+    return RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+        .hasMatch(email);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final authProvider = ref.watch(authViewModelProvider);
     final isPasswordVisible = ref.watch(passwordVisibilityProvider);
     final isConfirmPasswordVisible =
         ref.watch(confirmPasswordVisibilityProvider);
 
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: SingleChildScrollView(
-        child: Column(
-          // crossAxisAlignment: CrossAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20.0),
-              decoration: const BoxDecoration(
-                color: primaryColor,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Créer un compte",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              child: SafeArea(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 8),
+                Text(
+                  "Commencez votre expérience avec nous",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                SizedBox(height: size.height * 0.04),
+
+                // Champs de formulaire
+                _buildTextField(
+                  controller: nameController,
+                  hintText: 'Nom & Prénom',
+                  icon: Icons.person_outline,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: emailController,
+                  hintText: 'Email',
+                  icon: Icons.email_outlined,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: passwordController,
+                  hintText: 'Mot de passe',
+                  icon: Icons.lock_outline,
+                  isPassword: true,
+                  isVisible: isPasswordVisible,
+                  onVisibilityToggle: () {
+                    ref
+                        .read(passwordVisibilityProvider.notifier)
+                        .toggleVisibility();
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: confirmPasswordController,
+                  hintText: 'Confirmer le mot de passe',
+                  icon: Icons.lock_outline,
+                  isPassword: true,
+                  isVisible: isConfirmPasswordVisible,
+                  onVisibilityToggle: () {
+                    ref
+                        .read(confirmPasswordVisibilityProvider.notifier)
+                        .toggleVisibility();
+                  },
+                ),
+                const SizedBox(height: 24),
+
+                // Conditions d'utilisation
+                Row(
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
+                    Checkbox(
+                      value: _acceptedTerms,
+                      onChanged: (value) {
+                        setState(() {
+                          _acceptedTerms = value ?? false;
+                        });
+                      },
+                      activeColor: primaryColor,
                     ),
-                    const SizedBox(height: 20),
                     const Text(
-                      "Créez votre compte",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      "J'accepte les conditions d'utilisation",
+                      style: TextStyle(color: Colors.black54),
                     ),
                   ],
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 20),
-                  _buildTextField(
-                    controller: nameController,
-                    hintText: 'Nom & Présnom',
-                    icon: Icons.person_outline,
-                  ),
-                  const SizedBox(height: 20),
-                  _buildTextField(
-                    controller: emailController,
-                    hintText: 'Email',
-                    icon: Icons.email_outlined,
-                  ),
-                  const SizedBox(height: 20),
-                  _buildTextField(
-                    controller: passwordController,
-                    hintText: 'Mot de passe',
-                    icon: Icons.lock_outline,
-                    isPassword: true,
-                    isVisible: isPasswordVisible,
-                    onVisibilityToggle: () {
-                      ref
-                          .read(passwordVisibilityProvider.notifier)
-                          .toggleVisibility();
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  _buildTextField(
-                    controller: confirmPasswordController,
-                    hintText: 'Confirmer le mot de passe',
-                    icon: Icons.lock_outline,
-                    isPassword: true,
-                    isVisible: isConfirmPasswordVisible,
-                    onVisibilityToggle: () {
-                      ref
-                          .read(confirmPasswordVisibilityProvider.notifier)
-                          .toggleVisibility();
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: false,
-                        onChanged: (value) {},
-                        fillColor: WidgetStateProperty.resolveWith(
-                            (states) => primaryColor),
-                      ),
-                      const Text(
-                        'J’accepte les conditions d’utilisation',
-                        style: TextStyle(color: Colors.black54),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: authProvider.isCreatingAccount
-                          ? null
-                          : () async {
-                              // Votre logique de création de compte existante
-                              // Validation des champs
-                              if (emailController.text.isEmpty ||
-                                  passwordController.text.isEmpty ||
-                                  confirmPasswordController.text.isEmpty ||
-                                  nameController.text.isEmpty) {
-                                authProvider.showErrorMessage(
-                                  color: primaryColor,
-                                  context,
-                                  "Veuillez remplir tous les champs.",
-                                );
-                                return;
-                              }
 
-                              // Validation de l'email
-                              if (!_isValidEmail(emailController.text)) {
-                                authProvider.showErrorMessage(
-                                  context,
-                                  "Veuillez entrer une adresse email valide.",
-                                );
-                                return;
-                              }
-                              // Vérification si les mots de passe correspondent
-                              if (passwordController.text !=
-                                  confirmPasswordController.text) {
-                                authProvider.showErrorMessage(
-                                  context,
-                                  "Les mots de passe ne correspondent pas.",
-                                );
-                                return;
-                              }
+                const SizedBox(height: 20),
 
-                              // Validation de la longueur du mot de passe
-                              if (passwordController.text.length < 6) {
-                                authProvider.showErrorMessage(
-                                  context,
-                                  "Le mot de passe doit contenir au moins 6 caractères.",
-                                );
-                                return;
-                              }
+                // Bouton de création de compte
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: authProvider.isCreatingAccount
+                        ? null
+                        : () async {
+                            // Vérification des autres champs
+                            if (emailController.text.isEmpty ||
+                                passwordController.text.isEmpty ||
+                                confirmPasswordController.text.isEmpty ||
+                                nameController.text.isEmpty) {
+                              authProvider.showErrorMessage(
+                                context,
+                                "Veuillez remplir tous les champs.",
+                                color: primaryColor,
+                              );
+                              return;
+                            }
+                            if (!_isValidEmail(emailController.text)) {
+                              authProvider.showErrorMessage(
+                                context,
+                                "Email invalide",
+                                color: Colors.yellow[800],
+                              );
+                              return;
+                            }
 
-                              final List<ConnectivityResult>
-                                  connectivityResult =
-                                  await (Connectivity().checkConnectivity());
-                              // Vérifiez l'état de la connexion Internet
-                              if ((connectivityResult
-                                  .contains(ConnectivityResult.none))) {
-                                authProvider.showErrorMessage(
-                                    context, 'Connexion Internet indisponible.',
-                                    color: Colors.red);
-                                return;
-                              } else {
-                                await authProvider
-                                    .createUserWithEmailAndPassword(
-                                        context,
-                                        emailController.text,
-                                        passwordController.text,
-                                        nameController.text);
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
+                            if (passwordController.text !=
+                                confirmPasswordController.text) {
+                              authProvider.showErrorMessage(
+                                context,
+                                "Les mots de passe ne correspondent pas.",
+                                color: Colors.yellow[800],
+                              );
+                              return;
+                            }
+
+                            if (passwordController.text.length < 6) {
+                              authProvider.showErrorMessage(
+                                context,
+                                "Le mot de passe doit contenir au moins 6 caractères.",
+                                color: Colors.yellow[800],
+                              );
+                              return;
+                            }
+
+                            // Vérification de l'acceptation des conditions
+                            if (!_acceptedTerms) {
+                              authProvider.showErrorMessage(
+                                context,
+                                "Veuillez accepter les conditions d'utilisation",
+                                color: Colors.yellow[800],
+                              );
+                              return;
+                            }
+                            final List<ConnectivityResult> connectivityResult =
+                                await (Connectivity().checkConnectivity());
+                            if ((connectivityResult
+                                .contains(ConnectivityResult.none))) {
+                              authProvider.showErrorMessage(
+                                  context, 'Connexion Internet indisponible.',
+                                  color: Colors.yellow[800]);
+                              return;
+                            }
+
+                            // Création du compte
+                            await authProvider.createUserWithEmailAndPassword(
+                              context,
+                              emailController.text.trim(),
+                              passwordController.text,
+                              nameController.text.trim(),
+                            );
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: authProvider.isCreatingAccount
-                          ? const SpinKitFadingCircle(
-                              color: primaryColor,
-                              size: 20.0,
-                            )
-                          : const Text(
-                              'Créez votre compte',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                    child: authProvider.isCreatingAccount
+                        ? const SpinKitFadingCircle(
+                            color: primaryColor,
+                            size: 24,
+                          )
+                        : const Text(
+                            'Créer mon compte',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
-                    ),
+                          ),
                   ),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: TextButton(
-                      onPressed: () {
-                        // Naviguer vers la page de connexion
-                        authProvider.navigateToLogin(context);
-                      },
-                      child: const Text(
-                        'Avez déjà un compte ? Connectez-vous',
-                        style: TextStyle(color: primaryColor),
+                ),
+                const SizedBox(height: 24),
+
+                // Lien de connexion
+                Center(
+                  child: TextButton(
+                    onPressed: () => authProvider.navigateToLogin(context),
+                    child: RichText(
+                      text: TextSpan(
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey[600],
+                        ),
+                        children: [
+                          const TextSpan(text: "Déjà un compte ? "),
+                          TextSpan(
+                            text: "Se connecter",
+                            style: TextStyle(
+                              color: primaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+                // ... Reste de vos widgets ...
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -239,379 +273,41 @@ class CreateAccountPage extends ConsumerWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey[200]!,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TextField(
         controller: controller,
         obscureText: isPassword && !isVisible,
+        style: const TextStyle(fontSize: 16),
         decoration: InputDecoration(
           hintText: hintText,
-          prefixIcon: Icon(icon, color: Colors.grey),
+          hintStyle: TextStyle(color: Colors.grey[500]),
+          prefixIcon: Icon(icon, color: Colors.grey[600], size: 22),
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(
-                    isVisible ? Icons.visibility : Icons.visibility_off,
-                    color: Colors.grey,
+                    isVisible ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.grey[600],
+                    size: 22,
                   ),
                   onPressed: onVisibilityToggle,
                 )
               : null,
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class FilterModal extends StatefulWidget {
-  final Function(double, double, String, String, String, int, bool)
-      onApplyFilter;
-  const FilterModal({super.key, required this.onApplyFilter});
-
-  @override
-  _FilterModalState createState() => _FilterModalState();
-}
-
-class _FilterModalState extends State<FilterModal> {
-  String _propertyType = 'Tous';
-  String _needType = 'Tous';
-  final TextEditingController _minPriceController = TextEditingController();
-  final TextEditingController _maxPriceController = TextEditingController();
-  final TextEditingController _villeController = TextEditingController();
-  int _bedrooms = 0;
-  bool _hasChanges = false;
-  final backgroundColor = Colors.white;
-  final surfaceColor = const Color(0xFFF3F4F6);
-
-  @override
-  void dispose() {
-    _minPriceController.dispose();
-    _maxPriceController.dispose();
-    _villeController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
-      ),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // En-tête fixe
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Filtres',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _needType = 'Tous';
-                      _propertyType = 'Tous';
-                      _minPriceController.clear();
-                      _maxPriceController.clear();
-                      _villeController.clear();
-                      _bedrooms = 0;
-                      _hasChanges = false;
-                    });
-                  },
-                  child: Text(
-                    'Réinitialiser',
-                    style: TextStyle(
-                      color: primaryColor,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Contenu défilable
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Section Type de besoin (Compact)
-                  _buildSectionTitle("J'ai besoin de"),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: ['Tous', 'Louer', 'Acheter'].map((type) {
-                      final isSelected = _needType == type;
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: InkWell(
-                            onTap: () => setState(() {
-                              _needType = type;
-                              _hasChanges = true;
-                            }),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              decoration: BoxDecoration(
-                                color: isSelected ? primaryColor : surfaceColor,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  type,
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Colors.black87,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Section Ville (Compact)
-                  _buildSectionTitle("Emplacement"),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _villeController,
-                    decoration: InputDecoration(
-                      hintText: 'Ville, commune...',
-                      prefixIcon:
-                          const Icon(Icons.location_on_outlined, size: 20),
-                      filled: true,
-                      fillColor: surfaceColor,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                    ),
-                    onChanged: (_) => setState(() => _hasChanges = true),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Section Budget (Compact)
-                  _buildSectionTitle("Budget"),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildPriceField('Min', _minPriceController),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildPriceField('Max', _maxPriceController),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Section Type de propriété (Grid compact)
-                  _buildSectionTitle("Type de propriété"),
-                  const SizedBox(height: 8),
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 3,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 2.5,
-                    children: [
-                      _buildPropertyTypeChip('Tous', Icons.dashboard_outlined),
-                      _buildPropertyTypeChip('Maison', Icons.home_outlined),
-                      _buildPropertyTypeChip(
-                          'Appart.', Icons.apartment_outlined),
-                      _buildPropertyTypeChip(
-                          'Studio', Icons.single_bed_outlined),
-                      _buildPropertyTypeChip('Villa', Icons.villa_outlined),
-                      _buildPropertyTypeChip('Bureau', Icons.business_outlined),
-                    ],
-                  ),
-                  if (_propertyType != 'Terrain') ...[
-                    const SizedBox(height: 16),
-                    _buildSectionTitle("Chambres"),
-                    const SizedBox(height: 8),
-                    _buildBedroomSelector(),
-                  ],
-                ],
-              ),
-            ),
-          ),
-
-          // Bouton Appliquer (Fixe en bas)
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: ElevatedButton(
-              onPressed: () {
-                double minPrice =
-                    double.tryParse(_minPriceController.text) ?? 0;
-                double maxPrice = double.tryParse(_maxPriceController.text) ??
-                    double.infinity;
-                widget.onApplyFilter(
-                  minPrice,
-                  maxPrice,
-                  _needType,
-                  _propertyType,
-                  _villeController.text,
-                  _bedrooms,
-                  _hasChanges,
-                );
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Appliquer',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        color: Color(0xFF1F2937),
-      ),
-    );
-  }
-
-  Widget _buildPriceField(String label, TextEditingController controller) {
-    return TextField(
-      controller: controller,
-      keyboardType: TextInputType.number,
-      decoration: InputDecoration(
-        hintText: '$label €',
-        prefixIcon: const Icon(Icons.euro_outlined, size: 20),
-        filled: true,
-        fillColor: surfaceColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 8),
-      ),
-    );
-  }
-
-  Widget _buildPropertyTypeChip(String label, IconData icon) {
-    final isSelected = _propertyType == label;
-    return GestureDetector(
-      onTap: () => setState(() {
-        _propertyType = label;
-        _hasChanges = true;
-      }),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: isSelected ? primaryColor : surfaceColor,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isSelected ? Colors.white : Colors.black87,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
-                fontWeight: FontWeight.w500,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBedroomSelector() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.remove, size: 20),
-            onPressed: _bedrooms > 0
-                ? () => setState(() {
-                      _bedrooms--;
-                      _hasChanges = true;
-                    })
-                : null,
-          ),
-          Text(
-            '$_bedrooms',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.add, size: 20),
-            onPressed: () => setState(() {
-              _bedrooms++;
-              _hasChanges = true;
-            }),
-          ),
-        ],
       ),
     );
   }

@@ -20,9 +20,8 @@ class LoginScreen extends ConsumerWidget {
   LoginScreen({super.key});
 
   bool _isValidEmail(String email) {
-    final emailRegex =
-        RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
-    return emailRegex.hasMatch(email);
+    return RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+        .hasMatch(email);
   }
 
   @override
@@ -31,238 +30,221 @@ class LoginScreen extends ConsumerWidget {
     final isLoading =
         ref.watch(authViewModelProvider.select((value) => value.isLoading));
     final isPasswordVisible = ref.watch(passwordVisibilityProvider);
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: Container(
-        color: const Color.fromARGB(223, 0, 30, 40),
-        // lightPrimary,
-        // lightPrimary2,
-        // const Color.fromARGB(223, 1, 34, 44),
-        child: Center(
-          child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                const SizedBox(
-                    width: 100,
-                    height: 100,
-                    child: HousingSearchIcon(size: 48.0, color: Colors.white
-                        //  lightPrimary,
-                        )),
-                const SizedBox(height: 20),
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(height: size.height * 0.1),
+
+                // En-tête
                 Text(
-                  "HABITATGN",
+                  "Bienvenue !",
                   style: TextStyle(
-                    color: Colors.yellow[700],
-                    fontSize: 25,
+                    fontSize: 30,
                     fontWeight: FontWeight.bold,
+                    color: primaryColor,
                   ),
                 ),
+                const SizedBox(height: 8),
                 Text(
-                  "Explorez,Découvrez,Vivez",
+                  "Connectez-vous pour continuer",
                   style: TextStyle(
-                    color:
-                        //  primaryColor,
-                        Colors.teal[100],
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: Colors.grey[600],
                   ),
                 ),
-                const SizedBox(height: 30),
-                Card(
-                  color:
-                      // lightPrimary2,
-                      Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 20),
-                        _buildTextField(
-                          controller: emailController,
-                          hintText: 'Email',
-                          icon: Icons.email_outlined,
-                        ),
-                        const SizedBox(height: 15),
-                        _buildTextField(
-                          controller: passwordController,
-                          hintText: 'Mot de passe',
-                          icon: Icons.lock_outline,
-                          isPassword: true,
-                          isVisible: isPasswordVisible,
-                          onVisibilityToggle: () {
-                            ref
-                                .read(passwordVisibilityProvider.notifier)
-                                .toggleVisibility();
+                SizedBox(height: size.height * 0.06),
+
+                // Champs de connexion
+                _buildTextField(
+                  controller: emailController,
+                  hintText: 'Email',
+                  icon: Icons.email_outlined,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: passwordController,
+                  hintText: 'Mot de passe',
+                  icon: Icons.lock_outline,
+                  isPassword: true,
+                  isVisible: isPasswordVisible,
+                  onVisibilityToggle: () {
+                    ref
+                        .read(passwordVisibilityProvider.notifier)
+                        .toggleVisibility();
+                  },
+                ),
+
+                // Mot de passe oublié
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ForgotUserPasswordScreen()),
+                            );
                           },
-                        ),
-                        const SizedBox(height: 15),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: isLoading
-                                ? null
-                                : () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const ForgotUserPasswordScreen()),
-                                    );
-                                  },
-                            child: const Text(
-                              'Mot de passe oublié?',
-                              style: TextStyle(color: Colors.black87),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        _buildElevatedButton(
-                          borderColor: Colors.transparent,
-                          onPressed: isLoading
-                              ? null
-                              : () async {
-                                  // Validation des champs
-                                  if (emailController.text.isEmpty ||
-                                      passwordController.text.isEmpty) {
-                                    authViewModel.showErrorMessage(
-                                      color: primaryColor,
-                                      context,
-                                      "Veuillez remplir tous les champs.",
-                                    );
-                                    return;
-                                  }
+                    child: Text(
+                      'Mot de passe oublié?',
+                      style: TextStyle(color: Colors.grey[700]),
+                    ),
+                  ),
+                ),
 
-                                  // Validation de l'email
-                                  if (!_isValidEmail(emailController.text)) {
-                                    authViewModel.showErrorMessage(context,
-                                        "Veuillez entrer une adresse email valide.",
-                                        color: Colors.blueGrey);
-                                    return;
-                                  }
-                                  // Vérification de la connectivité
-                                  final List<ConnectivityResult>
-                                      connectivityResult = await (Connectivity()
-                                          .checkConnectivity());
-                                  // Vérifiez l'état de la connexion Internet
-                                  if ((connectivityResult
-                                      .contains(ConnectivityResult.none))) {
-                                    authViewModel.showErrorMessage(context,
-                                        'Connexion Internet indisponible.',
-                                        color: Colors.red);
-                                    return; // Ne continuez pas si aucune connexion n'est disponible
-                                  } else {
-                                    // Tentative de connexion
-                                    await authViewModel
-                                        .signInWithEmailAndPassword(
-                                      context,
-                                      emailController.text.trim(),
-                                      passwordController.text,
-                                    );
-                                  }
-                                },
-                          label: isLoading
-                              ? const SpinKitFadingCircle(
-                                  color: primaryColor,
-                                  size: 20.0,
-                                )
-                              : const Text(
-                                  'Se connecter',
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 16),
-                                ),
-                          backgroundColor: primaryColor,
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          "Ou connectez-vous avec",
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                        const SizedBox(height: 20),
-                        _buildElevatedButton(
-                          onPressed: isLoading
-                              ? null
-                              : () {
-                                  authViewModel
-                                      .navigateToCreateAccount(context);
-                                },
-                          label: const Text(
-                            "Creer un Compte",
-                            style: TextStyle(fontSize: 16, color: primaryColor),
-                          ),
-                          backgroundColor: lightPrimary,
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _buildSocialButton(
-                              icon: const Icon(Icons.facebook,
-                                  color: Colors.white),
-                              color: Colors.blue[700]!,
-                              onPressed: isLoading
-                                  ? null
-                                  : () async {
-                                      try {
-                                        // Vérification de la connectivité
-                                        final List<ConnectivityResult>
-                                            connectivityResult =
-                                            await (Connectivity()
-                                                .checkConnectivity());
-                                        if ((connectivityResult.contains(
-                                            ConnectivityResult.none))) {
-                                          authViewModel.showErrorMessage(
-                                              context,
-                                              'Connexion Internet indisponible.',
-                                              color: Colors.red);
-                                        } else {
-                                          await authViewModel
-                                              .signInWithFacebook(context);
-                                        }
-                                      } catch (e) {
-                                        print(
-                                            'Erreur de connexion Facebook: $e');
-                                      }
-                                    },
-                            ),
-                            const SizedBox(width: 20),
-                            _buildSocialButton(
-                              icon: const FaIcon(
-                                FontAwesomeIcons.google,
-                                color: Colors.white,
-                              ),
-                              color: Colors.red[600]!,
-                              onPressed: isLoading
-                                  ? null
-                                  : () async {
-                                      try {
-                                        // Vérification de la connectivité
+                const SizedBox(height: 24),
 
-                                        final List<ConnectivityResult>
-                                            connectivityResult =
-                                            await (Connectivity()
-                                                .checkConnectivity());
-                                        if ((connectivityResult.contains(
-                                            ConnectivityResult.none))) {
-                                          authViewModel.showErrorMessage(
-                                              context,
-                                              'Connexion Internet indisponible.',
-                                              color: Colors.red);
-                                        } else {
-                                          await authViewModel
-                                              .signInWithGoogle(context);
-                                        }
-                                      } catch (e) {
-                                        print('Erreur de connexion Google: $e');
-                                      }
-                                    },
-                            ),
-                          ],
+                // Bouton de connexion
+                ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          if (emailController.text.isEmpty ||
+                              passwordController.text.isEmpty) {
+                            authViewModel.showErrorMessage(
+                                context, "Veuillez remplir tous les champs.",
+                                color: primaryColor);
+                            return;
+                          }
+
+                          if (!_isValidEmail(emailController.text)) {
+                            authViewModel.showErrorMessage(
+                                context, "Email invalide",
+                                color: Colors.yellow[800]);
+                            return;
+                          }
+
+                          final List<ConnectivityResult> connectivityResult =
+                              await (Connectivity().checkConnectivity());
+                          if ((connectivityResult
+                              .contains(ConnectivityResult.none))) {
+                            authViewModel.showErrorMessage(
+                                context, 'Connexion Internet indisponible.',
+                                color: Colors.yellow[800]);
+                            return;
+                          }
+
+                          await authViewModel.signInWithEmailAndPassword(
+                            context,
+                            emailController.text.trim(),
+                            passwordController.text,
+                          );
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                  ),
+                  child: isLoading
+                      ? const SpinKitFadingCircle(color: primaryColor, size: 25)
+                      : const Text(
+                          'Se connecter',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Séparateur
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: Colors.grey[300])),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child:
+                          Text('OU', style: TextStyle(color: Colors.grey[600])),
+                    ),
+                    Expanded(child: Divider(color: Colors.grey[300])),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // Boutons sociaux
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildSocialButton(
+                      icon: const FaIcon(
+                        FontAwesomeIcons.google,
+                        size: 22,
+                        color: Colors.red,
+                      ),
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                              final List<ConnectivityResult>
+                                  connectivityResult =
+                                  await (Connectivity().checkConnectivity());
+                              if ((connectivityResult
+                                  .contains(ConnectivityResult.none))) {
+                                authViewModel.showErrorMessage(
+                                    context, 'Connexion Internet indisponible.',
+                                    color: primaryColor);
+                                return;
+                              }
+
+                              await authViewModel.signInWithGoogle(context);
+                            },
+                    ),
+                    const SizedBox(width: 20),
+                    _buildSocialButton(
+                      icon: const FaIcon(
+                        FontAwesomeIcons.facebook,
+                        size: 22,
+                        color: Colors.blue,
+                      ),
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                              final List<ConnectivityResult>
+                                  connectivityResult =
+                                  await (Connectivity().checkConnectivity());
+                              if ((connectivityResult
+                                  .contains(ConnectivityResult.none))) {
+                                authViewModel.showErrorMessage(
+                                    context, 'Connexion Internet indisponible.',
+                                    color: primaryColor);
+                                return;
+                              }
+                              await authViewModel.signInWithFacebook(context);
+                            },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                // Création de compte
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => authViewModel.navigateToCreateAccount(context),
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      children: [
+                        const TextSpan(text: "Pas encore de compte ? "),
+                        TextSpan(
+                          text: "Créer un compte",
+                          style: TextStyle(
+                            color: primaryColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
@@ -275,219 +257,67 @@ class LoginScreen extends ConsumerWidget {
       ),
     );
   }
-}
 
-Widget _buildTextField({
-  required TextEditingController controller,
-  required String hintText,
-  required IconData icon,
-  bool isPassword = false,
-  bool isVisible = true,
-  VoidCallback? onVisibilityToggle,
-}) {
-  return Container(
-    decoration: BoxDecoration(
-      border: Border.all(color: Colors.grey[300]!),
-      borderRadius: BorderRadius.circular(30),
-    ),
-    child: TextField(
-      controller: controller,
-      obscureText: isPassword && !isVisible,
-      decoration: InputDecoration(
-        hintText: hintText,
-        prefixIcon: Icon(icon, color: Colors.grey),
-        suffixIcon: isPassword
-            ? IconButton(
-                icon: Icon(
-                  isVisible ? Icons.visibility : Icons.visibility_off,
-                  color: Colors.grey,
-                ),
-                onPressed: onVisibilityToggle,
-              )
-            : null,
-        border: InputBorder.none,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    bool isPassword = false,
+    bool isVisible = true,
+    VoidCallback? onVisibilityToggle,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
       ),
-    ),
-  );
-}
-
-Widget _buildElevatedButton({
-  required VoidCallback? onPressed,
-  required Widget label,
-  required Color backgroundColor,
-  Color borderColor = primaryColor,
-}) {
-  return ElevatedButton(
-    onPressed: onPressed,
-    style: ElevatedButton.styleFrom(
-      backgroundColor: backgroundColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(30),
-        side: BorderSide(color: borderColor),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      minimumSize: const Size(double.infinity, 0),
-    ),
-    child: label,
-  );
-}
-
-Widget _buildSocialButton({
-  required Widget icon,
-  required Color color,
-  required VoidCallback? onPressed,
-}) {
-  return ElevatedButton(
-    onPressed: onPressed,
-    style: ElevatedButton.styleFrom(
-      backgroundColor: color,
-      shape: const CircleBorder(),
-      padding: const EdgeInsets.all(15),
-    ),
-    child: icon,
-  );
-}
-
-class HousingSearchIcon extends StatelessWidget {
-  final double size;
-  final Color color;
-
-  const HousingSearchIcon({
-    super.key,
-    this.size = 24.0,
-    this.color = Colors.black,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CustomPaint(
-        painter: _HousingSearchIconPainter(
-            mainColor: color, toolColor: Colors.yellow[700]!),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword && !isVisible,
+        style: const TextStyle(fontSize: 16),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: TextStyle(color: Colors.grey[500]),
+          prefixIcon: Icon(icon, color: Colors.grey[600], size: 20),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    isVisible ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.grey[600],
+                    size: 20,
+                  ),
+                  onPressed: onVisibilityToggle,
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
       ),
     );
   }
-}
 
-// class _HousingSearchIconPainter extends CustomPainter {
-//   final Color color;
-
-//   _HousingSearchIconPainter({required this.color});
-
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     final Paint paint = Paint()
-//       ..color = color
-//       ..style = PaintingStyle.stroke
-//       ..strokeWidth = size.width / 12;
-
-//     // Dessiner la maison
-//     final Path housePath = Path()
-//       ..moveTo(size.width * 0.2, size.height * 0.5)
-//       ..lineTo(size.width * 0.2, size.height * 0.8)
-//       ..lineTo(size.width * 0.8, size.height * 0.8)
-//       ..lineTo(size.width * 0.8, size.height * 0.5)
-//       ..lineTo(size.width * 0.5, size.height * 0.3)
-//       ..close();
-
-//     canvas.drawPath(housePath, paint);
-
-//     // Dessiner la loupe
-//     final double magnifierCenter = size.width * 0.7;
-//     final double magnifierRadius = size.width * 0.2;
-//     canvas.drawCircle(
-//       Offset(magnifierCenter, magnifierCenter),
-//       magnifierRadius,
-//       paint,
-//     );
-
-//     // Dessiner le manche de la loupe
-//     canvas.drawLine(
-//       Offset(magnifierCenter + magnifierRadius * 0.7,
-//           magnifierCenter + magnifierRadius * 0.7),
-//       Offset(size.width * 0.95, size.height * 0.95),
-//       paint,
-//     );
-//   }
-
-//   @override
-//   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-// }
-
-class _HousingSearchIconPainter extends CustomPainter {
-  final Color mainColor;
-  final Color toolColor;
-
-  _HousingSearchIconPainter({
-    required this.mainColor,
-    this.toolColor = Colors.yellow,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint mainPaint = Paint()
-      ..color = mainColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width / 20;
-
-    final Paint toolPaint = Paint()
-      ..color = toolColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width / 20;
-
-    // Dessiner la maison
-    final Path housePath = Path()
-      ..moveTo(size.width * 0.2, size.height * 0.5)
-      ..lineTo(size.width * 0.2, size.height * 0.8)
-      ..lineTo(size.width * 0.8, size.height * 0.8)
-      ..lineTo(size.width * 0.8, size.height * 0.5)
-      ..lineTo(size.width * 0.5, size.height * 0.3)
-      ..close();
-    canvas.drawPath(housePath, mainPaint);
-
-    // Dessiner la loupe
-    final double magnifierCenter = size.width * 0.7;
-    final double magnifierRadius = size.width * 0.2;
-    canvas.drawCircle(
-      Offset(magnifierCenter, magnifierCenter),
-      magnifierRadius,
-      mainPaint,
-    );
-
-    // Dessiner le manche de la loupe
-    canvas.drawLine(
-      Offset(magnifierCenter + magnifierRadius * 0.7,
-          magnifierCenter + magnifierRadius * 0.7),
-      Offset(size.width * 0.95, size.height * 0.95),
-      mainPaint,
-    );
-
-    // Dessiner l'outil de réparation (marteau) en jaune
-    final double toolStartX = size.width * 0.25;
-    final double toolStartY = size.height * 0.85;
-
-    // Manche du marteau
-    canvas.drawLine(
-      Offset(toolStartX, toolStartY),
-      Offset(toolStartX, toolStartY - size.height * 0.08),
-      toolPaint,
-    );
-
-    // Tête du marteau
-    canvas.drawRect(
-      Rect.fromCenter(
-        center: Offset(toolStartX, toolStartY - size.height * 0.1),
-        width: size.width * 0.08,
-        height: size.height * 0.04,
+  Widget _buildSocialButton({
+    required Widget icon,
+    required VoidCallback? onPressed,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconTheme(
+            data: IconThemeData(color: Colors.grey[700]),
+            child: icon,
+          ),
+        ),
       ),
-      toolPaint,
     );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

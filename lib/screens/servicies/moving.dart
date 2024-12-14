@@ -70,7 +70,7 @@ class MovingServicesScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 Text(
-                  'Un déménagement urgent ?',
+                  'Déménagement urgent ?',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

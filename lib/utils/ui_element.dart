@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:habitatgn/screens/seach/seach_screen.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -186,102 +187,6 @@ class FormattedPrice extends StatelessWidget {
   }
 }
 
-// class SeparatedText extends StatelessWidget {
-//   final String text;
-//   final TextStyle? firstLetterStyle;
-//   final TextStyle? restOfTextStyle;
-//   final double spaceBetween;
-
-//   const SeparatedText({
-//     super.key,
-//     required this.text,
-//     this.firstLetterStyle,
-//     this.restOfTextStyle,
-//     this.spaceBetween = 4.0, // Espace par défaut de 4.0
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     if (text.isEmpty) return const Text('');
-
-//     String firstLetter = text[0];
-//     String restOfText = text.substring(1);
-
-//     return RichText(
-//       text: TextSpan(
-//         children: [
-//           TextSpan(
-//             text: firstLetter,
-//             style: firstLetterStyle ?? DefaultTextStyle.of(context).style,
-//           ),
-//           WidgetSpan(
-//             child: SizedBox(width: spaceBetween),
-//           ),
-//           TextSpan(
-//             text: restOfText,
-//             style: restOfTextStyle ?? DefaultTextStyle.of(context).style,
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// class CustomCachedNetworkImage extends StatelessWidget {
-//   final String imageUrl;
-//   final double? width;
-//   final double? height;
-
-//   const CustomCachedNetworkImage({
-//     super.key,
-//     required this.imageUrl,
-//     this.width,
-//     this.height,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     // Définir les valeurs par défaut
-//     const double defaultWidth = 150;
-//     const double defaultHeight = 140;
-
-//     return CachedNetworkImage(
-//       imageUrl: imageUrl,
-//       width: width ?? defaultWidth,
-//       height: height ?? defaultHeight,
-//       fit: BoxFit.cover,
-//       placeholder: (context, url) => Shimmer.fromColors(
-//         baseColor: Colors.grey[300]!,
-//         highlightColor: Colors.grey[100]!,
-//         child: Container(
-//           width: width ?? defaultWidth,
-//           height: height ?? defaultHeight,
-//           color: Colors.grey[300],
-//         ),
-//       ),
-//       errorWidget: (context, url, error) => Container(
-//         width: width ?? defaultWidth,
-//         height: height ?? defaultHeight,
-//         color: Colors.grey.shade200,
-//         child: const Column(
-//           crossAxisAlignment: CrossAxisAlignment.center,
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             Center(
-//               child: Icon(
-//                 Icons.image_not_supported,
-//                 color: Colors.grey,
-//                 size: 40,
-//               ),
-//             ),
-//             Text('Pas de connexion internet')
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 class CustomCachedNetworkImage extends StatelessWidget {
   final String imageUrl;
   final double? width;
@@ -333,10 +238,12 @@ class CustomCachedNetworkImage extends StatelessWidget {
   }
 }
 
-// Navigator.pushAndRemoveUntil(
-//   context,
-//   MaterialPageRoute(
-//     builder: (context) => const HomeScreen(),
-//   ),
-//   (route) => false, // Supprime toutes les autres routes
-// );
+void showToast(String message, Color backgroundColor) {
+  Fluttertoast.showToast(
+    msg: message,
+    backgroundColor: backgroundColor,
+    textColor: Colors.white,
+    toastLength: Toast.LENGTH_SHORT,
+    gravity: ToastGravity.TOP,
+  );
+}

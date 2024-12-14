@@ -51,8 +51,9 @@ class AuthService {
 
         return user;
       }
-    } catch (e) {
-      print('Erreur de connexion Facebook: $e');
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'account-exists-with-different-credential') {}
+      print('Erreur de connexion Facebook : $e');
     }
     return null;
   }
@@ -118,7 +119,6 @@ class AuthService {
       await user.updateProfile(displayName: displayName);
       await user.reload();
       user = _auth.currentUser;
-
       await _firestore.collection('users').doc(user!.uid).set({
         'displayName': displayName,
         'email': email,

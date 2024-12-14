@@ -13,7 +13,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shimmer/shimmer.dart'; // Pour afficher un toast
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-// import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart';
 
 // class HouseDetailScreen extends ConsumerStatefulWidget {
 //   final String houseId;
@@ -811,9 +811,21 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
       ),
       child: IconButton(
         icon: const Icon(Icons.share, color: Colors.black),
-        onPressed: () {},
+        onPressed: _shareHouse,
       ),
     );
+  }
+
+  void _shareHouse() {
+    String message =
+        'Découvrez ce logement: ${house?.offerType["label"]?.toString() ?? 'Type inconnu'} '
+        // 'situé à ${house.address?.toString() ?? 'Adresse non spécifiée'}.\n'
+        ' situé à ${house?.address?.commune['label']?.toString()}/${house?.address?.zone}'
+        'Superficie: ${house?.area} m²\n'
+        'Prix: ${house?.price} GNF\n'
+        'Pour plus de détails, contactez le ${house?.phoneNumber}.';
+
+    Share.share(message);
   }
 
   Widget _buildImageCarousel() {
