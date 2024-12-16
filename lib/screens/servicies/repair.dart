@@ -467,6 +467,7 @@ class RepairServicesScreen extends ConsumerWidget {
                               phone: phoneController.text,
                               description: descriptionController.text,
                               scheduledDate: dateController.text,
+                              status: 'En attente',
                               scheduledTime: timeController.text,
                               userId: ref
                                   .read(authServiceProvider)

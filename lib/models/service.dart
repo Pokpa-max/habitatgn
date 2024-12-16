@@ -6,6 +6,7 @@ class ServiceRequestModel {
   final String name;
   final String address;
   final String description;
+  final String status;
   final String phone;
   final String userId;
   final String scheduledDate;
@@ -16,6 +17,7 @@ class ServiceRequestModel {
     required this.name,
     required this.address,
     required this.description,
+    required this.status,
     required this.phone,
     required this.userId,
     required this.scheduledDate,
@@ -30,7 +32,7 @@ class ServiceRequestModel {
       'phone': phone,
       'userId': userId,
       'description': description,
-      'status': 'En attente',
+      'status': status,
       'scheduledDate': scheduledDate,
       'scheduledTime': scheduledTime,
       'createdAt': Timestamp.now(),
@@ -42,6 +44,7 @@ class ServiceRequestModel {
       serviceType: json['serviceType'] as String,
       name: json['name'] as String,
       address: json['address'] as String,
+      status: json['status'] as String,
       phone: json['phone'] as String,
       userId: json['userId'] as String,
       description: json['description'] as String,

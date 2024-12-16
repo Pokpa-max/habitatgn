@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:habitatgn/providers/provider.dart';
 import 'package:habitatgn/screens/authscreen/loginscreen.dart';
 import 'package:habitatgn/screens/preference/preference.dart';
@@ -146,11 +148,13 @@ class SettingsPage extends ConsumerWidget {
   }
 
   void _showChangePasswordDialog(BuildContext context, WidgetRef ref) {
-    TextEditingController currentPasswordController = TextEditingController();
-    TextEditingController newPasswordController = TextEditingController();
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         return Consumer(
           builder: (context, ref, child) {
@@ -159,73 +163,93 @@ class SettingsPage extends ConsumerWidget {
             final obscureNewPassword = ref.watch(obscureNewPasswordProvider);
 
             return AlertDialog(
-              title: const Text(
+              title: Text(
                 'Changer le mot de passe',
-                style: TextStyle(fontSize: 20, color: Colors.black),
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
               ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildPasswordTextField(
-                    controller: currentPasswordController,
-                    labelText: 'Mot de passe actuel',
-                    obscureText: obscureCurrentPassword,
-                    toggleObscure: () {
-                      ref.read(obscureCurrentPasswordProvider.notifier).state =
-                          !obscureCurrentPassword;
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  _buildPasswordTextField(
-                    controller: newPasswordController,
-                    labelText: 'Nouveau mot de passe',
-                    obscureText: obscureNewPassword,
-                    toggleObscure: () {
-                      ref.read(obscureNewPasswordProvider.notifier).state =
-                          !obscureNewPassword;
-                    },
-                  ),
-                ],
+              content: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildPasswordField(
+                      controller: currentPasswordController,
+                      labelText: 'Mot de passe actuel',
+                      obscureText: obscureCurrentPassword,
+                      onToggleObscure: () {
+                        ref
+                            .read(obscureCurrentPasswordProvider.notifier)
+                            .state = !obscureCurrentPassword;
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez entrer votre mot de passe actuel';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _buildPasswordField(
+                      controller: newPasswordController,
+                      labelText: 'Nouveau mot de passe',
+                      obscureText: obscureNewPassword,
+                      onToggleObscure: () {
+                        ref.read(obscureNewPasswordProvider.notifier).state =
+                            !obscureNewPassword;
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veuillez entrer un nouveau mot de passe';
+                        }
+                        if (value.length < 6) {
+                          return 'Le mot de passe doit contenir au moins 6 caractères';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
               ),
               actions: [
-                ElevatedButton(
-                  style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(Colors.grey),
-                      foregroundColor: WidgetStateProperty.all(Colors.white)),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Annuler'),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Annuler',
+                    style: GoogleFonts.poppins(
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
                 ElevatedButton(
-                  style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(primaryColor),
-                      foregroundColor: WidgetStateProperty.all(Colors.white)),
-                  onPressed: () async {
-                    String currentPassword =
-                        currentPasswordController.text.trim();
-                    String newPassword = newPasswordController.text.trim();
-                    if (currentPassword.isNotEmpty && newPassword.isNotEmpty) {
-                      try {
-                        await ref
-                            .read(settingViewModelProvider.notifier)
-                            .changePassword(currentPassword, newPassword);
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content:
-                                  Text('Mot de passe modifié avec succès')),
-                        );
-                      } catch (error) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Erreur: $error'),
-                          ),
-                        );
-                      }
-                    }
-                  },
-                  child: const Text('Changer'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                  ),
+                  onPressed: () => _handlePasswordChange(
+                    context: context,
+                    ref: ref,
+                    formKey: formKey,
+                    currentPassword: currentPasswordController.text.trim(),
+                    newPassword: newPasswordController.text.trim(),
+                  ),
+                  child: Text(
+                    'Changer',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -235,22 +259,90 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildPasswordTextField({
+  Widget _buildPasswordField({
     required TextEditingController controller,
     required String labelText,
-    required VoidCallback toggleObscure,
     required bool obscureText,
+    required VoidCallback onToggleObscure,
+    required String? Function(String?) validator,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       obscureText: obscureText,
+      validator: validator,
+      style: GoogleFonts.poppins(),
       decoration: InputDecoration(
         labelText: labelText,
+        labelStyle: GoogleFonts.poppins(color: Colors.grey[700]),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: primaryColor),
+        ),
         suffixIcon: IconButton(
-          icon: Icon(obscureText ? Icons.visibility : Icons.visibility_off),
-          onPressed: toggleObscure,
+          icon: Icon(
+            obscureText ? Icons.visibility_off : Icons.visibility,
+            color: Colors.grey[600],
+          ),
+          onPressed: onToggleObscure,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
         ),
       ),
+    );
+  }
+
+  Future<void> _handlePasswordChange({
+    required BuildContext context,
+    required WidgetRef ref,
+    required GlobalKey<FormState> formKey,
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (!formKey.currentState!.validate()) {
+      return;
+    }
+
+    try {
+      await ref
+          .read(settingViewModelProvider.notifier)
+          .changePassword(currentPassword, newPassword);
+
+      Navigator.pop(context);
+
+      _showToast(
+        message: 'Mot de passe modifié avec succès',
+        backgroundColor: Colors.green,
+      );
+    } catch (error) {
+      _showToast(
+        message: 'Erreur: ${error.toString()}',
+        backgroundColor: Colors.red,
+      );
+    }
+  }
+
+  void _showToast({
+    required String message,
+    required Color backgroundColor,
+  }) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.TOP,
+      timeInSecForIosWeb: 3,
+      backgroundColor: backgroundColor,
+      textColor: Colors.white,
+      fontSize: 16.0,
     );
   }
 

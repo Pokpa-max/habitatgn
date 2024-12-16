@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habitatgn/models/service.dart';
 import 'package:habitatgn/viewmodels/repairService/repair_service.dart';
@@ -6,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ServiceRequestService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   late SharedPreferences _prefs;
   static const String _phonePrefix = 'service_phone_';
 
@@ -55,6 +57,25 @@ class ServiceRequestService {
       return cachedPhone;
     }
     return null;
+  }
+
+  // get user repair request
+  Future<List<ServiceRequestModel>> getUserRepairRequests() async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('serviceRequests')
+          .where('userId', isEqualTo: _auth.currentUser!.uid)
+          .get();
+
+      final List<ServiceRequestModel> requests = querySnapshot.docs
+          .map((doc) => ServiceRequestModel.fromJson(doc.data()))
+          .toList();
+
+      return requests;
+    } catch (e) {
+      print('Error fetching user repair requests: $e');
+      return [];
+    }
   }
 }
 

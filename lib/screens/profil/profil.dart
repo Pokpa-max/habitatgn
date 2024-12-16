@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:habitatgn/screens/authscreen/loginscreen.dart';
 import 'package:habitatgn/screens/preference/preference.dart';
+import 'package:habitatgn/screens/repair_requests/repair_requests_Screen.dart';
 import 'package:habitatgn/screens/settings/contact_page.dart';
 import 'package:habitatgn/screens/settings/helpsupport_page.dart';
 import 'package:habitatgn/screens/settings/settings_page.dart';
@@ -81,16 +83,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
               children: [
+                // liste des users service request
+
                 _buildProfileOption(
-                  icon: Icons.settings,
-                  title: 'Paramètres',
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const SettingsPage()));
-                  },
-                ),
+                    icon: Icons.build,
+                    title: 'Mes réparations',
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const RepairRequestsScreen()));
+                    }),
                 _buildProfileOption(
                   icon: Icons.help,
                   title: 'Aide & Support',
@@ -112,6 +116,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   },
                 ),
                 _buildProfileOption(
+                  icon: Icons.settings,
+                  title: 'Paramètres',
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SettingsPage()));
+                  },
+                ),
+                _buildProfileOption(
                   icon: Icons.logout,
                   title: 'Se déconnecter',
                   onTap: () {
@@ -123,16 +137,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           content: const Text(
                               'Êtes-vous sûr de vouloir vous déconnecter ?'),
                           actions: [
-                            ElevatedButton(
-                              style: ButtonStyle(
-                                  backgroundColor:
-                                      WidgetStateProperty.all(Colors.grey),
-                                  foregroundColor:
-                                      WidgetStateProperty.all(Colors.white)),
-                              onPressed: () async {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('annuler'),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text(
+                                'Annuler',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
                             ElevatedButton(
                               style: ButtonStyle(

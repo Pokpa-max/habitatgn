@@ -449,6 +449,7 @@ class MovingServicesScreen extends ConsumerWidget {
                               name: nameController.text,
                               address: addressController.text,
                               phone: phoneController.text,
+                              status: "En attente",
                               description: descriptionController.text,
                               scheduledDate: dateController.text,
                               scheduledTime: timeController.text,

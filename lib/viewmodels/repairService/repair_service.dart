@@ -25,6 +25,15 @@ class ServiceRequestViewModel extends StateNotifier<AsyncValue<void>> {
       return null;
     }
   }
+
+  Future<List<ServiceRequestModel>?> getUserRepairRequest() async {
+    try {
+      return await _serviceRequestService.getUserRepairRequests();
+    } catch (e) {
+      print('Error fetching user repair request: $e');
+      return null;
+    }
+  }
 }
 
 final serviceRequestServiceProvider =
