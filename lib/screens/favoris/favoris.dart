@@ -49,7 +49,6 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
                 text: "Mes coups de cœur",
                 textColor: Colors.white,
               ),
-              Icon(Icons.favorite, color: Colors.red),
             ],
           ),
           backgroundColor: primaryColor,
