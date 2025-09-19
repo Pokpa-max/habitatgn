@@ -30,8 +30,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   Widget build(BuildContext context) {
     final userProfileViewModel = ref.watch(authViewModelProvider);
     final user = userProfileViewModel.user;
-    final Map<String, dynamic>? userFireStore =
-        userProfileViewModel.userProfile;
 
     return Scaffold(
       backgroundColor: lightPrimary,

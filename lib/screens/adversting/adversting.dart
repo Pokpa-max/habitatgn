@@ -22,7 +22,6 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
   @override
   Widget build(BuildContext context) {
     // Get the screen width and height
-    double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
     return CarouselSlider.builder(

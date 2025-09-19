@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, deprecated_member_use
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -31,8 +33,6 @@ class _LocationMapScreenState extends State<LocationMapScreen> {
   final Set<Polyline> _polylines = {};
   String _distance = '';
   bool _isLoading = true;
-  GoogleMapController? _mapController;
-  final Completer<void> _mapCreatedCompleter = Completer<void>();
   final MarkerId _houseMarkerId = const MarkerId('houseLocation');
 
   @override
@@ -127,29 +127,8 @@ class _LocationMapScreenState extends State<LocationMapScreen> {
   }
 
   void _onMapCreated(GoogleMapController controller) {
-    _mapController = controller;
     // _mapCreatedCompleter.complete();
     // _animateCameraToMarker();
-  }
-
-  Future<void> _animateCameraToMarker() async {
-    if (_mapController == null) return;
-
-    try {
-      await _mapCreatedCompleter.future;
-      if (_markers.any((marker) => marker.markerId == _houseMarkerId)) {
-        await _mapController!.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            LatLng(widget.latitude, widget.longitude),
-            15,
-          ),
-        );
-        _mapController!.showMarkerInfoWindow(_houseMarkerId);
-      }
-    } catch (e) {
-      print(
-          'Erreur lors de l\'animation de la caméra ou de l\'affichage de l\'InfoWindow : $e');
-    }
   }
 
   @override
