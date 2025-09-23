@@ -28,9 +28,6 @@ class DashbordViewModel extends ChangeNotifier {
     _init();
   }
 
-  // ────────────────────────────────────────────────────────────────────────────
-  // Services / DI
-  // ────────────────────────────────────────────────────────────────────────────
   final Ref _read;
   final HouseService _houseService = HouseService();
   final NotificationViewModel notificationViewModel = NotificationViewModel();
@@ -41,7 +38,12 @@ class DashbordViewModel extends ChangeNotifier {
   String title = "Habitat Gn";
   String? lastError;
 
-  // Public getters
+  // État de recherche et filtres
+  bool _isSearchActive = false;
+  String _currentQuery = '';
+  Map<String, dynamic> _currentFilters = {};
+
+  // Getters publics
   List<AdvertisementData> get advertisementData => _advertisementData;
   List<House> get recentHouses => _recentHouses;
   List<House> get houses => _houses;
@@ -50,42 +52,32 @@ class DashbordViewModel extends ChangeNotifier {
   bool get isAdverstingLoading => _isAdverstingLoading;
   bool get isRecentLoading => _isRecentLoading;
   bool get isLoading => _isLoading;
-
   bool get hasMore => _hasMore;
   bool get hasMoreSearch => _hasMoreSearch;
+  bool get isSearchActive => _isSearchActive;
+  String get currentQuery => _currentQuery;
+  Map<String, dynamic> get currentFilters => Map.from(_currentFilters);
 
-  // Internals
+  // Listes privées
   List<AdvertisementData> _advertisementData = [];
   List<House> _recentHouses = [];
   final List<House> _houses = [];
-
-  // Liste générale (tous les logements)
-  DocumentSnapshot? _lastDocument;
-  bool _hasMore = true;
-
-  // Recherche + filtres
   final List<House> _searchResults = [];
+
+  // Pagination
+  DocumentSnapshot? _lastDocument;
   DocumentSnapshot? _lastSearchDoc;
+  bool _hasMore = true;
   bool _hasMoreSearch = true;
 
-  // Loaders
+  // États de chargement
   bool _isAdverstingLoading = true;
   bool _isRecentLoading = false;
   bool _isLoading = false;
 
-  // Filtres/recherche en cours (source de vérité)
-  String _q = '';
-  double? _min;
-  double? _max;
-  String _need = 'Tous';
-  String _type = 'Tous';
-  String _ville = '';
-  int _bedrooms = 0;
-
   // ────────────────────────────────────────────────────────────────────────────
-  // Bootstrap
+  // Initialisation
   // ────────────────────────────────────────────────────────────────────────────
-
   Future<void> _init() async {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -96,13 +88,14 @@ class DashbordViewModel extends ChangeNotifier {
       }
       await fetchAdvertisementData();
       await fetchRecentHouses();
-    } catch (_) {}
+    } catch (e) {
+      print('Error during init: $e');
+    }
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // Resets
+  // Gestion des états et resets
   // ────────────────────────────────────────────────────────────────────────────
-  /// Reset de la liste générale
   void resetHouses() {
     _houses.clear();
     _lastDocument = null;
@@ -112,29 +105,43 @@ class DashbordViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Reset du mode recherche/filtres
   void resetSearch() {
     _searchResults.clear();
     _lastSearchDoc = null;
     _hasMoreSearch = true;
+    _isSearchActive = false;
+    _currentQuery = '';
+    _currentFilters.clear();
     _isLoading = false;
     lastError = null;
     notifyListeners();
   }
 
+  void activateSearchMode() {
+    _isSearchActive = true;
+    notifyListeners();
+  }
+
+  void deactivateSearchMode() {
+    resetSearch();
+    notifyListeners();
+  }
+
   // ────────────────────────────────────────────────────────────────────────────
-  // Advertisement
+  // Publicités
   // ────────────────────────────────────────────────────────────────────────────
   Future<void> fetchAdvertisementData() async {
     _isAdverstingLoading = true;
     lastError = null;
     notifyListeners();
+
     try {
       _advertisementData = await _read
           .read(advertisementServiceProvider)
           .fetchAdvertisementDatas();
     } catch (e) {
-      lastError = 'Erreur chargement publicités';
+      lastError = 'Erreur chargement publicités: $e';
+      print('Error fetching ads: $e');
     } finally {
       _isAdverstingLoading = false;
       notifyListeners();
@@ -142,16 +149,18 @@ class DashbordViewModel extends ChangeNotifier {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // Recent
+  // Logements récents
   // ────────────────────────────────────────────────────────────────────────────
   Future<void> fetchRecentHouses({int limit = 20}) async {
     _isRecentLoading = true;
     lastError = null;
     notifyListeners();
+
     try {
       _recentHouses = await _houseService.getRecentHouses(limit: limit);
     } catch (e) {
-      lastError = 'Erreur chargement récents';
+      lastError = 'Erreur chargement récents: $e';
+      print('Error fetching recent houses: $e');
     } finally {
       _isRecentLoading = false;
       notifyListeners();
@@ -159,24 +168,32 @@ class DashbordViewModel extends ChangeNotifier {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // Tous les logements (pagination)
+  // Tous les logements (pagination simple)
   // ────────────────────────────────────────────────────────────────────────────
   Future<void> fetchHouses({int limit = 20}) async {
-    if (_isLoading || !_hasMore) return;
+    if (_isLoading || !_hasMore || _isSearchActive) return;
+
     _isLoading = true;
     lastError = null;
     notifyListeners();
+
     try {
       final newHouses = await _houseService.getHouses(
-          lastDocument: _lastDocument, limit: limit);
+        lastDocument: _lastDocument,
+        limit: limit,
+      );
 
-      if (newHouses.length < limit) _hasMore = false;
+      if (newHouses.length < limit) {
+        _hasMore = false;
+      }
+
       if (newHouses.isNotEmpty) {
         _lastDocument = newHouses.last.snapshot;
         _houses.addAll(newHouses);
       }
     } catch (e) {
-      lastError = 'Erreur chargement logements';
+      lastError = 'Erreur chargement logements: $e';
+      print('Error fetching houses: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -184,7 +201,7 @@ class DashbordViewModel extends ChangeNotifier {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // Recherche + filtres (côté Firestore) — API unifiée
+  // 🚀 RECHERCHE ET FILTRES OPTIMISÉS
   // ────────────────────────────────────────────────────────────────────────────
   Future<void> searchAndFilter({
     String query = '',
@@ -198,52 +215,110 @@ class DashbordViewModel extends ChangeNotifier {
     int limit = 20,
   }) async {
     if (_isLoading) return;
+
     _isLoading = true;
     lastError = null;
 
+    // Si c'est une nouvelle recherche, reset tout
     if (reset) {
-      _q = query;
-      _min = minPrice;
-      _max = maxPrice;
-      _need = needType;
-      _type = propertyType;
-      _ville = ville;
-      _bedrooms = bedrooms;
-
       _searchResults.clear();
       _lastSearchDoc = null;
       _hasMoreSearch = true;
+      _isSearchActive = true;
+      _currentQuery = query;
+      _currentFilters = {
+        'minPrice': minPrice,
+        'maxPrice': maxPrice,
+        'needType': needType,
+        'propertyType': propertyType,
+        'ville': ville,
+        'bedrooms': bedrooms,
+      };
     }
 
     notifyListeners();
 
     try {
-      final res = await _houseService.searchAndFilterHouses(
-        query: _q,
-        minPrice: _min,
-        maxPrice: _max,
-        needType: _need,
-        propertyType: _type,
-        ville: _ville,
-        bedrooms: _bedrooms,
+      final newResults = await _houseService.searchAndFilterHouses(
+        query: _currentQuery,
+        minPrice: _currentFilters['minPrice'],
+        maxPrice: _currentFilters['maxPrice'],
+        needType: _currentFilters['needType'] ?? 'Tous',
+        propertyType: _currentFilters['propertyType'] ?? 'Tous',
+        ville: _currentFilters['ville'] ?? '',
+        bedrooms: _currentFilters['bedrooms'] ?? 0,
         lastDocument: _lastSearchDoc,
         limit: limit,
       );
 
-      if (res.length < limit) _hasMoreSearch = false;
-      if (res.isNotEmpty) {
-        _lastSearchDoc = res.last.snapshot;
-        _searchResults.addAll(res);
+      if (newResults.length < limit) {
+        _hasMoreSearch = false;
+      }
+
+      if (newResults.isNotEmpty) {
+        _lastSearchDoc = newResults.last.snapshot;
+        _searchResults.addAll(newResults);
+      }
+
+      // Si pas de résultats et c'est une nouvelle recherche
+      if (_searchResults.isEmpty && reset) {
+        // Optionnel: suggérer des alternatives ou élargir la recherche
+        print(
+            'Aucun résultat trouvé pour: query="$query", filters=$_currentFilters');
       }
     } catch (e) {
-      lastError = 'Erreur recherche/filtres';
+      lastError = 'Erreur recherche: $e';
+      print('Error in searchAndFilter: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  /// Compat : conserve ta signature existante, redirige vers l’API unifiée
+  /// Chargement de plus de résultats de recherche
+  Future<void> loadMoreSearch({int limit = 20}) async {
+    if (!_isSearchActive || !_hasMoreSearch) return;
+
+    return searchAndFilter(reset: false, limit: limit);
+  }
+
+  /// Recherche rapide par texte uniquement
+  Future<void> quickTextSearch(String query) async {
+    if (query.trim().isEmpty) {
+      deactivateSearchMode();
+      return;
+    }
+
+    await searchAndFilter(
+      query: query,
+      reset: true,
+    );
+  }
+
+  /// Application de filtres avec la recherche actuelle
+  Future<void> applyFilters({
+    double? minPrice,
+    double? maxPrice,
+    String needType = 'Tous',
+    String propertyType = 'Tous',
+    String ville = '',
+    int bedrooms = 0,
+  }) async {
+    await searchAndFilter(
+      query: _currentQuery,
+      minPrice: minPrice,
+      maxPrice: maxPrice,
+      needType: needType,
+      propertyType: propertyType,
+      ville: ville,
+      bedrooms: bedrooms,
+      reset: true,
+    );
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // MÉTHODES DE COMPATIBILITÉ (pour ne pas casser l'existant)
+  // ────────────────────────────────────────────────────────────────────────────
   Future<void> fetchFilteredHouses({
     required double minPrice,
     required double maxPrice,
@@ -251,9 +326,8 @@ class DashbordViewModel extends ChangeNotifier {
     required String propertyType,
     required String ville,
     required int bedrooms,
-  }) {
-    return searchAndFilter(
-      query: _q,
+  }) async {
+    await searchAndFilter(
       minPrice: minPrice > 0 ? minPrice : null,
       maxPrice: (maxPrice.isFinite && maxPrice > 0) ? maxPrice : null,
       needType: needType,
@@ -264,12 +338,94 @@ class DashbordViewModel extends ChangeNotifier {
     );
   }
 
-  /// Chargement incrémental en mode recherche (scroll bas)
-  Future<void> loadMoreSearch({int limit = 20}) {
-    if (_hasMoreSearch) {
-      return searchAndFilter(reset: false, limit: limit);
+  // ────────────────────────────────────────────────────────────────────────────
+  // Utilitaires et helpers
+  // ────────────────────────────────────────────────────────────────────────────
+  bool get hasActiveFilters {
+    final filters = _currentFilters;
+    return _isSearchActive &&
+        (_currentQuery.isNotEmpty ||
+            (filters['minPrice'] != null && filters['minPrice'] > 0) ||
+            (filters['maxPrice'] != null &&
+                filters['maxPrice'].isFinite &&
+                filters['maxPrice'] > 0) ||
+            (filters['needType'] != null && filters['needType'] != 'Tous') ||
+            (filters['propertyType'] != null &&
+                filters['propertyType'] != 'Tous') ||
+            (filters['ville'] != null &&
+                filters['ville'].toString().trim().isNotEmpty) ||
+            (filters['bedrooms'] != null && filters['bedrooms'] > 0));
+  }
+
+  String get filtersDescription {
+    if (!hasActiveFilters) return '';
+
+    final parts = <String>[];
+    final filters = _currentFilters;
+
+    if (_currentQuery.isNotEmpty) {
+      parts.add('"$_currentQuery"');
     }
-    return Future.value();
+
+    if (filters['needType'] != null && filters['needType'] != 'Tous') {
+      parts.add(filters['needType']);
+    }
+
+    if (filters['propertyType'] != null && filters['propertyType'] != 'Tous') {
+      parts.add(filters['propertyType']);
+    }
+
+    if (filters['ville'] != null &&
+        filters['ville'].toString().trim().isNotEmpty) {
+      parts.add(filters['ville']);
+    }
+
+    if (filters['bedrooms'] != null && filters['bedrooms'] > 0) {
+      parts.add('${filters['bedrooms']} chambre(s)');
+    }
+
+    if (filters['minPrice'] != null && filters['minPrice'] > 0) {
+      parts.add('≥ ${filters['minPrice']} F');
+    }
+
+    if (filters['maxPrice'] != null &&
+        filters['maxPrice'].isFinite &&
+        filters['maxPrice'] > 0) {
+      parts.add('≤ ${filters['maxPrice']} F');
+    }
+
+    return parts.join(' • ');
+  }
+
+  /// Filtrage local pour les logements récents (optionnel)
+  List<House> filterRecentHouses(String query) {
+    if (query.isEmpty) return _recentHouses;
+
+    final normalizedQuery = query.toLowerCase();
+    return _recentHouses.where((house) {
+      final searchFields = [
+        house.houseType?.label ?? '',
+        house.description,
+        house.address?.town['label']?.toString() ?? '',
+        house.address?.commune['label']?.toString() ?? '',
+      ];
+
+      return searchFields
+          .any((field) => field.toLowerCase().contains(normalizedQuery));
+    }).toList();
+  }
+
+  /// Refresh complet des données
+  Future<void> refreshAll() async {
+    await Future.wait([
+      fetchAdvertisementData(),
+      fetchRecentHouses(),
+    ]);
+
+    if (!_isSearchActive) {
+      resetHouses();
+      await fetchHouses();
+    }
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -338,15 +494,9 @@ class DashbordViewModel extends ChangeNotifier {
     );
   }
 
-  /// Filtre client pour la section "récents" uniquement (facultatif)
-  List<House> filterRecentHouses(String query) {
-    if (query.isEmpty) return _recentHouses;
-    final lower = query.toLowerCase();
-    return _recentHouses.where((house) {
-      final t = house.houseType?.label.toLowerCase() ?? '';
-      final d = house.description.toLowerCase();
-      final a = house.address?.town["label"].toLowerCase() ?? '';
-      return t.contains(lower) || d.contains(lower) || a.contains(lower);
-    }).toList();
+  @override
+  void dispose() {
+    // Cleanup si nécessaire
+    super.dispose();
   }
 }

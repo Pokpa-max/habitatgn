@@ -20,20 +20,17 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
 
-  // UI state local
-  bool _isFilterApplied = false; // bouton “Filtres” allumé/éteint
-  bool _hasChanges = false; // indique qu'on est en mode recherche/filtres
-  String _searchQuery = '';
+  // État local de l'interface
+  bool _isFilterApplied = false;
+  Timer? _debounce;
 
-  // filtres
+  // Filtres locaux (pour l'UI)
   double _minPrice = 0;
   double _maxPrice = double.infinity;
   String _needType = 'Tous';
   String _propertyType = 'Tous';
   String _ville = '';
   int _bedrooms = 0;
-
-  Timer? _debounce;
 
   @override
   void initState() {
@@ -42,9 +39,15 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
   }
 
   void _bootstrap() {
-    final vm = ref.read(dashbordViewModelProvider.notifier);
-    vm.resetHouses();
-    vm.fetchHouses();
+    // Initialiser selon l'état du ViewModel
+    final vm = ref.read(dashbordViewModelProvider);
+    if (!vm.isSearchActive) {
+      // Mode normal : charger tous les logements
+      ref.read(dashbordViewModelProvider.notifier).resetHouses();
+      ref.read(dashbordViewModelProvider.notifier).fetchHouses();
+    }
+    // Sinon, le mode recherche est déjà actif avec des résultats
+
     _scrollController.addListener(_onScroll);
   }
 
@@ -57,52 +60,64 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // Scroll → pagination
+  // Gestion du scroll et pagination
   // ────────────────────────────────────────────────────────────────────────────
   void _onScroll() {
     final vm = ref.read(dashbordViewModelProvider);
     if (!_scrollController.hasClients || vm.isLoading) return;
 
     final atBottom = _scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 50;
+        _scrollController.position.maxScrollExtent - 100;
 
     if (!atBottom) return;
 
-    final usingSearch = _hasChanges || _searchQuery.trim().isNotEmpty;
-
-    if (usingSearch && vm.hasMoreSearch) {
+    if (vm.isSearchActive && vm.hasMoreSearch) {
+      // Mode recherche : charger plus de résultats de recherche
       ref.read(dashbordViewModelProvider.notifier).loadMoreSearch();
-    } else if (!usingSearch && vm.hasMore) {
+    } else if (!vm.isSearchActive && vm.hasMore) {
+      // Mode normal : charger plus de logements
       ref.read(dashbordViewModelProvider.notifier).fetchHouses();
     }
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // Recherche (debounce)
+  // Recherche textuelle avec debounce
   // ────────────────────────────────────────────────────────────────────────────
   void _onSearchChanged(String query) {
-    setState(() {
-      _searchQuery = query;
-      _hasChanges = query.trim().isNotEmpty || _isFilterApplied;
-    });
-
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      ref.read(dashbordViewModelProvider.notifier).searchAndFilter(
-            query: _searchQuery,
-            minPrice: _minPrice > 0 ? _minPrice : null,
-            maxPrice: (_maxPrice.isFinite && _maxPrice > 0) ? _maxPrice : null,
-            needType: _needType,
-            propertyType: _propertyType,
-            ville: _ville,
-            bedrooms: _bedrooms,
-            reset: true,
-          );
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      if (query.trim().isEmpty) {
+        // Retour au mode normal
+        _resetToNormalMode();
+      } else {
+        // Recherche textuelle
+        ref.read(dashbordViewModelProvider.notifier).quickTextSearch(query);
+      }
     });
   }
 
+  void _resetToNormalMode() {
+    ref.read(dashbordViewModelProvider.notifier).deactivateSearchMode();
+    ref.read(dashbordViewModelProvider.notifier).resetHouses();
+    ref.read(dashbordViewModelProvider.notifier).fetchHouses();
+
+    setState(() {
+      _isFilterApplied = false;
+      _resetLocalFilters();
+    });
+  }
+
+  void _resetLocalFilters() {
+    _needType = 'Tous';
+    _propertyType = 'Tous';
+    _ville = '';
+    _bedrooms = 0;
+    _minPrice = 0;
+    _maxPrice = double.infinity;
+  }
+
   // ────────────────────────────────────────────────────────────────────────────
-  // Filtres
+  // Gestion des filtres
   // ────────────────────────────────────────────────────────────────────────────
   void _showFilterModal() {
     showModalBottomSheet(
@@ -110,21 +125,26 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => FilterModal(
-        onApplyFilter: (minPrice, maxPrice, needType, propertyType, ville,
-            bedrooms, hasChanges) {
+        currentMinPrice: _minPrice,
+        currentMaxPrice: _maxPrice,
+        currentNeedType: _needType,
+        currentPropertyType: _propertyType,
+        currentVille: _ville,
+        currentBedrooms: _bedrooms,
+        onApplyFilter:
+            (minPrice, maxPrice, needType, propertyType, ville, bedrooms) {
           setState(() {
             _isFilterApplied = true;
             _minPrice = minPrice;
             _maxPrice = maxPrice;
             _needType = needType;
             _propertyType = propertyType;
-            _ville = ville.trim().toLowerCase();
+            _ville = ville.trim();
             _bedrooms = bedrooms;
-            _hasChanges = hasChanges || _searchQuery.trim().isNotEmpty;
           });
 
-          ref.read(dashbordViewModelProvider.notifier).searchAndFilter(
-                query: _searchQuery,
+          // Appliquer les filtres avec la recherche actuelle
+          ref.read(dashbordViewModelProvider.notifier).applyFilters(
                 minPrice: _minPrice > 0 ? _minPrice : null,
                 maxPrice:
                     (_maxPrice.isFinite && _maxPrice > 0) ? _maxPrice : null,
@@ -132,194 +152,236 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                 propertyType: _propertyType,
                 ville: _ville,
                 bedrooms: _bedrooms,
-                reset: true,
               );
         },
       ),
     );
   }
 
-  void _resetFilters() {
+  void _resetAllFilters() {
+    _searchController.clear();
     setState(() {
       _isFilterApplied = false;
-      _hasChanges = false;
-      _searchQuery = '';
-      _searchController.clear();
-      _needType = 'Tous';
-      _propertyType = 'Tous';
-      _ville = '';
-      _bedrooms = 0;
-      _minPrice = 0;
-      _maxPrice = double.infinity;
+      _resetLocalFilters();
     });
-
-    // reset côté VM
-    final vmn = ref.read(dashbordViewModelProvider.notifier);
-    vmn.resetSearch();
-    vmn.resetHouses();
-    vmn.fetchHouses();
+    _resetToNormalMode();
   }
 
   // ────────────────────────────────────────────────────────────────────────────
-  // UI
+  // Interface utilisateur
   // ────────────────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final vm = ref.watch(dashbordViewModelProvider);
-    final usingSearch = _hasChanges || _searchQuery.trim().isNotEmpty;
 
-    final List<House> items = usingSearch ? vm.searchResults : vm.houses;
-
-    final bool showLoaderTail = usingSearch ? vm.hasMoreSearch : vm.hasMore;
+    // Déterminer quelle liste afficher
+    final List<House> displayedItems =
+        vm.isSearchActive ? vm.searchResults : vm.houses;
+    final bool showLoadingTail =
+        vm.isSearchActive ? vm.hasMoreSearch : vm.hasMore;
+    final bool isEmpty = displayedItems.isEmpty && !vm.isLoading;
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_outlined),
-          color: Colors.grey[700],
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Tous les logements',
-          style: GoogleFonts.poppins(
-            color: Colors.grey[800],
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: Colors.grey[200]),
-        ),
-      ),
+      appBar: _buildAppBar(),
       body: Column(
         children: [
-          // Barre de recherche + filtres
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Recherche
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[200]!),
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: _onSearchChanged,
-                    style: GoogleFonts.poppins(fontSize: 14),
-                    decoration: InputDecoration(
-                      hintText: 'Rechercher un logement...',
-                      hintStyle: GoogleFonts.poppins(
-                        color: Colors.grey[500],
-                        fontSize: 14,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.search_outlined,
-                        color: primaryColor,
-                        size: 20,
-                      ),
-                      suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(Icons.clear,
-                                  color: Colors.grey[400], size: 20),
-                              onPressed: () {
-                                _onSearchChanged('');
-                                _searchController.clear();
-                              },
-                            )
-                          : null,
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
+          // Barre de recherche et filtres
+          _buildSearchAndFilterBar(vm),
 
-                // Boutons filtres
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildFilterButton(
-                        label: 'Tous',
-                        isSelected: !_isFilterApplied && _searchQuery.isEmpty,
-                        onTap: _resetFilters,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildFilterButton(
-                        label: 'Filtres',
-                        icon: Icons.tune_outlined,
-                        isSelected: _isFilterApplied,
-                        onTap: _showFilterModal,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    _buildIconButton(
-                      icon: Icons.refresh_outlined,
-                      onTap: _resetFilters,
-                      tooltip: 'Réinitialiser',
-                    ),
-                  ],
-                ),
+          // Indicateur de filtres actifs
+          if (vm.hasActiveFilters) _buildActiveFiltersIndicator(vm),
 
-                // Indicateur filtres actifs
-                if (_isFilterApplied && _hasChanges) ...[
-                  const SizedBox(height: 12),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.filter_list, color: primaryColor, size: 16),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Filtres appliqués',
-                          style: GoogleFonts.poppins(
-                            color: primaryColor,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: _resetFilters,
-                          child:
-                              Icon(Icons.close, color: primaryColor, size: 16),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-
-          // Résultats
+          // Zone principale de contenu
           Expanded(
-            child: vm.isLoading && items.isEmpty
-                ? _buildLoadingState()
-                : items.isEmpty
-                    ? _buildEmptyState()
-                    : _buildHouseList(items, showLoaderTail),
+            child: RefreshIndicator(
+              onRefresh: () async {
+                if (vm.isSearchActive) {
+                  // Recharger la recherche actuelle
+                  await ref
+                      .read(dashbordViewModelProvider.notifier)
+                      .searchAndFilter(
+                        query: vm.currentQuery,
+                        minPrice: vm.currentFilters['minPrice'],
+                        maxPrice: vm.currentFilters['maxPrice'],
+                        needType: vm.currentFilters['needType'] ?? 'Tous',
+                        propertyType:
+                            vm.currentFilters['propertyType'] ?? 'Tous',
+                        ville: vm.currentFilters['ville'] ?? '',
+                        bedrooms: vm.currentFilters['bedrooms'] ?? 0,
+                        reset: true,
+                      );
+                } else {
+                  // Recharger la liste normale
+                  ref.read(dashbordViewModelProvider.notifier).resetHouses();
+                  await ref
+                      .read(dashbordViewModelProvider.notifier)
+                      .fetchHouses();
+                }
+              },
+              child: _buildMainContent(
+                  vm, displayedItems, showLoadingTail, isEmpty),
+            ),
           ),
         ],
       ),
     );
+  }
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_outlined),
+        color: Colors.grey[700],
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Text(
+        'Tous les logements',
+        style: GoogleFonts.poppins(
+          color: Colors.grey[800],
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      centerTitle: true,
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: Colors.grey[200]),
+      ),
+    );
+  }
+
+  Widget _buildSearchAndFilterBar(vm) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // Champ de recherche
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: TextField(
+              controller: _searchController,
+              onChanged: _onSearchChanged,
+              style: GoogleFonts.poppins(fontSize: 14),
+              decoration: InputDecoration(
+                hintText: 'Rechercher un logement...',
+                hintStyle: GoogleFonts.poppins(
+                  color: Colors.grey[500],
+                  fontSize: 14,
+                ),
+                prefixIcon: Icon(
+                  Icons.search_outlined,
+                  color: primaryColor,
+                  size: 20,
+                ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(Icons.clear,
+                            color: Colors.grey[400], size: 20),
+                        onPressed: () {
+                          _searchController.clear();
+                          _onSearchChanged('');
+                        },
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Boutons de contrôle
+          Row(
+            children: [
+              Expanded(
+                child: _buildFilterButton(
+                  label: 'Tous',
+                  isSelected: !vm.isSearchActive && !_isFilterApplied,
+                  onTap: _resetAllFilters,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildFilterButton(
+                  label: 'Filtres',
+                  icon: Icons.tune_outlined,
+                  isSelected: _isFilterApplied || vm.hasActiveFilters,
+                  onTap: _showFilterModal,
+                ),
+              ),
+              const SizedBox(width: 12),
+              _buildIconButton(
+                icon: Icons.refresh_outlined,
+                onTap: _resetAllFilters,
+                tooltip: 'Réinitialiser',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveFiltersIndicator(vm) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: primaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.filter_list, color: primaryColor, size: 16),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                vm.filtersDescription.isNotEmpty
+                    ? vm.filtersDescription
+                    : 'Filtres appliqués',
+                style: GoogleFonts.poppins(
+                  color: primaryColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: _resetAllFilters,
+              child: Icon(Icons.close, color: primaryColor, size: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainContent(
+      vm, List<House> items, bool showLoadingTail, bool isEmpty) {
+    if (vm.isLoading && items.isEmpty) {
+      return _buildLoadingState();
+    }
+
+    if (isEmpty) {
+      return _buildEmptyState(vm);
+    }
+
+    return _buildHouseList(items, showLoadingTail, vm.isLoading);
   }
 
   Widget _buildFilterButton({
@@ -397,7 +459,9 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(vm) {
+    final isSearchMode = vm.isSearchActive;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -407,31 +471,49 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                  color: Colors.grey[100], shape: BoxShape.circle),
-              child: Icon(Icons.search_off_outlined,
-                  size: 64, color: Colors.grey[400]),
+                color: Colors.grey[100],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isSearchMode ? Icons.search_off_outlined : Icons.home_outlined,
+                size: 64,
+                color: Colors.grey[400],
+              ),
             ),
             const SizedBox(height: 24),
             Text(
-              'Aucun logement trouvé',
+              isSearchMode
+                  ? 'Aucun résultat trouvé'
+                  : 'Aucun logement disponible',
               style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700]),
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
             ),
             const SizedBox(height: 12),
             Text(
-              'Essayez de modifier vos critères de recherche ou supprimez certains filtres.',
+              isSearchMode
+                  ? 'Essayez de modifier vos critères de recherche ou supprimez certains filtres.'
+                  : 'Il n\'y a actuellement aucun logement disponible. Revenez plus tard.',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
-                  fontSize: 14, color: Colors.grey[600], height: 1.5),
+                fontSize: 14,
+                color: Colors.grey[600],
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: _resetFilters,
-              icon: const Icon(Icons.refresh_outlined, size: 20),
-              label: Text('Réinitialiser les filtres',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+              onPressed: _resetAllFilters,
+              icon: Icon(
+                isSearchMode ? Icons.refresh_outlined : Icons.home_outlined,
+                size: 20,
+              ),
+              label: Text(
+                isSearchMode ? 'Réinitialiser la recherche' : 'Actualiser',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
@@ -439,7 +521,8 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],
@@ -448,21 +531,25 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
     );
   }
 
-  Widget _buildHouseList(List<House> houses, bool showLoaderTail) {
+  Widget _buildHouseList(
+      List<House> houses, bool showLoadingTail, bool isLoading) {
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
-      itemCount: houses.length + (showLoaderTail ? 1 : 0),
+      itemCount: houses.length + (showLoadingTail && isLoading ? 1 : 0),
       itemBuilder: (context, index) {
         if (index == houses.length) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: CircularProgressIndicator(
-                  color: primaryColor, strokeWidth: 2),
+                color: primaryColor,
+                strokeWidth: 2,
+              ),
             ),
           );
         }
+
         final house = houses[index];
         return _buildHouseCard(house);
       },
@@ -477,9 +564,10 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2))
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          )
         ],
       ),
       child: Material(
@@ -489,7 +577,8 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => HouseDetailScreen(houseId: house.id)),
+                builder: (context) => HouseDetailScreen(houseId: house.id),
+              ),
             );
           },
           borderRadius: BorderRadius.circular(16),
@@ -523,23 +612,25 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2))
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          )
                         ],
                       ),
                       child: Text(
-                        house.offerType["label"],
+                        house.offerType["label"] ?? '',
                         style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12),
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-              // Infos
+              // Informations
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -553,9 +644,10 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                           child: Text(
                             (house.houseType?.label ?? '').toUpperCase(),
                             style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[800]),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey[800],
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -563,9 +655,7 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                           color: primaryColor,
                           price: house.price,
                           size: 18,
-                          // Compat: accepte "ALouer" ou "Louer"
-                          suffix: (house.offerType["value"] == "ALouer" ||
-                                  house.offerType["value"] == "Louer")
+                          suffix: (house.offerType["value"] == "Louer")
                               ? '/mois'
                               : '',
                         ),
@@ -577,8 +667,9 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(6)),
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(6),
+                          ),
                           child: Icon(Icons.location_on_outlined,
                               color: Colors.grey[600], size: 16),
                         ),
@@ -587,9 +678,10 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
                           child: Text(
                             '${house.address?.town["label"] ?? ''} / ${house.address?.commune["label"] ?? ''}',
                             style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500),
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -616,17 +708,19 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
         Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6)),
+            color: primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+          ),
           child: Icon(Icons.bed_outlined, color: primaryColor, size: 16),
         ),
         const SizedBox(width: 8),
         Text(
-          '${house.bedrooms} chambres',
+          '${house.bedrooms} chambre${house.bedrooms > 1 ? 's' : ''}',
           style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[700]),
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[700],
+          ),
         ),
       ],
     );
@@ -638,17 +732,19 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
         Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6)),
+            color: primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+          ),
           child: Icon(Icons.straighten_outlined, color: primaryColor, size: 16),
         ),
         const SizedBox(width: 8),
         Text(
           '${house.area} m²',
           style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[700]),
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[700],
+          ),
         ),
       ],
     );
@@ -656,26 +752,59 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// MODAL FILTRES
+// MODAL FILTRES OPTIMISÉE
 // ────────────────────────────────────────────────────────────────────────────
 class FilterModal extends StatefulWidget {
-  final Function(double, double, String, String, String, int, bool)
-      onApplyFilter;
+  final Function(double, double, String, String, String, int) onApplyFilter;
+  final double currentMinPrice;
+  final double currentMaxPrice;
+  final String currentNeedType;
+  final String currentPropertyType;
+  final String currentVille;
+  final int currentBedrooms;
 
-  const FilterModal({super.key, required this.onApplyFilter});
+  const FilterModal({
+    super.key,
+    required this.onApplyFilter,
+    this.currentMinPrice = 0,
+    this.currentMaxPrice = double.infinity,
+    this.currentNeedType = 'Tous',
+    this.currentPropertyType = 'Tous',
+    this.currentVille = '',
+    this.currentBedrooms = 0,
+  });
 
   @override
   State<FilterModal> createState() => _FilterModalState();
 }
 
 class _FilterModalState extends State<FilterModal> {
-  String _propertyType = 'Tous';
-  String _needType = 'Tous';
-  final TextEditingController _minPriceController = TextEditingController();
-  final TextEditingController _maxPriceController = TextEditingController();
-  final TextEditingController _villeController = TextEditingController();
-  int _bedrooms = 0;
-  bool _hasChanges = false;
+  late String _propertyType;
+  late String _needType;
+  late TextEditingController _minPriceController;
+  late TextEditingController _maxPriceController;
+  late TextEditingController _villeController;
+  late int _bedrooms;
+
+  @override
+  void initState() {
+    super.initState();
+    _propertyType = widget.currentPropertyType;
+    _needType = widget.currentNeedType;
+    _bedrooms = widget.currentBedrooms;
+
+    _minPriceController = TextEditingController(
+      text: widget.currentMinPrice > 0
+          ? widget.currentMinPrice.toInt().toString()
+          : '',
+    );
+    _maxPriceController = TextEditingController(
+      text: widget.currentMaxPrice.isFinite
+          ? widget.currentMaxPrice.toInt().toString()
+          : '',
+    );
+    _villeController = TextEditingController(text: widget.currentVille);
+  }
 
   @override
   void dispose() {
@@ -688,8 +817,9 @@ class _FilterModalState extends State<FilterModal> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints:
-          BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.9),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
+      ),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -703,8 +833,9 @@ class _FilterModalState extends State<FilterModal> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2)),
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
 
           Flexible(
@@ -717,17 +848,23 @@ class _FilterModalState extends State<FilterModal> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Filtres',
-                          style: GoogleFonts.poppins(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey[800])),
+                      Text(
+                        'Filtres',
+                        style: GoogleFonts.poppins(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[800],
+                        ),
+                      ),
                       TextButton(
                         onPressed: _resetAllFilters,
-                        child: Text('Réinitialiser',
-                            style: GoogleFonts.poppins(
-                                color: primaryColor,
-                                fontWeight: FontWeight.w600)),
+                        child: Text(
+                          'Réinitialiser',
+                          style: GoogleFonts.poppins(
+                            color: primaryColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -770,11 +907,16 @@ class _FilterModalState extends State<FilterModal> {
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      child: Text('Appliquer les filtres',
-                          style: GoogleFonts.poppins(
-                              fontSize: 16, fontWeight: FontWeight.w600)),
+                      child: Text(
+                        'Appliquer les filtres',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -789,7 +931,10 @@ class _FilterModalState extends State<FilterModal> {
   Widget _buildSectionTitle(String title) => Text(
         title,
         style: GoogleFonts.poppins(
-            fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey[800]),
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Colors.grey[800],
+        ),
       );
 
   Widget _buildNeedTypeSelector() {
@@ -802,12 +947,7 @@ class _FilterModalState extends State<FilterModal> {
             child: _buildSelectableChip(
               label: type,
               isSelected: isSelected,
-              onTap: () {
-                setState(() {
-                  _needType = type;
-                  _hasChanges = true;
-                });
-              },
+              onTap: () => setState(() => _needType = type),
             ),
           ),
         );
@@ -818,7 +958,6 @@ class _FilterModalState extends State<FilterModal> {
   Widget _buildLocationField() {
     return TextField(
       controller: _villeController,
-      onChanged: (_) => setState(() => _hasChanges = true),
       style: GoogleFonts.poppins(fontSize: 14),
       decoration: InputDecoration(
         hintText: 'Ville, commune, quartier...',
@@ -827,8 +966,9 @@ class _FilterModalState extends State<FilterModal> {
         filled: true,
         fillColor: Colors.grey[50],
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: primaryColor, width: 2),
@@ -856,12 +996,7 @@ class _FilterModalState extends State<FilterModal> {
           label: type['label'] as String,
           icon: type['icon'] as IconData,
           isSelected: isSelected,
-          onTap: () {
-            setState(() {
-              _propertyType = type['label'] as String;
-              _hasChanges = true;
-            });
-          },
+          onTap: () => setState(() => _propertyType = type['label'] as String),
         );
       }).toList(),
     );
@@ -884,20 +1019,26 @@ class _FilterModalState extends State<FilterModal> {
             color: isSelected ? primaryColor.withOpacity(0.1) : Colors.grey[50],
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-                color: isSelected ? primaryColor : Colors.grey[200]!),
+              color: isSelected ? primaryColor : Colors.grey[200]!,
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon,
-                  size: 18,
-                  color: isSelected ? primaryColor : Colors.grey[600]),
+              Icon(
+                icon,
+                size: 18,
+                color: isSelected ? primaryColor : Colors.grey[600],
+              ),
               const SizedBox(width: 8),
-              Text(label,
-                  style: GoogleFonts.poppins(
-                      color: isSelected ? primaryColor : Colors.grey[700],
-                      fontWeight: FontWeight.w500,
-                      fontSize: 13)),
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  color: isSelected ? primaryColor : Colors.grey[700],
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
             ],
           ),
         ),
@@ -912,7 +1053,6 @@ class _FilterModalState extends State<FilterModal> {
           child: TextField(
             controller: _minPriceController,
             keyboardType: TextInputType.number,
-            onChanged: (_) => setState(() => _hasChanges = true),
             style: GoogleFonts.poppins(fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Prix minimum',
@@ -922,8 +1062,9 @@ class _FilterModalState extends State<FilterModal> {
               filled: true,
               fillColor: Colors.grey[50],
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: primaryColor, width: 2),
@@ -936,7 +1077,6 @@ class _FilterModalState extends State<FilterModal> {
           child: TextField(
             controller: _maxPriceController,
             keyboardType: TextInputType.number,
-            onChanged: (_) => setState(() => _hasChanges = true),
             style: GoogleFonts.poppins(fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Prix maximum',
@@ -946,8 +1086,9 @@ class _FilterModalState extends State<FilterModal> {
               filled: true,
               fillColor: Colors.grey[50],
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: primaryColor, width: 2),
@@ -963,41 +1104,38 @@ class _FilterModalState extends State<FilterModal> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: Colors.grey[50], borderRadius: BorderRadius.circular(12)),
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildCircularButton(
             icon: Icons.remove,
-            onPressed: _bedrooms > 0
-                ? () {
-                    setState(() {
-                      _bedrooms--;
-                      _hasChanges = true;
-                    });
-                  }
-                : null,
+            onPressed: _bedrooms > 0 ? () => setState(() => _bedrooms--) : null,
           ),
           Column(
             children: [
-              Text('$_bedrooms',
-                  style: GoogleFonts.poppins(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[800])),
-              Text('chambres',
-                  style: GoogleFonts.poppins(
-                      fontSize: 12, color: Colors.grey[600])),
+              Text(
+                '$_bedrooms',
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+              Text(
+                'chambre${_bedrooms > 1 ? 's' : ''}',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
             ],
           ),
           _buildCircularButton(
             icon: Icons.add,
-            onPressed: () {
-              setState(() {
-                _bedrooms++;
-                _hasChanges = true;
-              });
-            },
+            onPressed: () => setState(() => _bedrooms++),
           ),
         ],
       ),
@@ -1017,9 +1155,11 @@ class _FilterModalState extends State<FilterModal> {
             color: onPressed != null ? primaryColor : Colors.grey[300],
             shape: BoxShape.circle,
           ),
-          child: Icon(icon,
-              color: onPressed != null ? Colors.white : Colors.grey[500],
-              size: 20),
+          child: Icon(
+            icon,
+            color: onPressed != null ? Colors.white : Colors.grey[500],
+            size: 20,
+          ),
         ),
       ),
     );
@@ -1064,7 +1204,6 @@ class _FilterModalState extends State<FilterModal> {
       _maxPriceController.clear();
       _villeController.clear();
       _bedrooms = 0;
-      _hasChanges = false;
     });
   }
 
@@ -1080,8 +1219,8 @@ class _FilterModalState extends State<FilterModal> {
       _propertyType,
       _villeController.text,
       _bedrooms,
-      _hasChanges,
     );
+
     Navigator.pop(context);
   }
 }
