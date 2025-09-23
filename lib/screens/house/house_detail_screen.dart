@@ -1,5 +1,4 @@
 // ignore_for_file: deprecated_member_use
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,7 +11,7 @@ import 'package:habitatgn/widgets/dashbord/dashbord.dart';
 import 'package:habitatgn/viewmodels/housings/house_list.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:shimmer/shimmer.dart'; // Pour afficher un toast
+import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:share_plus/share_plus.dart';
@@ -31,18 +30,15 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
   House? house;
   bool isLoading = false;
   bool isLiked = false;
-  bool showTitle = false;
   final PageController _pageController = PageController();
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _setupAnimations();
-    _setupListeners();
     _initializeData();
   }
 
@@ -57,21 +53,9 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
     _animationController.forward();
   }
 
-  void _setupListeners() {
-    _scrollController.addListener(_scrollListener);
-  }
-
   void _initializeData() async {
     await _fetchHouseDetails();
     await _checkIfFavorite();
-  }
-
-  void _scrollListener() {
-    if (_scrollController.offset > kToolbarHeight && !showTitle) {
-      setState(() => showTitle = true);
-    } else if (_scrollController.offset <= kToolbarHeight && showTitle) {
-      setState(() => showTitle = false);
-    }
   }
 
   Future<void> _fetchHouseDetails() async {
@@ -99,10 +83,33 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
     try {
       await houseListViewModel.toggleFavorite(widget.houseId);
       setState(() => isLiked = !isLiked);
-      _showSuccess(
-        isLiked
-            ? '${house?.houseType?.label} ajouté aux favoris'
-            : '${house?.houseType?.label} retiré des favoris',
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                isLiked ? Icons.favorite : Icons.favorite_border,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                isLiked
+                    ? '${house?.houseType?.label} ajouté aux favoris'
+                    : '${house?.houseType?.label} retiré des favoris',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: isLiked ? Colors.green[600] : Colors.orange[600],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
       );
     } catch (e) {
       _showError('Erreur lors de la modification des favoris');
@@ -119,20 +126,30 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
   }
 
   void _showError(String message) {
-    _showToast(message, Colors.red);
-  }
-
-  void _showSuccess(String message) {
-    _showToast(message, primaryColor);
-  }
-
-  void _showToast(String message, Color backgroundColor) {
-    Fluttertoast.showToast(
-      msg: message,
-      backgroundColor: backgroundColor,
-      textColor: Colors.white,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.TOP,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              message,
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.red[600],
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
     );
   }
 
@@ -150,62 +167,39 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      floatingActionButton: _buildAnimatedFAB(),
+      backgroundColor: Colors.grey[50],
       body: isLoading
-          ? _buildLoadingShimmer()
+          ? _buildLoadingState()
           : AnimatedBuilder(
               animation: _fadeAnimation,
               builder: (context, child) => _buildMainContent(),
             ),
+      bottomNavigationBar: house != null ? _buildBottomBar() : null,
     );
   }
 
-  Widget _buildMainContent() {
-    return Opacity(
-      opacity: _fadeAnimation.value,
-      child: CustomScrollView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          _buildSliverAppBar(),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: house != null ? _buildHouseDetails(house!) : Container(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoadingShimmer() {
+  Widget _buildLoadingState() {
     return Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
       highlightColor: Colors.grey[100]!,
       child: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              height: MediaQuery.of(context).size.height * 0.4,
+              height: 300,
               color: Colors.white,
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: List.generate(
-                  10,
-                  (index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Container(
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                  8,
+                  (index) => Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                 ),
@@ -217,115 +211,91 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
     );
   }
 
-  Widget _buildAnimatedFAB() {
-    return AnimatedSlide(
-      duration: const Duration(milliseconds: 300),
-      offset: showTitle ? const Offset(0, 2) : Offset.zero,
-      child: AnimatedScale(
-        duration: const Duration(milliseconds: 300),
-        scale: showTitle ? 0.0 : 1.0,
-        child: FloatingActionButton.extended(
-          elevation: 4,
-          extendedPadding:
-              EdgeInsets.all(MediaQuery.of(context).size.width * 0.02),
-          backgroundColor: primaryColor,
-          onPressed: _makePhoneCall,
-          icon: const Icon(Icons.phone, color: Colors.white),
-          label: Text(
-            "Appeler l'Agence",
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+  Widget _buildMainContent() {
+    return Opacity(
+      opacity: _fadeAnimation.value,
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          _buildSliverAppBar(),
+          SliverToBoxAdapter(
+            child: house != null ? _buildHouseDetails(house!) : Container(),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildSliverAppBar() {
     return SliverAppBar(
-      expandedHeight: MediaQuery.of(context).size.height * 0.4,
+      expandedHeight: 300,
       pinned: true,
       stretch: true,
-      backgroundColor: Colors.transparent,
-      leading: _buildBackButton(),
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      leading: Container(
+        margin: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: IconButton(
+          icon: Icon(Icons.arrow_back_ios_outlined, color: Colors.grey[700]),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       actions: [
-        _buildFavoriteButton(),
-        _buildShareButton(),
+        Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: IconButton(
+            icon: Icon(
+              isLiked ? Icons.favorite : Icons.favorite_outline,
+              color: isLiked ? Colors.red[400] : Colors.grey[700],
+            ),
+            onPressed: _toggleLike,
+          ),
+        ),
+        Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: IconButton(
+            icon: Icon(Icons.share_outlined, color: Colors.grey[700]),
+            onPressed: _shareHouse,
+          ),
+        ),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        background: house != null
-            ? Stack(
-                fit: StackFit.expand,
-                children: [
-                  _buildImageCarousel(),
-                  _buildGradientOverlay(),
-                  _buildPageIndicator(),
-                ],
-              )
-            : Container(
-                color: Colors.grey[200],
-              ),
+        background: house != null ? _buildImageCarousel() : Container(),
       ),
     );
-  }
-
-  Widget _buildBackButton() {
-    return Container(
-      margin: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        shape: BoxShape.circle,
-      ),
-      child: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
-        onPressed: () => Navigator.pop(context),
-      ),
-    );
-  }
-
-  Widget _buildFavoriteButton() {
-    return Container(
-      margin: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        shape: BoxShape.circle,
-      ),
-      child: IconButton(
-        icon: Icon(
-          isLiked ? Icons.favorite : Icons.favorite_border,
-          color: isLiked ? Colors.red : Colors.black,
-        ),
-        onPressed: _toggleLike,
-      ),
-    );
-  }
-
-  Widget _buildShareButton() {
-    return Container(
-      margin: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        shape: BoxShape.circle,
-      ),
-      child: IconButton(
-        icon: const Icon(Icons.share, color: Colors.black),
-        onPressed: _shareHouse,
-      ),
-    );
-  }
-
-  void _shareHouse() {
-    String message =
-        'Découvrez ce logement: ${house?.offerType["label"]?.toString() ?? 'Type inconnu'} '
-        // 'situé à ${house.address?.toString() ?? 'Adresse non spécifiée'}.\n'
-        ' situé à ${house?.address?.commune['label']?.toString()}/${house?.address?.zone}'
-        'Superficie: ${house?.area} m²\n'
-        'Prix: ${house?.price} GNF\n'
-        'Pour plus de détails, contactez le ${house?.phoneNumber}.';
-
-    Share.share(message);
   }
 
   Widget _buildImageCarousel() {
@@ -333,145 +303,171 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
       if (house?.imageUrl != null) house!.imageUrl,
       ...house?.houseInsides ?? [],
     ];
-    final customCacheManager = CacheManager(Config(
-      'customCacheKey',
-      stalePeriod: const Duration(days: 15),
-      maxNrOfCacheObjects: 100,
-    ));
 
-    return PageView.builder(
-      controller: _pageController,
-      physics: const BouncingScrollPhysics(),
-      itemCount: images.length,
-      itemBuilder: (context, index) {
-        return Hero(
-          tag: 'house-image-$index',
-          child: CachedNetworkImage(
-            cacheManager: customCacheManager,
-            imageUrl: images[index],
-            fit: BoxFit.cover,
-            placeholder: (context, url) => const Center(
-              child: CircularProgressIndicator(color: primaryColor),
-            ),
-            errorWidget: (context, url, error) => const Icon(Icons.error),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildGradientOverlay() {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: IgnorePointer(
-        child: Container(
-          height: 120,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              colors: [
-                Colors.black.withOpacity(0.6),
-                Colors.transparent,
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPageIndicator() {
-    return Positioned(
-      bottom: 16,
-      left: 0,
-      right: 0,
-      child: Center(
-        child: SmoothPageIndicator(
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        PageView.builder(
           controller: _pageController,
-          count: (house?.houseInsides.length ?? 0) + 1,
-          effect: WormEffect(
-            dotHeight: 8,
-            dotWidth: 8,
-            activeDotColor: primaryColor,
-            dotColor: Colors.white.withOpacity(0.5),
-          ),
+          physics: const BouncingScrollPhysics(),
+          itemCount: images.length,
+          itemBuilder: (context, index) {
+            return CachedNetworkImage(
+              imageUrl: images[index],
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                color: Colors.grey[200],
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: primaryColor,
+                    strokeWidth: 2,
+                  ),
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: Colors.grey[200],
+                child: Icon(
+                  Icons.image_not_supported_outlined,
+                  color: Colors.grey[400],
+                  size: 48,
+                ),
+              ),
+            );
+          },
         ),
-      ),
+        if (images.length > 1)
+          Positioned(
+            bottom: 16,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: SmoothPageIndicator(
+                  controller: _pageController,
+                  count: images.length,
+                  effect: WormEffect(
+                    dotHeight: 8,
+                    dotWidth: 8,
+                    activeDotColor: Colors.white,
+                    dotColor: Colors.white.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
   Widget _buildHouseDetails(House house) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildHeaderSection(house),
-        const SizedBox(height: 24),
-        _buildPriceSection(house),
-        const SizedBox(height: 24),
-        _buildFeaturesSection(house),
-        const SizedBox(height: 24),
-        _furnishingSection(house),
-        const SizedBox(height: 24),
-        _buildLocationSection(house),
-        const SizedBox(height: 24),
-        _buildDescriptionSection(house),
-        if (house.houseType?.label != "Terrain") ...[
-          const SizedBox(height: 24),
-          _buildAmenitiesSection(house),
-        ],
-        const SizedBox(height: 24),
-        _buildAdditionalInfoSection(house),
-      ],
-    );
-  }
-
-  Widget _buildHeaderSection(House house) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '${house.houseType?.label ?? ''} - ${house.offerType["label"]}',
-          style: GoogleFonts.poppins(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Icon(Icons.location_on, color: Colors.grey[600], size: 16),
-            const SizedBox(width: 4),
-            Text(
-              '${house.address?.commune["label"]}/${house.address?.zone}',
-              style: GoogleFonts.poppins(
-                color: Colors.grey[600],
-                fontSize: 15,
-              ),
-            ),
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildHeaderCard(house),
+          const SizedBox(height: 10),
+          _buildPriceCard(house),
+          const SizedBox(height: 10),
+          _buildFeaturesCard(house),
+          const SizedBox(height: 10),
+          _buildLocationCard(house),
+          const SizedBox(height: 10),
+          _buildDescriptionCard(house),
+          if (house.houseType?.label != "Terrain") ...[
+            const SizedBox(height: 10),
+            _buildAmenitiesCard(house),
           ],
-        ),
-      ],
+          const SizedBox(height: 10),
+          _buildAdditionalInfoCard(house),
+          const SizedBox(height: 100), // Espace pour le bottom bar
+        ],
+      ),
     );
   }
 
-  Widget _buildPriceSection(House house) {
+  Widget _buildCard({required Widget child}) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
       ),
+      child: child,
+    );
+  }
+
+  Widget _buildHeaderCard(House house) {
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  house.offerType["label"],
+                  style: GoogleFonts.poppins(
+                    color: primaryColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            house.houseType?.label ?? '',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.location_on_outlined,
+                  color: Colors.grey[600], size: 18),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  '${house.address?.commune["label"]}/${house.address?.zone}',
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[600],
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriceCard(House house) {
+    return _buildCard(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -483,280 +479,185 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
                   'Prix',
                   style: GoogleFonts.poppins(
                     color: Colors.grey[600],
-                    fontSize: 15,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 4),
                 FormattedPrice(
                   color: primaryColor,
                   price: house.price,
-                  size: 22,
+                  size: 20,
                   suffix: house.offerType["value"] == "ALouer" ? '/mois' : '',
                 ),
               ],
             ),
           ),
           ElevatedButton.icon(
-              icon: const Icon(
-                Icons.map,
-                size: 20,
+            icon: const Icon(Icons.map_outlined, size: 18),
+            label: Text(
+              'Carte',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w500,
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
-              onPressed: () => _navigateToMap(house),
-              label: SizedBox(
-                width: 60, // Ajuste cette largeur selon tes besoins
-                child: const Text(
-                  'Voir sur la carte',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              )),
+            ),
+            onPressed: () => _navigateToMap(house),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildFeaturesSection(House house) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+  Widget _buildFeaturesCard(House house) {
+    bool isTerrain = house.houseType?.label == "Terrain";
+
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildFeatureItem(
-            icon: Icons.king_bed,
-            label: 'Chambres',
-            value: house.bedrooms.toString(),
+          Text(
+            'Caractéristiques',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
           ),
-          Container(
-            width: 1,
-            height: 40,
-            color: Colors.grey[300],
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              if (!isTerrain) ...[
+                Expanded(
+                  child: _buildFeatureItem(
+                    icon: Icons.bed_outlined,
+                    label: 'Chambres',
+                    value: (house.bedrooms).toString(),
+                  ),
+                ),
+                Expanded(
+                  child: _buildFeatureItem(
+                    icon: Icons.straighten_outlined,
+                    label: 'Superficie',
+                    value: '${house.area} m²',
+                  ),
+                ),
+                Expanded(
+                  child: _buildFeatureItem(
+                    icon: Icons.payments_outlined,
+                    label: 'Avance',
+                    value: '${house.housingDeposit} mois',
+                  ),
+                ),
+              ] else ...[
+                Expanded(
+                  child: _buildFeatureItem(
+                    icon: Icons.straighten_outlined,
+                    label: 'Superficie',
+                    value: '${house.area} m²',
+                  ),
+                ),
+                Expanded(
+                  child: _buildFeatureItem(
+                    icon: Icons.payments_outlined,
+                    label: 'Avance',
+                    value: '${house.housingDeposit} mois',
+                  ),
+                ),
+                const Expanded(child: SizedBox()),
+              ],
+            ],
           ),
-          _buildFeatureItem(
-            icon: Icons.square_foot,
-            label: 'Superficie',
-            value: '${house.area} m²',
-          ),
-          Container(
-            width: 1,
-            height: 40,
-            color: Colors.grey[300],
-          ),
-          _buildFeatureItem(
-            icon: Icons.attach_money_sharp,
-            label: 'Avance',
-            value: '${house.housingDeposit} mois',
-          ),
+          if (!isTerrain && house.furnishing != null) ...[
+            const SizedBox(height: 16),
+            _buildInfoRow(
+                'Mobilier', house.furnishing["label"] ?? 'Non spécifié'),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildFeatureItem(
-      {required IconData icon, required String label, required String value}) {
+  Widget _buildFeatureItem({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
     return Column(
       children: [
-        Icon(icon, color: primaryColor, size: 28),
-        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: primaryColor, size: 24),
+        ),
+        const SizedBox(height: 8),
         Text(
           label,
           style: GoogleFonts.poppins(
             color: Colors.grey[600],
-            fontSize: 15,
+            fontSize: 12,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
           style: GoogleFonts.poppins(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+            color: Colors.grey[800],
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildLocationSection(House house) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Localisation',
-          style: GoogleFonts.poppins(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Icon(Icons.map, color: Colors.grey[600], size: 16),
-            const SizedBox(width: 4),
-            Text(
-              '${house.address?.town["label"]}, ${house.address?.zone}',
-              style: GoogleFonts.poppins(
-                color: Colors.grey[600],
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _furnishingSection(House house) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Mobilier',
-          style: GoogleFonts.poppins(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Icon(Icons.weekend, color: Colors.grey[600], size: 16),
-            const SizedBox(width: 4),
-            Text(
-              '${house.furnishing["label"]}',
-              style: GoogleFonts.poppins(
-                color: Colors.grey[600],
-                fontSize: 15,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDescriptionSection(House house) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Description',
-          style: GoogleFonts.poppins(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          house.description,
-          style: GoogleFonts.poppins(
-            fontSize: 15,
-            color: Colors.grey[700],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAmenitiesSection(House house) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Commodités',
-          style: GoogleFonts.poppins(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: house.commodites!.map((commodity) {
-            return Chip(
-              label: Text(
-                commodity["label"],
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.white,
+  Widget _buildLocationCard(House house) {
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.location_on_outlined,
+                  color: primaryColor,
+                  size: 20,
                 ),
               ),
-              backgroundColor: primaryColor,
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAdditionalInfoSection(House house) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Informations supplémentaires',
-          style: GoogleFonts.poppins(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+              const SizedBox(width: 12),
+              Text(
+                'Localisation',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 8),
-        Column(
-          children: [
-            _buildInfoRow('Caution', '${house.rentalDeposit} mois'),
-            _buildInfoRow('Frais dagence', '${1} mois'),
-            _buildInfoRow('Statut du locataire', house.rentalStatus),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
+          const SizedBox(height: 12),
           Text(
-            label,
+            '${house.address?.town["label"]}, ${house.address?.zone}',
             style: GoogleFonts.poppins(
+              color: Colors.grey[700],
               fontSize: 15,
-              color: Colors.grey[600],
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -764,8 +665,231 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
     );
   }
 
+  Widget _buildDescriptionCard(House house) {
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.description_outlined,
+                  color: primaryColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Description',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            house.description,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey[700],
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAmenitiesCard(House house) {
+    // Vérifier si les commodités existent et ne sont pas vides
+    if (house.commodites == null || house.commodites!.isEmpty) {
+      return const SizedBox.shrink(); // Ne rien afficher si pas de commodités
+    }
+
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.star_outline,
+                  color: primaryColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Commodités',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: house.commodites!.map((commodity) {
+              return Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: primaryColor.withOpacity(0.2),
+                  ),
+                ),
+                child: Text(
+                  commodity["label"] ?? 'Non spécifié',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: primaryColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdditionalInfoCard(House house) {
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.info_outline,
+                  color: primaryColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Informations supplémentaires',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildInfoRow('Caution', '${house.rentalDeposit} mois'),
+          _buildInfoRow('Frais d\'agence', '1 mois'),
+          _buildInfoRow('Statut du locataire', house.rentalStatus),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: ElevatedButton.icon(
+          onPressed: _makePhoneCall,
+          icon: const Icon(Icons.phone_outlined, size: 20),
+          label: Text(
+            "Contacter l'agence",
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primaryColor,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            minimumSize: const Size(double.infinity, 0),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _shareHouse() {
+    String message =
+        'Découvrez ce logement: ${house?.offerType["label"]?.toString() ?? 'Type inconnu'} '
+        'situé à ${house?.address?.commune['label']?.toString()}/${house?.address?.zone}\n'
+        'Superficie: ${house?.area} m²\n'
+        'Prix: ${house?.price} GNF\n'
+        'Pour plus de détails, contactez le ${house?.phoneNumber}.';
+
+    Share.share(message);
+  }
+
   void _navigateToMap(House house) {
-    // Logique pour la navigation vers la carte
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -783,7 +907,6 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
   void dispose() {
     _animationController.dispose();
     _pageController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 }

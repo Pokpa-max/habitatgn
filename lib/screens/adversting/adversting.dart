@@ -34,7 +34,7 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
         );
       },
       options: CarouselOptions(
-        height: screenHeight * 0.25, // 25% of screen height
+        height: screenHeight * 0.20, // 25% of screen height
         autoPlay: true,
         aspectRatio: 16 / 9,
         viewportFraction: 1.0,
@@ -58,7 +58,7 @@ class _AdvertisementCarouselState extends State<AdvertisementCarousel> {
             CustomCachedNetworkImage(
               imageUrl: imageUrl,
               width: screenWidth,
-              height: screenHeight * 0.25,
+              height: screenHeight * 0.20,
             ),
             Positioned(
               bottom: 0.0,

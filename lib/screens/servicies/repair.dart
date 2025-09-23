@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,234 +9,439 @@ import 'package:habitatgn/viewmodels/repairService/repair_service.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class RepairServicesScreen extends ConsumerWidget {
-  const RepairServicesScreen({super.key});
+enum ServiceType { repair, moving }
+
+class UnifiedServicesScreen extends ConsumerWidget {
+  final ServiceType serviceType;
+
+  const UnifiedServicesScreen({
+    super.key,
+    required this.serviceType,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final config = _getServiceConfig();
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_outlined, size: 20),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
         backgroundColor: primaryColor,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const CustomTitle(
-          text: 'Réparations et Entretien',
-          textColor: Colors.white,
-          fontSize: 20,
+        elevation: 0,
+        title: Text(
+          config.title,
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: Column(
         children: [
-          _buildEmergencyBanner(context, ref),
+          _buildEmergencyBanner(context, ref, config),
           Expanded(
-            child: _buildServicesGrid(context, ref),
+            child: _buildServicesGrid(context, ref, config),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildEmergencyBanner(BuildContext context, WidgetRef ref) {
+  ServiceConfig _getServiceConfig() {
+    switch (serviceType) {
+      case ServiceType.repair:
+        return ServiceConfig(
+          title: 'Réparations & Entretien',
+          emergencyTitle: 'Réparation urgente ?',
+          emergencyIcon: Icons.build_circle_outlined,
+          phoneType: 'repair',
+          gradientColors: [
+            primaryColor,
+            primaryColor.withOpacity(0.8),
+          ],
+          services: [
+            ServiceItemData(
+              icon: Icons.plumbing_outlined,
+              title: 'Plomberie',
+              description:
+                  'Dépannage fuites, installation sanitaire et chauffe-eau',
+            ),
+            ServiceItemData(
+              icon: Icons.electrical_services_outlined,
+              title: 'Électricité',
+              description:
+                  'Installation électrique, réparation et mise aux normes',
+            ),
+            ServiceItemData(
+              icon: Icons.handyman_outlined,
+              title: 'Bricolage',
+              description: 'Montage meubles, serrurerie et petites réparations',
+            ),
+            ServiceItemData(
+              icon: Icons.format_paint_outlined,
+              title: 'Peinture',
+              description: 'Rénovation intérieure, décoration et conseils',
+            ),
+            ServiceItemData(
+              icon: Icons.ac_unit_outlined,
+              title: 'Climatisation',
+              description:
+                  'Installation, réparation et entretien de climatiseurs',
+            ),
+            ServiceItemData(
+              icon: Icons.cleaning_services_outlined,
+              title: 'Assainissement',
+              description: 'Nettoyage professionnel et assainissement 24h/24',
+            ),
+          ],
+        );
+
+      case ServiceType.moving:
+        return ServiceConfig(
+          title: 'Services de Déménagement',
+          emergencyTitle: 'Déménagement urgent ?',
+          emergencyIcon: Icons.emergency_rounded,
+          phoneType: 'moving',
+          gradientColors: [
+            primaryColor,
+            primaryColor.withOpacity(0.8),
+          ],
+          services: [
+            ServiceItemData(
+              icon: Icons.local_shipping_outlined,
+              title: 'Transport',
+              description:
+                  'Transport sécurisé de vos biens avec véhicules adaptés',
+            ),
+            ServiceItemData(
+              icon: Icons.handyman_outlined,
+              title: 'Assemblage',
+              description: 'Montage et démontage professionnel de vos meubles',
+            ),
+            ServiceItemData(
+              icon: Icons.inventory_2_outlined,
+              title: 'Stockage',
+              description: 'Solutions de stockage temporaire sécurisées',
+            ),
+            ServiceItemData(
+              icon: Icons.all_inbox_outlined,
+              title: 'Emballage',
+              description: 'Emballage professionnel et protection optimale',
+            ),
+          ],
+        );
+    }
+  }
+
+  Widget _buildEmergencyBanner(
+      BuildContext context, WidgetRef ref, ServiceConfig config) {
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      margin: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [primaryColor.withOpacity(0.8), primaryColor],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
+          colors: config.gradientColors,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: primaryColor.withOpacity(0.3),
+            spreadRadius: 0,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
-      child: Row(
+      child: Stack(
         children: [
-          const Icon(Icons.emergency, color: Colors.white, size: 30),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Réparation urgente ?',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Intervention rapide disponible',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ElevatedButton.icon(
-            onPressed: () async {
-              final phoneNumber = await ref
-                  .read(serviceRequestServiceProvider)
-                  .getAgentPhoneNumber('repair');
-              if (phoneNumber != null) {
-                _launchPhoneCall('tel:$phoneNumber');
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Numéro non disponible'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: primaryColor,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          // Cercles décoratifs
+          Positioned(
+            right: -10,
+            top: -10,
+            child: Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.1),
               ),
             ),
-            icon: const Icon(Icons.phone, size: 20),
-            label: const Text(
-              'Appeler',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          Positioned(
+            right: 20,
+            bottom: -5,
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.15),
+              ),
             ),
+          ),
+          // Contenu principal
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  config.emergencyIcon,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      config.emergencyTitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Intervention rapide disponible 24h/7j',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: Colors.white.withOpacity(0.9),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () async {
+                    final phoneNumber = await ref
+                        .read(serviceRequestServiceProvider)
+                        .getAgentPhoneNumber(config.phoneType);
+                    if (phoneNumber != null) {
+                      _launchPhoneCall('tel:$phoneNumber');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Numéro non disponible'),
+                          backgroundColor: Colors.red,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.phone, color: primaryColor, size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Appeler',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildServicesGrid(BuildContext context, WidgetRef ref) {
-    final services = [
-      {
-        'icon': Icons.plumbing,
-        'title': 'Plomberie',
-        'description':
-            'Dépannage fuites, installation sanitaire et chauffe-eau',
-      },
-      {
-        'icon': Icons.electrical_services,
-        'title': 'Électricité',
-        'description': 'Installation, réparation et mise aux normes',
-      },
-      {
-        'icon': Icons.build,
-        'title': 'Bricolage',
-        'description': 'Montage meubles, serrurerie et petites réparations',
-      },
-      {
-        'icon': Icons.format_paint,
-        'title': 'Peinture',
-        'description': 'Rénovation intérieure et conseils déco',
-      },
-      {
-        'icon': Icons.heat_pump,
-        'title': 'Climatisation',
-        'description': 'Installation et entretien de climatiseurs',
-      },
-      {
-        'icon': Icons.cleaning_services,
-        'title': 'Assainissement',
-        'description': 'Nettoyage et assainissement 24h/24',
-      }
-    ];
-
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.0,
-        crossAxisSpacing: 15,
-        mainAxisSpacing: 15,
+  Widget _buildServicesGrid(
+      BuildContext context, WidgetRef ref, ServiceConfig config) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Nos Services',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Choisissez le service dont vous avez besoin',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.85,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemCount: config.services.length,
+              itemBuilder: (context, index) {
+                final service = config.services[index];
+                return _buildServiceCard(
+                  context: context,
+                  service: service,
+                  ref: ref,
+                );
+              },
+            ),
+          ),
+        ],
       ),
-      itemCount: services.length,
-      itemBuilder: (context, index) {
-        final service = services[index];
-        return _buildServiceCard(
-          context: context,
-          icon: service['icon'] as IconData,
-          title: service['title'] as String,
-          color: Colors.white,
-          description: service['description'] as String,
-          ref: ref,
-        );
-      },
     );
   }
 
   Widget _buildServiceCard({
     required BuildContext context,
-    required IconData icon,
-    required String title,
-    required Color color,
-    required String description,
+    required ServiceItemData service,
     required WidgetRef ref,
   }) {
-    return Card(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: lightPrimary2)),
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
-        onTap: () => _showRequestForm(context, title, ref),
+        onTap: () => _showRequestForm(context, service.title, ref),
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+            border: Border.all(
+              color: primaryColor.withOpacity(0.1),
+              width: 1,
+            ),
+          ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Icône
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: primaryColor,
-                  // color.withOpacity(0.1),
-                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      primaryColor.withOpacity(0.1),
+                      primaryColor.withOpacity(0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  icon,
-                  color: color,
+                  service.icon,
+                  color: primaryColor,
+                  size: 20,
                 ),
               ),
               const SizedBox(height: 10),
+
+              // Titre
               Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                service.title,
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
+              const SizedBox(height: 8),
+
+              // Description
+              Expanded(
+                child: Text(
+                  service.description,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: Colors.grey[600],
+                    height: 1.3,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 10),
+
+              // Bouton d'action
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Demander',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: primaryColor,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: primaryColor,
+                      size: 12,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -247,12 +450,8 @@ class RepairServicesScreen extends ConsumerWidget {
     );
   }
 
-  // ... Rest of the code remains the same for _showRequestForm and _launchPhoneCall
-
   void _showRequestForm(
       BuildContext context, String serviceType, WidgetRef ref) async {
-    // Added async
-    // Initialiser les données de localisation avant utilisation
     await initializeDateFormatting('fr_FR', null);
 
     final viewModel = ref.watch(serviceRequestServiceProvider);
@@ -264,257 +463,403 @@ class RepairServicesScreen extends ConsumerWidget {
     final dateController = TextEditingController();
     final timeController = TextEditingController();
 
-    // Initialiser le format de date en français
     Intl.defaultLocale = 'fr_FR';
     final dateFormat = DateFormat.yMMMMd('fr_FR');
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 16,
-          right: 16,
-          top: 16,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        child: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Demande de $serviceType',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
+          child: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // En-tête du modal
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          this.serviceType == ServiceType.repair
+                              ? Icons.build_outlined
+                              : Icons.local_shipping_outlined,
+                          color: primaryColor,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Demande de $serviceType',
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[800],
+                              ),
+                            ),
+                            Text(
+                              'Remplissez les informations ci-dessous',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(Icons.close, color: Colors.grey[600]),
+                      ),
+                    ],
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nom et prénom',
-                    labelStyle: TextStyle(color: primaryColor),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: primaryColor),
-                    ),
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 20),
+
+                  // Champs du formulaire
+                  _buildFormField(
+                    controller: nameController,
+                    label: 'Nom et prénom',
+                    icon: Icons.person_outline,
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? 'Nom requis' : null,
                   ),
-                  validator: (value) =>
-                      value?.isEmpty ?? true ? 'Nom requis' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: phoneController,
-                  decoration: const InputDecoration(
-                    labelText: 'Téléphone',
-                    labelStyle: TextStyle(color: primaryColor),
+                  const SizedBox(height: 16),
+
+                  _buildFormField(
+                    controller: phoneController,
+                    label: 'Téléphone',
+                    icon: Icons.phone_outlined,
+                    keyboardType: TextInputType.phone,
                     prefixText: '+224 ',
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: primaryColor),
-                    ),
-                    border: OutlineInputBorder(),
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? 'Numéro requis' : null,
                   ),
-                  keyboardType: TextInputType.phone,
-                  validator: (value) =>
-                      value?.isEmpty ?? true ? 'Numéro requis' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: addressController,
-                  decoration: const InputDecoration(
-                    labelText: 'Quartier',
-                    labelStyle: TextStyle(color: primaryColor),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: primaryColor),
-                    ),
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 16),
+
+                  _buildFormField(
+                    controller: addressController,
+                    label: 'Quartier',
+                    icon: Icons.location_on_outlined,
+                    validator: (value) =>
+                        value?.isEmpty ?? true ? 'Quartier requis' : null,
                   ),
-                  validator: (value) =>
-                      value?.isEmpty ?? true ? 'Quartier requis' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: dateController,
-                  decoration: const InputDecoration(
-                    labelText: 'Date de réparation',
-                    labelStyle: TextStyle(color: primaryColor),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: primaryColor),
-                    ),
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.calendar_today, color: primaryColor),
+                  const SizedBox(height: 16),
+
+                  // Date et heure sur la même ligne
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildDateField(
+                            context, dateController, dateFormat),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildTimeField(context, timeController),
+                      ),
+                    ],
                   ),
-                  readOnly: true,
-                  onTap: () async {
-                    final DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 30)),
-                      locale: const Locale('fr', 'FR'),
-                      confirmText: 'CONFIRMER',
-                      cancelText: 'ANNULER',
-                      helpText: 'SÉLECTIONNER UNE DATE',
-                      builder: (context, child) {
-                        return Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: ColorScheme.light(
-                              primary: primaryColor,
-                              onPrimary: Colors.white,
-                              onSurface: Colors.black,
-                              surface: Colors.white,
-                            ),
-                            textButtonTheme: TextButtonThemeData(
-                              style: TextButton.styleFrom(
-                                foregroundColor: primaryColor,
-                              ),
-                            ),
-                          ),
-                          child: child!,
-                        );
-                      },
-                    );
-                    if (pickedDate != null) {
-                      dateController.text = dateFormat.format(pickedDate);
-                    }
-                  },
-                  validator: (value) =>
-                      value?.isEmpty ?? true ? 'Date requise' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: timeController,
-                  decoration: const InputDecoration(
-                    labelText: 'Heure de réparation',
-                    labelStyle: TextStyle(color: primaryColor),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: primaryColor),
-                    ),
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.access_time, color: primaryColor),
+                  const SizedBox(height: 16),
+
+                  _buildFormField(
+                    controller: descriptionController,
+                    label: 'Description (optionnel)',
+                    icon: Icons.description_outlined,
+                    maxLines: 3,
                   ),
-                  readOnly: true,
-                  onTap: () async {
-                    final TimeOfDay? pickedTime = await showTimePicker(
-                      context: context,
-                      initialTime: TimeOfDay.now(),
-                      helpText: 'SÉLECTIONNER UNE HEURE',
-                      builder: (context, child) {
-                        return Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: ColorScheme.light(
-                              primary: primaryColor,
-                              onPrimary: Colors.white,
-                              onSurface: Colors.black,
-                              surface: Colors.white,
-                            ),
-                            textButtonTheme: TextButtonThemeData(
-                              style: TextButton.styleFrom(
-                                foregroundColor: primaryColor,
-                              ),
-                            ),
-                          ),
-                          child: child!,
-                        );
-                      },
-                    );
-                    if (pickedTime != null) {
-                      final now = DateTime.now();
-                      final datetime = DateTime(
-                        now.year,
-                        now.month,
-                        now.day,
-                        pickedTime.hour,
-                        pickedTime.minute,
-                      );
-                      timeController.text =
-                          DateFormat('HH:mm').format(datetime);
-                    }
-                  },
-                  validator: (value) =>
-                      value?.isEmpty ?? true ? 'Heure requise' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Description',
-                    labelStyle: TextStyle(color: primaryColor),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: primaryColor),
-                    ),
-                    border: OutlineInputBorder(),
-                  ),
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: viewModel is AsyncLoading
-                      ? null
-                      : () async {
-                          if (formKey.currentState?.validate() ?? false) {
-                            final request = ServiceRequestModel(
-                              serviceType: serviceType,
-                              name: nameController.text,
-                              address: addressController.text,
-                              phone: phoneController.text,
-                              description: descriptionController.text,
-                              scheduledDate: dateController.text,
-                              status: 'En attente',
-                              scheduledTime: timeController.text,
-                              userId: ref
-                                  .read(authServiceProvider)
-                                  .getCurrentUser()!
-                                  .uid,
-                            );
-                            await ref
-                                .read(serviceRequestViewModelProvider.notifier)
-                                .submitRequest(request)
-                                .then((_) {
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Center(
-                                    child: Text(
-                                        'Demande de $serviceType soumise avec succès !'),
+                  const SizedBox(height: 24),
+
+                  // Bouton de soumission
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: viewModel is AsyncLoading
+                          ? null
+                          : () async {
+                              if (formKey.currentState?.validate() ?? false) {
+                                final request = ServiceRequestModel(
+                                  serviceType: serviceType,
+                                  name: nameController.text,
+                                  address: addressController.text,
+                                  phone: phoneController.text,
+                                  status: "En attente",
+                                  description: descriptionController.text,
+                                  scheduledDate: dateController.text,
+                                  scheduledTime: timeController.text,
+                                  userId: ref
+                                      .read(authServiceProvider)
+                                      .getCurrentUser()!
+                                      .uid,
+                                );
+                                await ref
+                                    .read(serviceRequestViewModelProvider
+                                        .notifier)
+                                    .submitRequest(request)
+                                    .then((_) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content:
+                                          Text('Demande envoyée avec succès !'),
+                                      backgroundColor: Colors.green,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }).catchError((error) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Erreur: $error'),
+                                      backgroundColor: Colors.red,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                });
+                              }
+                            },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          color: viewModel is AsyncLoading
+                              ? Colors.grey[300]
+                              : primaryColor,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: viewModel is AsyncLoading
+                              ? null
+                              : [
+                                  BoxShadow(
+                                    color: primaryColor.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 3),
                                   ),
+                                ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (viewModel is AsyncLoading)
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
                                 ),
-                              );
-                            }).catchError((error) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      'Erreur lors de la soumission: $error'),
-                                ),
-                              );
-                            });
-                          }
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                              )
+                            else
+                              Icon(Icons.send, color: Colors.white, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              viewModel is AsyncLoading
+                                  ? 'Envoi en cours...'
+                                  : 'Envoyer la demande',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  child: const Text('Envoyer la demande'),
-                ),
-                const SizedBox(height: 16),
-              ],
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFormField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType? keyboardType,
+    String? prefixText,
+    String? Function(String?)? validator,
+    int maxLines = 1,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      style: GoogleFonts.poppins(fontSize: 14),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.poppins(color: primaryColor),
+        prefixText: prefixText,
+        prefixIcon: Icon(icon, color: primaryColor, size: 20),
+        filled: true,
+        fillColor: Colors.grey[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: primaryColor, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+      ),
+      validator: validator,
+    );
+  }
+
+  Widget _buildDateField(BuildContext context, TextEditingController controller,
+      DateFormat dateFormat) {
+    return TextFormField(
+      controller: controller,
+      readOnly: true,
+      style: GoogleFonts.poppins(fontSize: 14),
+      decoration: InputDecoration(
+        labelText: 'Date',
+        labelStyle: GoogleFonts.poppins(color: primaryColor),
+        prefixIcon:
+            Icon(Icons.calendar_today_outlined, color: primaryColor, size: 20),
+        filled: true,
+        fillColor: Colors.grey[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: primaryColor, width: 2),
+        ),
+      ),
+      onTap: () async {
+        final DateTime? pickedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime.now(),
+          lastDate: DateTime.now().add(const Duration(days: 30)),
+          locale: const Locale('fr', 'FR'),
+          helpText: 'SÉLECTIONNER UNE DATE',
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: ColorScheme.light(
+                  primary: primaryColor,
+                  onPrimary: Colors.white,
+                  onSurface: Colors.black,
+                  surface: Colors.white,
+                ),
+                textButtonTheme: TextButtonThemeData(
+                  style: TextButton.styleFrom(foregroundColor: primaryColor),
+                ),
+              ),
+              child: child!,
+            );
+          },
+        );
+        if (pickedDate != null) {
+          controller.text = dateFormat.format(pickedDate);
+        }
+      },
+      validator: (value) => value?.isEmpty ?? true ? 'Date requise' : null,
+    );
+  }
+
+  Widget _buildTimeField(
+      BuildContext context, TextEditingController controller) {
+    return TextFormField(
+      controller: controller,
+      readOnly: true,
+      style: GoogleFonts.poppins(fontSize: 14),
+      decoration: InputDecoration(
+        labelText: 'Heure',
+        labelStyle: GoogleFonts.poppins(color: primaryColor),
+        prefixIcon:
+            Icon(Icons.access_time_outlined, color: primaryColor, size: 20),
+        filled: true,
+        fillColor: Colors.grey[50],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: primaryColor, width: 2),
+        ),
+      ),
+      onTap: () async {
+        final TimeOfDay? pickedTime = await showTimePicker(
+          context: context,
+          initialTime: TimeOfDay.now(),
+          cancelText: 'ANNULER',
+          confirmText: 'CONFIRMER',
+          helpText: 'SÉLECTIONNER UNE HEURE',
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: ColorScheme.light(
+                  primary: primaryColor,
+                  onPrimary: Colors.white,
+                  onSurface: Colors.black,
+                  surface: Colors.white,
+                ),
+                textButtonTheme: TextButtonThemeData(
+                  style: TextButton.styleFrom(foregroundColor: primaryColor),
+                ),
+              ),
+              child: child!,
+            );
+          },
+        );
+        if (pickedTime != null) {
+          final now = DateTime.now();
+          final datetime = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+          controller.text = DateFormat('HH:mm').format(datetime);
+        }
+      },
+      validator: (value) => value?.isEmpty ?? true ? 'Heure requise' : null,
     );
   }
 
@@ -525,16 +870,33 @@ class RepairServicesScreen extends ConsumerWidget {
   }
 }
 
-class ServiceItem {
+// Classes de configuration pour les différents types de services
+class ServiceConfig {
+  final String title;
+  final String emergencyTitle;
+  final IconData emergencyIcon;
+  final String phoneType;
+  final List<Color> gradientColors;
+  final List<ServiceItemData> services;
+
+  ServiceConfig({
+    required this.title,
+    required this.emergencyTitle,
+    required this.emergencyIcon,
+    required this.phoneType,
+    required this.gradientColors,
+    required this.services,
+  });
+}
+
+class ServiceItemData {
   final IconData icon;
   final String title;
   final String description;
-  final List<Color> gradient;
 
-  ServiceItem({
+  ServiceItemData({
     required this.icon,
     required this.title,
     required this.description,
-    required this.gradient,
   });
 }

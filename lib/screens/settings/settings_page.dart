@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,97 +30,297 @@ class SettingsPage extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: lightPrimary,
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_outlined),
+          color: Colors.grey[700],
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          'Paramètres',
+          style: GoogleFonts.poppins(
+            color: Colors.grey[800],
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         centerTitle: true,
-        title: const Text('Paramètres', style: TextStyle(color: Colors.white)),
-        backgroundColor: primaryColor,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 1,
+            color: Colors.grey[200],
+          ),
+        ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-        children: [
-          _buildSettingsOption(
-            icon: Icons.lock,
-            title: 'Changer le mot de passe',
-            onTap: () {
-              _checkInternetAndExecute(context, ref, () {
-                _showChangePasswordDialog(context, ref);
-              });
-            },
-          ),
-          const SizedBox(height: 20),
-          _buildSettingsOption(
-            icon: Icons.location_on,
-            title: 'Préférences de notification',
-            onTap: () {
-              _checkInternetAndExecute(context, ref, () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HousingPreferencesScreen(
-                      userId: user!.uid,
-                    ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Section Compte
+            _buildSectionHeader(
+              icon: Icons.account_circle_outlined,
+              title: 'Compte',
+              subtitle: 'Gérez vos informations personnelles',
+            ),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
                   ),
-                );
-              });
-            },
-          ),
-          const SizedBox(height: 20),
-          _buildSettingsOption(
-            icon: Icons.info,
-            title: 'À propos',
-            onTap: () {
-              _checkInternetAndExecute(context, ref, () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AboutPage()),
-                );
-              });
-            },
-          ),
-          _buildSettingsOption(
-            icon: Icons.delete,
-            title: 'Supprimer votre compte',
-            onTap: () {
-              _checkInternetAndExecute(context, ref, () {
-                _showDeleteAccountDialog(context, ref);
-              });
-            },
-          ),
-        ],
+                ],
+              ),
+              child: Column(
+                children: [
+                  _buildModernSettingsOption(
+                    icon: Icons.lock_outline,
+                    title: 'Changer le mot de passe',
+                    subtitle: 'Modifiez votre mot de passe',
+                    onTap: () {
+                      _checkInternetAndExecute(context, ref, () {
+                        _showChangePasswordDialog(context, ref);
+                      });
+                    },
+                    isFirst: true,
+                  ),
+                  _buildDivider(),
+                  _buildModernSettingsOption(
+                    icon: Icons.notifications_outlined,
+                    title: 'Préférences de notification',
+                    subtitle: 'Configurez vos notifications',
+                    onTap: () {
+                      _checkInternetAndExecute(context, ref, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HousingPreferencesScreen(
+                              userId: user!.uid,
+                            ),
+                          ),
+                        );
+                      });
+                    },
+                    isLast: true,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Section Application
+            _buildSectionHeader(
+              icon: Icons.info_outline,
+              title: 'Application',
+              subtitle: 'Informations et support',
+            ),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: _buildModernSettingsOption(
+                icon: Icons.info_outline,
+                title: 'À propos',
+                subtitle: 'Version et informations légales',
+                onTap: () {
+                  _checkInternetAndExecute(context, ref, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AboutPage()),
+                    );
+                  });
+                },
+                isFirst: true,
+                isLast: true,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Section Danger
+            _buildSectionHeader(
+              icon: Icons.warning_outlined,
+              title: 'Zone de danger',
+              subtitle: 'Actions irréversibles',
+            ),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: _buildModernSettingsOption(
+                icon: Icons.delete_outline,
+                title: 'Supprimer votre compte',
+                subtitle: 'Supprimer définitivement votre compte',
+                onTap: () {
+                  _checkInternetAndExecute(context, ref, () {
+                    _showDeleteAccountDialog(context, ref);
+                  });
+                },
+                iconColor: Colors.red[400],
+                titleColor: Colors.red[600],
+                isFirst: true,
+                isLast: true,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildSettingsOption({
+  Widget _buildSectionHeader({
     required IconData icon,
     required String title,
-    required VoidCallback onTap,
+    required String subtitle,
   }) {
-    return Column(
+    return Row(
       children: [
-        ListTile(
-          leading: Icon(icon, color: primaryColor),
-          title: Text(
-            title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
           ),
-          trailing: const Icon(
-            Icons.arrow_forward_ios,
+          child: Icon(
+            icon,
+            color: primaryColor,
             size: 20,
-            color: Colors.grey,
           ),
-          onTap: onTap,
         ),
-        const Divider(height: 1, thickness: 1),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+              Text(
+                subtitle,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildModernSettingsOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    Color? iconColor,
+    Color? titleColor,
+    bool isFirst = false,
+    bool isLast = false,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.vertical(
+          top: isFirst ? const Radius.circular(16) : Radius.zero,
+          bottom: isLast ? const Radius.circular(16) : Radius.zero,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: (iconColor ?? primaryColor).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  icon,
+                  color: iconColor ?? primaryColor,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: titleColor ?? Colors.grey[800],
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: Colors.grey[400],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      height: 1,
+      color: Colors.grey[100],
     );
   }
 
@@ -134,10 +333,29 @@ class SettingsPage extends ConsumerWidget {
     if (connectivityResult == ConnectivityResult.none) {
       // Affichez un message à l'utilisateur si la connexion Internet est absente
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Center(
-            child: Text(
-                'Aucune connexion Internet. Veuillez vérifier votre connexion.'),
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                Icons.wifi_off,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Aucune connexion Internet. Veuillez vérifier votre connexion.',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange[600],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
           ),
         ),
       );
@@ -163,20 +381,40 @@ class SettingsPage extends ConsumerWidget {
             final obscureNewPassword = ref.watch(obscureNewPasswordProvider);
 
             return AlertDialog(
-              title: Text(
-                'Changer le mot de passe',
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.lock_outline,
+                      color: primaryColor,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Changer le mot de passe',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                ],
               ),
               content: Form(
                 key: formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildPasswordField(
+                    _buildModernPasswordField(
                       controller: currentPasswordController,
                       labelText: 'Mot de passe actuel',
                       obscureText: obscureCurrentPassword,
@@ -193,7 +431,7 @@ class SettingsPage extends ConsumerWidget {
                       },
                     ),
                     const SizedBox(height: 16),
-                    _buildPasswordField(
+                    _buildModernPasswordField(
                       controller: newPasswordController,
                       labelText: 'Nouveau mot de passe',
                       obscureText: obscureNewPassword,
@@ -229,8 +467,9 @@ class SettingsPage extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -259,7 +498,7 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildPasswordField({
+  Widget _buildModernPasswordField({
     required TextEditingController controller,
     required String labelText,
     required bool obscureText,
@@ -270,32 +509,55 @@ class SettingsPage extends ConsumerWidget {
       controller: controller,
       obscureText: obscureText,
       validator: validator,
-      style: GoogleFonts.poppins(),
+      style: GoogleFonts.poppins(
+        fontSize: 14,
+        color: Colors.grey[800],
+      ),
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: GoogleFonts.poppins(color: Colors.grey[700]),
+        labelStyle: GoogleFonts.poppins(
+          color: Colors.grey[600],
+          fontSize: 14,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey[300]!),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey[300]!),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: primaryColor),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: primaryColor, width: 2),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red[400]!, width: 2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red[400]!, width: 2),
+        ),
+        filled: true,
+        fillColor: Colors.grey[50],
         suffixIcon: IconButton(
           icon: Icon(
-            obscureText ? Icons.visibility_off : Icons.visibility,
+            obscureText
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
             color: Colors.grey[600],
+            size: 20,
           ),
           onPressed: onToggleObscure,
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
-          vertical: 12,
+          vertical: 16,
+        ),
+        errorStyle: GoogleFonts.poppins(
+          color: Colors.red[600],
+          fontSize: 12,
         ),
       ),
     );
@@ -350,27 +612,64 @@ class SettingsPage extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
-          'Supprimer le compte',
-          style: TextStyle(fontSize: 20, color: Colors.red),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
-        content: const Text(
-            'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.',
-            style: TextStyle(fontSize: 16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.warning_outlined,
+                color: Colors.red[600],
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Supprimer le compte',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.red[600],
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.',
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            color: Colors.grey[600],
+            height: 1.4,
+          ),
+        ),
         actions: [
-          ElevatedButton(
-            style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(Colors.grey),
-                foregroundColor: WidgetStateProperty.all(Colors.white)),
+          TextButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            child: const Text('Annuler'),
+            child: Text(
+              'Annuler',
+              style: GoogleFonts.poppins(
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
           ElevatedButton(
-            style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(Colors.red),
-                foregroundColor: WidgetStateProperty.all(Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red[600],
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             onPressed: () async {
               await ref.read(settingViewModelProvider.notifier).deleteAccount();
               Navigator.pushReplacement(
@@ -379,10 +678,37 @@ class SettingsPage extends ConsumerWidget {
               );
 
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Votre compte a été supprimé')),
+                SnackBar(
+                  content: Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Votre compte a été supprimé',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  backgroundColor: Colors.green[600],
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
               );
             },
-            child: const Text('Supprimer'),
+            child: Text(
+              'Supprimer',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ],
       ),

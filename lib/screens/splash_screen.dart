@@ -1,6 +1,7 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:habitatgn/viewmodels/splashScreen/splashscreen_provider.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 
@@ -14,20 +15,41 @@ class SplashScreen extends ConsumerStatefulWidget {
 class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _animationController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _scaleAnimation;
   late final SplashScreenViewModel _splashScreenViewModel;
 
   @override
   void initState() {
     super.initState();
+
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
-    )..forward().whenComplete(() {
-        // Appeler checkLoggedIn après l'animation
-        _splashScreenViewModel.checkLoggedIn(context);
-      });
+      duration: const Duration(milliseconds: 1500),
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
+    ));
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.95,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.5, curve: Curves.easeOutCubic),
+    ));
 
     _splashScreenViewModel = ref.read(splashScreenViewModelProvider);
+
+    // Démarrer l'animation et la navigation
+    _animationController.forward().whenComplete(() {
+      _splashScreenViewModel.checkLoggedIn(context);
+    });
   }
 
   @override
@@ -39,181 +61,99 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: lightPrimary,
-      body: Stack(
-        children: [
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "HABITATGN",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                "Votre Chez-Vous Idéal de Logement",
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 20),
-              SpinKitWave(
-                color: primaryColor,
-                size: 50.0,
-                duration: Duration(seconds: 4),
-              ),
-            ],
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: ClipPath(
-              clipper: TopRoundedClipper(),
-              child: Container(
-                height: 150,
-                width: MediaQuery.of(context).size.width,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [primaryColor, primaryColor],
-                  ),
-                ),
-                child: const Center(
-                  child: Text(
-                    "Explorez • Découvrez • Vivez",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 10.0,
-                          color: Colors.black26,
-                          offset: Offset(2, 2),
+      backgroundColor: Colors.white,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: Colors.white,
+        child: AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return Column(
+              children: [
+                // Contenu principal centré
+                Expanded(
+                  child: Center(
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: ScaleTransition(
+                        scale: _scaleAnimation,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Logo H minimaliste
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: primaryColor,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "H",
+                                  style: GoogleFonts.inter(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // Titre principal simplifié
+                            Text(
+                              "HABITATGN",
+                              style: GoogleFonts.inter(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[900],
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            // Sous-titre épuré
+                            Text(
+                              "Votre logement idéal",
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.grey[600],
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-          ),
-        ],
+
+                // Indicateur de chargement
+                Container(
+                  padding: const EdgeInsets.only(bottom: 60),
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SizedBox(
+                      width: 120,
+                      height: 4,
+                      child: LinearProgressIndicator(
+                        backgroundColor: Colors.grey[200],
+                        valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
-}
-
-class TopRoundedClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.moveTo(0, size.height);
-    path.lineTo(0, 60);
-    path.quadraticBezierTo(size.width / 2, 0, size.width, 60);
-    path.lineTo(size.width, size.height);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
-}
-
-class HousingSearchIcon extends StatelessWidget {
-  final double size;
-  final Color color;
-
-  const HousingSearchIcon({
-    super.key,
-    this.size = 25.0,
-    this.color = Colors.black,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CustomPaint(
-        painter: _HousingSearchIconPainter(
-            mainColor: color, toolColor: Colors.yellow[700]!),
-      ),
-    );
-  }
-}
-
-class _HousingSearchIconPainter extends CustomPainter {
-  final Color mainColor;
-  final Color toolColor;
-
-  _HousingSearchIconPainter({
-    required this.mainColor,
-    this.toolColor = Colors.yellow,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint mainPaint = Paint()
-      ..color = mainColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width / 20;
-
-    final Paint toolPaint = Paint()
-      ..color = toolColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width / 20;
-
-    // Dessiner la maison
-    final Path housePath = Path()
-      ..moveTo(size.width * 0.2, size.height * 0.5)
-      ..lineTo(size.width * 0.2, size.height * 0.8)
-      ..lineTo(size.width * 0.8, size.height * 0.8)
-      ..lineTo(size.width * 0.8, size.height * 0.5)
-      ..lineTo(size.width * 0.5, size.height * 0.3)
-      ..close();
-    canvas.drawPath(housePath, mainPaint);
-
-    // Dessiner la loupe
-    final double magnifierCenter = size.width * 0.7;
-    final double magnifierRadius = size.width * 0.2;
-    canvas.drawCircle(
-      Offset(magnifierCenter, magnifierCenter),
-      magnifierRadius,
-      mainPaint,
-    );
-
-    // Dessiner le manche de la loupe
-    canvas.drawLine(
-      Offset(magnifierCenter + magnifierRadius * 0.7,
-          magnifierCenter + magnifierRadius * 0.7),
-      Offset(size.width * 0.95, size.height * 0.95),
-      mainPaint,
-    );
-
-    // Dessiner l'outil de réparation (marteau) en jaune
-    final double toolStartX = size.width * 0.25;
-    final double toolStartY = size.height * 0.85;
-
-    // Manche du marteau
-    canvas.drawLine(
-      Offset(toolStartX, toolStartY),
-      Offset(toolStartX, toolStartY - size.height * 0.08),
-      toolPaint,
-    );
-
-    // Tête du marteau
-    canvas.drawRect(
-      Rect.fromCenter(
-        center: Offset(toolStartX, toolStartY - size.height * 0.1),
-        width: size.width * 0.08,
-        height: size.height * 0.04,
-      ),
-      toolPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
