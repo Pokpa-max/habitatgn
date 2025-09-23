@@ -35,7 +35,12 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
   @override
   void initState() {
     super.initState();
-    _bootstrap();
+    _scrollController.addListener(_onScroll);
+
+    // Délayer la modification du provider après la construction
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _bootstrap();
+    });
   }
 
   void _bootstrap() {
@@ -47,8 +52,6 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
       ref.read(dashbordViewModelProvider.notifier).fetchHouses();
     }
     // Sinon, le mode recherche est déjà actif avec des résultats
-
-    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -939,7 +942,7 @@ class _FilterModalState extends State<FilterModal> {
 
   Widget _buildNeedTypeSelector() {
     return Row(
-      children: ['Tous', 'Louer', 'Acheter'].map((type) {
+      children: ['Tous', 'Louer', 'Vendre'].map((type) {
         final isSelected = _needType == type;
         return Expanded(
           child: Padding(
