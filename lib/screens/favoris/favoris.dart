@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habitatgn/models/house_result_model.dart';
+import 'package:habitatgn/screens/house/houseList.dart';
 import 'package:habitatgn/screens/house/house_detail_screen.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:habitatgn/utils/skleton/house_list_skleton.dart';
@@ -249,7 +250,13 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HouseListScreen(),
+                  ),
+                );
+                ;
               },
               icon: const Icon(Icons.search, size: 20),
               label: Text(
