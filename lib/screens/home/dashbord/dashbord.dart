@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habitatgn/models/house_result_model.dart';
+import 'package:habitatgn/screens/reservation/reservationl_list_screen.dart';
 import 'package:habitatgn/utils/ui_element.dart';
 import 'package:habitatgn/viewmodels/dashbord/dashbord_view_model.dart';
 import 'package:habitatgn/screens/adversting/adversting.dart';
@@ -133,9 +134,15 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen>
                 ],
               ),
               TextButton(
-                onPressed: () {
-                  showToast("Page locations journalières", primaryColor);
-                },
+                // onPressed: () {
+                //   showToast("Page locations journalières", primaryColor);
+                // },
+
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const HouseReservationListScreen()),
+                ),
                 style: TextButton.styleFrom(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

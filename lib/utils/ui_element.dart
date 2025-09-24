@@ -1,5 +1,7 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:habitatgn/screens/seach/seach_screen.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -7,6 +9,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CustomTitle extends StatelessWidget {
   final String text;
@@ -246,4 +249,57 @@ void showToast(String message, Color backgroundColor) {
     toastLength: Toast.LENGTH_SHORT,
     gravity: ToastGravity.TOP,
   );
+}
+
+void showError(String message, BuildContext context) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: Colors.white,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            message,
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: Colors.red[600],
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+    ),
+  );
+}
+
+Future<bool> checkConnectivity(BuildContext context) async {
+  final connectivityResult = await Connectivity().checkConnectivity();
+  if (connectivityResult == ConnectivityResult.none) {
+    showError('Connexion Internet indisponible', context);
+    return false;
+  }
+  return true;
+}
+
+Future<void> makePhoneCall(String phoneNumber, context) async {
+  if (!await checkConnectivity(context)) return;
+  if (phoneNumber == null) {
+    showError('Numéro de téléphone non disponible', context);
+    return;
+  }
+
+  await launchPhoneCall("tel:$phoneNumber");
+}
+
+Future<void> launchPhoneCall(String url) async {
+  if (!await launchUrl(Uri.parse(url))) {
+    throw Exception('Could not launch $url');
+  }
 }

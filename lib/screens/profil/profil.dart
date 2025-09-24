@@ -6,6 +6,7 @@ import 'package:habitatgn/screens/authscreen/loginscreen.dart';
 import 'package:habitatgn/screens/favoris/favoris.dart';
 import 'package:habitatgn/screens/preference/preference.dart';
 import 'package:habitatgn/screens/repair_requests/repair_requests_Screen.dart';
+import 'package:habitatgn/screens/reservation/reservation_screen.dart';
 import 'package:habitatgn/screens/settings/contact_page.dart';
 import 'package:habitatgn/screens/settings/helpsupport_page.dart';
 import 'package:habitatgn/screens/settings/settings_page.dart';
@@ -171,6 +172,20 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                     context,
                     MaterialPageRoute(
                       builder: (context) => const FavoritesPage(),
+                    ),
+                  );
+                },
+              ),
+              _buildDivider(),
+              _buildProfileOption(
+                icon: Icons.tune_outlined,
+                title: 'Mes reservations',
+                subtitle: 'Logements réservés',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ReservationsPage(),
                     ),
                   );
                 },

@@ -77,7 +77,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
   }
 
   Future<void> _toggleLike() async {
-    if (!await _checkConnectivity()) return;
+    if (!await checkConnectivity(context)) return;
 
     final houseListViewModel = ref.read(houseListViewModelProvider);
     try {
@@ -116,14 +116,14 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
     }
   }
 
-  Future<bool> _checkConnectivity() async {
-    final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
-      _showError('Connexion Internet indisponible');
-      return false;
-    }
-    return true;
-  }
+  // Future<bool> _checkConnectivity() async {
+  //   final connectivityResult = await Connectivity().checkConnectivity();
+  //   if (connectivityResult == ConnectivityResult.none) {
+  //     showError('Connexion Internet indisponible', context);
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -154,7 +154,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
   }
 
   Future<void> _makePhoneCall() async {
-    if (!await _checkConnectivity()) return;
+    if (!await checkConnectivity(context)) return;
     if (house?.phoneNumber == null) {
       _showError('Numéro de téléphone non disponible');
       return;
