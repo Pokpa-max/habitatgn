@@ -335,7 +335,7 @@ class _RequestDetailsModal extends StatelessWidget {
                         child: Text(
                           'Détails de la demande',
                           style: GoogleFonts.poppins(
-                            fontSize: 20,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

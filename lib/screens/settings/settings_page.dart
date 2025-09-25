@@ -189,7 +189,6 @@ class SettingsPage extends ConsumerWidget {
                   });
                 },
                 iconColor: Colors.red[400],
-                titleColor: Colors.red[600],
                 isFirst: true,
                 isLast: true,
               ),

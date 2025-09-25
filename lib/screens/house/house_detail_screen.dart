@@ -104,7 +104,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
               ),
             ],
           ),
-          backgroundColor: isLiked ? Colors.green[600] : Colors.orange[600],
+          backgroundColor: primaryColor,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),

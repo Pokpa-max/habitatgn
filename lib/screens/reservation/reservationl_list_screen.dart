@@ -872,7 +872,7 @@ class _HouseReservationListScreenState
               _showReservationModal(context, house, onReservationChanged),
           icon: const Icon(Icons.event_available_outlined, size: 18),
           label: Text(
-            'Réserver une visite',
+            'Faire une réservation',
             style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -1043,7 +1043,8 @@ class _HouseReservationListScreenState
         houseTitle: house.houseType?.label ?? 'Logement',
         houseLocation:
             '${house.address?.town["label"] ?? ''} / ${house.address?.commune["label"] ?? ''}',
-        housePrice: house.price.toDouble(),
+        // housePrice: house.price.toDouble(),
+        maxGuests: house.bedrooms,
         onReservationSuccess: onReservationChanged,
       ),
     );
@@ -1161,9 +1162,9 @@ class _ReservationFilterModalState extends State<ReservationFilterModal> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Filtres de réservation',
+                          'Filtrer',
                           style: GoogleFonts.poppins(
-                            fontSize: 24,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Colors.grey[800],
                           ),

@@ -272,7 +272,7 @@ Widget _buildReservationSection(
             _showReservationModal(context, house, onReservationChanged),
         icon: const Icon(Icons.event_available_outlined, size: 18),
         label: Text(
-          'Réserver une visite',
+          'Faire une réservation',
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -439,11 +439,12 @@ void _showReservationModal(
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (context) => ReservationModal(
+      maxGuests: house.bedrooms,
       houseId: house.id,
       houseTitle: house.houseType?.label ?? 'Logement',
       houseLocation:
           '${house.address?.town["label"] ?? ''} / ${house.address?.commune["label"] ?? ''}',
-      housePrice: house.price.toDouble(),
+      // housePrice: house.price.toDouble(),
       onReservationSuccess: onReservationChanged,
     ),
   );

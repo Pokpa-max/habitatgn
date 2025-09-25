@@ -426,7 +426,7 @@ class _ReservationsPageState extends State<ReservationsPage>
                         flex: 2,
                         child: ElevatedButton.icon(
                           onPressed: () => makePhoneCall(
-                              'tel:${details.contactPhone ?? ''}', context),
+                              details.contactPhone ?? '', context),
                           icon: const Icon(Icons.phone, size: 16),
                           label: const Text('Appeler'),
                           style: ElevatedButton.styleFrom(

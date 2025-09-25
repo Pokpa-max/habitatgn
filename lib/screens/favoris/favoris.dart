@@ -82,12 +82,12 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.red.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   Icons.favorite_outline,
-                  color: Colors.orange[600],
+                  color: Colors.red[600],
                   size: 20,
                 ),
               ),
@@ -123,7 +123,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange[600],
+                backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(

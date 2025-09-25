@@ -134,10 +134,6 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen>
                 ],
               ),
               TextButton(
-                // onPressed: () {
-                //   showToast("Page locations journalières", primaryColor);
-                // },
-
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -179,7 +175,12 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen>
               color: Colors.transparent,
               child: InkWell(
                 onTap: () {
-                  showToast("Locations journalières", primaryColor);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            const HouseReservationListScreen()),
+                  );
                 },
                 borderRadius: BorderRadius.circular(10),
                 child: Padding(
