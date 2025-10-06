@@ -15,6 +15,7 @@ import 'package:habitatgn/screens/settings/contact_page.dart';
 import 'package:habitatgn/screens/settings/helpsupport_page.dart';
 import 'package:habitatgn/services/advertisement/advertisement_service.dart';
 import 'package:habitatgn/services/houses/house_service.dart';
+import 'package:habitatgn/services/reservation/reservation_service.dart';
 import 'package:habitatgn/viewmodels/notification/notification.dart';
 
 final houseServiceProvider = Provider((ref) => HouseService());

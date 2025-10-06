@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:habitatgn/models/house_result_model.dart';
 import 'package:habitatgn/models/reservation/reservation.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,8 +14,11 @@ class ReservationService {
     required String houseId,
     required String userName,
     required String userPhone,
-    required String userEmail,
-    DateTime? visitDate,
+    required DateTime checkInDate,
+    required DateTime checkOutDate,
+    required int numberOfGuests,
+    required int numberOfNights,
+    required TimeOfDay checkInTime,
     String? message,
   }) async {
     try {
@@ -33,14 +37,17 @@ class ReservationService {
       final houseData = houseDoc.data()!;
 
       // Créer les détails de réservation
-      final details = ReservationDetails(
+      final reservationDetails = ReservationDetails(
         userId: currentUser.uid,
         houseId: houseId,
         userName: userName,
         userPhone: userPhone,
-        userEmail: userEmail,
         requestDate: DateTime.now(),
-        visitDate: visitDate,
+        checkInDate: checkInDate,
+        checkOutDate: checkOutDate,
+        numberOfGuests: numberOfGuests,
+        numberOfNights: numberOfNights,
+        checkInTime: checkInTime,
         message: message,
         status: ReservationStatus.pending,
         imageUrl: houseData['imageUrl'],
@@ -51,7 +58,7 @@ class ReservationService {
 
       // Mettre à jour le document house
       await reservationRref.set({
-        'details': details.toMap(),
+        'details': reservationDetails.toMap(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
 

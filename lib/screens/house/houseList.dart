@@ -987,6 +987,9 @@ class _FilterModalState extends State<FilterModal> {
       {'label': 'Maison', 'icon': Icons.home_outlined},
       {'label': 'Appartement', 'icon': Icons.apartment_outlined},
       {'label': 'Studio', 'icon': Icons.single_bed_outlined},
+      {'label': 'Chambre', 'icon': Icons.bed_outlined},
+      {'label': 'Bureau', 'icon': Icons.business_outlined},
+      {'label': 'Magasin', 'icon': Icons.store_outlined},
       {'label': 'Terrain', 'icon': Icons.landscape_outlined},
     ];
 

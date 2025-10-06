@@ -134,7 +134,9 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen>
                 ],
               ),
               TextButton(
-                onPressed: () => Navigator.push(
+                onPressed: () => 
+
+                 Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => const HouseReservationListScreen()),
@@ -270,7 +272,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen>
 
   Widget _buildSliverAppBar(DashbordViewModel viewModel) {
     return SliverAppBar(
-      expandedHeight: 100,
+      expandedHeight: 80,
       floating: true,
       pinned: true,
       snap: false,
@@ -304,15 +306,6 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen>
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      IconButton(
-                        onPressed: () =>
-                            viewModel.navigateToHouseListPage(context),
-                        icon: Icon(
-                          Icons.search_outlined,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      )
                     ],
                   ),
                   Text(
@@ -825,44 +818,6 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.support_outlined,
-                  color: primaryColor,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Ressources Utiles',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                  Text(
-                    'Tout ce dont vous avez besoin',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
           _buildResourceItem(
             icon: Icons.headset_mic_outlined,
             title: 'Service Client',

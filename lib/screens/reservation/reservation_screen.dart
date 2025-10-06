@@ -353,7 +353,7 @@ class _ReservationsPageState extends State<ReservationsPage>
                           ),
                         ],
                       ),
-                      if (details.visitDate != null) ...[
+                      if (details.checkInDate != null) ...[
                         const SizedBox(height: 8),
                         Row(
                           children: [
@@ -361,7 +361,7 @@ class _ReservationsPageState extends State<ReservationsPage>
                                 size: 16, color: primaryColor),
                             const SizedBox(width: 8),
                             Text(
-                              'Visite prévue le ${_formatDate(details.visitDate!)}',
+                              'Visite prévue le ${_formatDate(details.checkInDate!)}',
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 color: primaryColor,
