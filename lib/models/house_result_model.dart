@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:habitatgn/models/dailyRental/daily_rental.dart';
 
 class HouseEssai {
   final String imageUrl;
@@ -198,29 +199,26 @@ class Address {
   }
 }
 
-class HouseType {
-  final String label;
-  final String value;
+// class HouseType {
+//   final String label;
+//   final String value;
 
-  HouseType({required this.label, required this.value});
+//   HouseType({required this.label, required this.value});
 
-  factory HouseType.fromMap(Map<String, dynamic> data) {
-    return HouseType(
-      label: data['label'] ?? '',
-      value: data['value'] ?? '',
-    );
-  }
+//   factory HouseType.fromMap(Map<String, dynamic> data) {
+//     return HouseType(
+//       label: data['label'] ?? '',
+//       value: data['value'] ?? '',
+//     );
+//   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'label': label,
-      'value': value,
-    };
-  }
-}
-
-
+//   Map<String, dynamic> toMap() {
+//     return {
+//       'label': label,
+//       'value': value,
+//     };
+//   }
+// }
 
 
-//  List<Map<String, dynamic>>.from(json['accompagnements']),
-//    List<Map<String, dynamic>>?
+

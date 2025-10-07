@@ -3,31 +3,33 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:habitatgn/models/house_result_model.dart';
+import 'package:habitatgn/models/dailyRental/daily_rental.dart';
+import 'package:habitatgn/screens/daily_rental/daily_rental_viewmodel.dart';
+
 import 'package:habitatgn/screens/notification/map/map_screen.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:habitatgn/utils/ui_element.dart';
-import 'package:habitatgn/widgets/dashbord/dashbord.dart';
-import 'package:habitatgn/viewmodels/housings/house_list.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:habitatgn/widgets/reservation/unifielDaily_rental.dart';
+
 import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:intl/intl.dart';
 
-class HouseDetailScreen extends ConsumerStatefulWidget {
-  final String houseId;
+class DailyRentalDetailScreen extends ConsumerStatefulWidget {
+  final String rentalId;
 
-  const HouseDetailScreen({required this.houseId, super.key});
+  const DailyRentalDetailScreen({required this.rentalId, super.key});
 
   @override
-  ConsumerState<HouseDetailScreen> createState() => _HouseDetailScreenState();
+  ConsumerState<DailyRentalDetailScreen> createState() =>
+      _DailyRentalDetailScreenState();
 }
 
-class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
+class _DailyRentalDetailScreenState
+    extends ConsumerState<DailyRentalDetailScreen>
     with SingleTickerProviderStateMixin {
-  House? house;
+  DailyRental? rental;
   bool isLoading = false;
   bool isLiked = false;
   final PageController _pageController = PageController();
@@ -54,15 +56,15 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
   }
 
   void _initializeData() async {
-    await _fetchHouseDetails();
+    await _fetchRentalDetails();
     await _checkIfFavorite();
   }
 
-  Future<void> _fetchHouseDetails() async {
+  Future<void> _fetchRentalDetails() async {
     setState(() => isLoading = true);
     try {
-      final houseListViewModel = ref.read(houseListViewModelProvider);
-      house = await houseListViewModel.fetchHouseById(widget.houseId);
+      final viewModel = ref.read(dailyRentalViewModelProvider);
+      rental = await viewModel.fetchRentalById(widget.rentalId);
     } catch (e) {
       _showError('Erreur lors du chargement des détails');
     } finally {
@@ -71,17 +73,17 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
   }
 
   Future<void> _checkIfFavorite() async {
-    final houseListViewModel = ref.read(houseListViewModelProvider);
-    final liked = await houseListViewModel.isFavorite(widget.houseId);
+    final viewModel = ref.read(dailyRentalViewModelProvider);
+    final liked = await viewModel.isFavorite(widget.rentalId);
     setState(() => isLiked = liked);
   }
 
   Future<void> _toggleLike() async {
     if (!await checkConnectivity(context)) return;
 
-    final houseListViewModel = ref.read(houseListViewModelProvider);
+    final viewModel = ref.read(dailyRentalViewModelProvider);
     try {
-      await houseListViewModel.toggleFavorite(widget.houseId);
+      await viewModel.toggleFavorite(widget.rentalId);
       setState(() => isLiked = !isLiked);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -96,8 +98,8 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
               const SizedBox(width: 8),
               Text(
                 isLiked
-                    ? '${house?.houseType?.label} ajouté aux favoris'
-                    : '${house?.houseType?.label} retiré des favoris',
+                    ? '${rental?.houseType?.label} ajouté aux favoris'
+                    : '${rental?.houseType?.label} retiré des favoris',
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w500,
                 ),
@@ -116,21 +118,12 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
     }
   }
 
-  // Future<bool> _checkConnectivity() async {
-  //   final connectivityResult = await Connectivity().checkConnectivity();
-  //   if (connectivityResult == ConnectivityResult.none) {
-  //     showError('Connexion Internet indisponible', context);
-  //     return false;
-  //   }
-  //   return true;
-  // }
-
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.error_outline,
               color: Colors.white,
               size: 20,
@@ -155,13 +148,39 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
 
   Future<void> _makePhoneCall() async {
     if (!await checkConnectivity(context)) return;
-    if (house?.phoneNumber == null) {
+    if (rental?.phoneNumber == null) {
       _showError('Numéro de téléphone non disponible');
       return;
     }
 
-    final houseListViewModel = ref.read(houseListViewModelProvider);
-    await houseListViewModel.launchPhoneCall("tel:${house!.phoneNumber}");
+    final viewModel = ref.read(dailyRentalViewModelProvider);
+    await viewModel.launchPhoneCall("tel:${rental!.phoneNumber}");
+  }
+
+  void _showBookingModal() {
+    if (rental == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => UnifiedDailyRentalModal(
+        houseId: widget.rentalId,
+        houseTitle: rental!.houseType?.label ?? 'Location',
+        houseLocation:
+            '${rental!.address?.commune.label}/${rental!.address?.zone}',
+        pricePerNight: rental!.pricePerNight.toDouble(),
+        maxGuests: rental!.maxGuests,
+        minStay: rental!.minStay,
+        maxStay: rental!.maxStay,
+        checkInHour: rental!.checkInHour,
+        checkOutHour: rental!.checkOutHour,
+        onBookingSuccess: () {
+          // Rafraîchir les détails après une réservation réussie
+          _fetchRentalDetails();
+        },
+      ),
+    );
   }
 
   @override
@@ -174,7 +193,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
               animation: _fadeAnimation,
               builder: (context, child) => _buildMainContent(),
             ),
-      bottomNavigationBar: house != null ? _buildBottomBar() : null,
+      bottomNavigationBar: rental != null ? _buildBottomBar() : null,
     );
   }
 
@@ -219,7 +238,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
         slivers: [
           _buildSliverAppBar(),
           SliverToBoxAdapter(
-            child: house != null ? _buildHouseDetails(house!) : Container(),
+            child: rental != null ? _buildRentalDetails(rental!) : Container(),
           ),
         ],
       ),
@@ -288,20 +307,20 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
           ),
           child: IconButton(
             icon: Icon(Icons.share_outlined, color: Colors.grey[700]),
-            onPressed: _shareHouse,
+            onPressed: _shareRental,
           ),
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        background: house != null ? _buildImageCarousel() : Container(),
+        background: rental != null ? _buildImageCarousel() : Container(),
       ),
     );
   }
 
   Widget _buildImageCarousel() {
     final images = [
-      if (house?.imageUrl != null) house!.imageUrl,
-      ...house?.houseInsides ?? [],
+      if (rental?.imageUrl != null) rental!.imageUrl,
+      ...rental?.houseInsides ?? [],
     ];
 
     return Stack(
@@ -335,6 +354,72 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
             );
           },
         ),
+        // Badge "Location journalière"
+        Positioned(
+          top: 16,
+          left: 16,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: primaryColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.calendar_today,
+                  color: Colors.white,
+                  size: 14,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Location journalière',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Badge de disponibilité
+        if (rental?.isAvailable == false)
+          Positioned(
+            top: 16,
+            right: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                'Non disponible',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
         if (images.length > 1)
           Positioned(
             bottom: 16,
@@ -365,27 +450,27 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
     );
   }
 
-  Widget _buildHouseDetails(House house) {
+  Widget _buildRentalDetails(DailyRental rental) {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildHeaderCard(house),
+          _buildHeaderCard(rental),
           const SizedBox(height: 10),
-          _buildPriceCard(house),
+          _buildPriceCard(rental),
           const SizedBox(height: 10),
-          _buildFeaturesCard(house),
+          _buildQuickInfoCard(rental),
           const SizedBox(height: 10),
-          _buildLocationCard(house),
+          _buildCheckInOutCard(rental),
           const SizedBox(height: 10),
-          _buildDescriptionCard(house),
-          if (house.houseType?.label != "Terrain") ...[
-            const SizedBox(height: 10),
-            _buildAmenitiesCard(house),
-          ],
+          _buildFeaturesCard(rental),
           const SizedBox(height: 10),
-          _buildAdditionalInfoCard(house),
+          _buildLocationCard(rental),
+          const SizedBox(height: 10),
+          _buildDescriptionCard(rental),
+          const SizedBox(height: 10),
+          _buildRulesCard(rental),
           const SizedBox(height: 100), // Espace pour le bottom bar
         ],
       ),
@@ -410,36 +495,15 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
     );
   }
 
-  Widget _buildHeaderCard(House house) {
+  Widget _buildHeaderCard(DailyRental rental) {
     return _buildCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  house.offerType["label"],
-                  style: GoogleFonts.poppins(
-                    color: primaryColor,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
           Text(
-            house.houseType?.label ?? '',
+            rental.houseType?.label ?? '',
             style: GoogleFonts.poppins(
-              fontSize: 20,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.grey[800],
             ),
@@ -452,7 +516,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  '${house.address?.commune["label"]}/${house.address?.zone}',
+                  '${rental.address?.commune.label}/${rental.address?.zone}',
                   style: GoogleFonts.poppins(
                     color: Colors.grey[600],
                     fontSize: 14,
@@ -466,7 +530,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
     );
   }
 
-  Widget _buildPriceCard(House house) {
+  Widget _buildPriceCard(DailyRental rental) {
     return _buildCard(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -476,7 +540,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Prix',
+                  'Prix par nuit',
                   style: GoogleFonts.poppins(
                     color: Colors.grey[600],
                     fontSize: 14,
@@ -484,11 +548,13 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
                   ),
                 ),
                 const SizedBox(height: 4),
-                FormattedPrice(
-                  color: primaryColor,
-                  price: house.price,
-                  size: 20,
-                  suffix: house.offerType["value"] == "ALouer" ? '/mois' : '',
+                Text(
+                  '${NumberFormat('#,###').format(rental.pricePerNight)} GNF',
+                  style: GoogleFonts.poppins(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                  ),
                 ),
               ],
             ),
@@ -510,119 +576,234 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () => _navigateToMap(house),
+            onPressed: () => _navigateToMap(rental),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFeaturesCard(House house) {
-    bool isTerrain = house.houseType?.label == "Terrain";
-
+  Widget _buildQuickInfoCard(DailyRental rental) {
     return _buildCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Text(
-            'Caractéristiques',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[800],
-            ),
+          _buildQuickInfoItem(
+            icon: Icons.people_outline,
+            label: 'Invités',
+            value: '${rental.maxGuests}',
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              if (!isTerrain) ...[
-                Expanded(
-                  child: _buildFeatureItem(
-                    icon: Icons.bed_outlined,
-                    label: 'Chambres',
-                    value: (house.bedrooms).toString(),
-                  ),
-                ),
-                Expanded(
-                  child: _buildFeatureItem(
-                    icon: Icons.straighten_outlined,
-                    label: 'Superficie',
-                    value: '${house.area} m²',
-                  ),
-                ),
-                Expanded(
-                  child: _buildFeatureItem(
-                    icon: Icons.payments_outlined,
-                    label: 'Avance',
-                    value: '${house.housingDeposit} mois',
-                  ),
-                ),
-              ] else ...[
-                Expanded(
-                  child: _buildFeatureItem(
-                    icon: Icons.straighten_outlined,
-                    label: 'Superficie',
-                    value: '${house.area} m²',
-                  ),
-                ),
-                Expanded(
-                  child: _buildFeatureItem(
-                    icon: Icons.payments_outlined,
-                    label: 'Avance',
-                    value: '${house.housingDeposit} mois',
-                  ),
-                ),
-                const Expanded(child: SizedBox()),
-              ],
-            ],
+          Container(
+            height: 40,
+            width: 1,
+            color: Colors.grey[300],
           ),
-          if (!isTerrain && house.furnishing != null) ...[
-            const SizedBox(height: 16),
-            _buildInfoRow(
-                'Mobilier', house.furnishing["label"] ?? 'Non spécifié'),
-          ],
+          _buildQuickInfoItem(
+            icon: Icons.hotel_outlined,
+            label: 'Chambres',
+            value: '${rental.bedrooms}',
+          ),
+          Container(
+            height: 40,
+            width: 1,
+            color: Colors.grey[300],
+          ),
+          _buildQuickInfoItem(
+            icon: Icons.straighten_outlined,
+            label: 'Superficie',
+            value: '${rental.area} m²',
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildFeatureItem({
+  Widget _buildQuickInfoItem({
     required IconData icon,
     required String label,
     required String value,
   }) {
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: primaryColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: primaryColor, size: 24),
-        ),
+        Icon(icon, color: primaryColor, size: 24),
         const SizedBox(height: 8),
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            color: Colors.grey[600],
-            fontSize: 12,
-          ),
-        ),
-        const SizedBox(height: 4),
         Text(
           value,
           style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
             color: Colors.grey[800],
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: Colors.grey[600],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildLocationCard(House house) {
+  Widget _buildCheckInOutCard(DailyRental rental) {
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.access_time,
+                  color: primaryColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Horaires',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.green.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.login, color: Colors.green[700], size: 28),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Check-in',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${rental.checkInHour}:00',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.orange.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.logout, color: Colors.orange[700], size: 28),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Check-out',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${rental.checkOutHour}:00',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeaturesCard(DailyRental rental) {
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.info_outline,
+                  color: primaryColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Informations du séjour',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildInfoRow(
+            'Séjour minimum',
+            '${rental.minStay} nuit${rental.minStay > 1 ? 's' : ''}',
+          ),
+          _buildInfoRow(
+            'Séjour maximum',
+            '${rental.maxStay} nuits',
+          ),
+          _buildInfoRow(
+            'Nombre d\'invités max',
+            '${rental.maxGuests} personne${rental.maxGuests > 1 ? 's' : ''}',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocationCard(DailyRental rental) {
     return _buildCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -654,7 +835,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
           ),
           const SizedBox(height: 12),
           Text(
-            '${house.address?.town["label"]}, ${house.address?.zone}',
+            '${rental.address?.town.label}, ${rental.address?.zone}',
             style: GoogleFonts.poppins(
               color: Colors.grey[700],
               fontSize: 15,
@@ -665,7 +846,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
     );
   }
 
-  Widget _buildDescriptionCard(House house) {
+  Widget _buildDescriptionCard(DailyRental rental) {
     return _buildCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -697,7 +878,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
           ),
           const SizedBox(height: 12),
           Text(
-            house.description,
+            rental.description,
             style: GoogleFonts.poppins(
               fontSize: 14,
               color: Colors.grey[700],
@@ -709,12 +890,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
     );
   }
 
-  Widget _buildAmenitiesCard(House house) {
-    // Vérifier si les commodités existent et ne sont pas vides
-    if (house.commodites == null || house.commodites!.isEmpty) {
-      return const SizedBox.shrink(); // Ne rien afficher si pas de commodités
-    }
-
+  Widget _buildRulesCard(DailyRental rental) {
     return _buildCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -728,75 +904,14 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  Icons.star_outline,
+                  Icons.rule_outlined,
                   color: primaryColor,
                   size: 20,
                 ),
               ),
               const SizedBox(width: 12),
               Text(
-                'Commodités',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[800],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: house.commodites!.map((commodity) {
-              return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: primaryColor.withOpacity(0.2),
-                  ),
-                ),
-                child: Text(
-                  commodity["label"] ?? 'Non spécifié',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: primaryColor,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAdditionalInfoCard(House house) {
-    return _buildCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.info_outline,
-                  color: primaryColor,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Informations supplémentaires',
+                'Règlement',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -806,9 +921,54 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
             ],
           ),
           const SizedBox(height: 16),
-          _buildInfoRow('Caution', '${house.rentalDeposit} mois'),
-          _buildInfoRow('Frais d\'agence', '1 mois'),
-          _buildInfoRow('Statut du locataire', house.rentalStatus),
+          _buildRuleItem(
+            icon: Icons.schedule,
+            text: 'Arrivée après ${rental.checkInHour}:00',
+          ),
+          _buildRuleItem(
+            icon: Icons.schedule,
+            text: 'Départ avant ${rental.checkOutHour}:00',
+          ),
+          _buildRuleItem(
+            icon: Icons.people,
+            text: 'Maximum ${rental.maxGuests} invités',
+          ),
+          _buildRuleItem(
+            icon: Icons.nights_stay,
+            text: 'Séjour entre ${rental.minStay} et ${rental.maxStay} nuits',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRuleItem({required IconData icon, required String text}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(
+              icon,
+              color: primaryColor,
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey[700],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -816,7 +976,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
 
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -854,50 +1014,82 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
         ],
       ),
       child: SafeArea(
-        child: ElevatedButton.icon(
-          onPressed: _makePhoneCall,
-          icon: const Icon(Icons.phone_outlined, size: 20),
-          label: Text(
-            "Contacter l'agence",
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w600,
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _makePhoneCall,
+                icon: const Icon(Icons.phone_outlined, size: 20),
+                label: Text(
+                  'Appeler',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: primaryColor,
+                  side: BorderSide(color: primaryColor, width: 2),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
             ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 2,
+              child: ElevatedButton.icon(
+                onPressed:
+                    rental?.isAvailable == true ? _showBookingModal : null,
+                icon: const Icon(Icons.calendar_today, size: 20),
+                label: Text(
+                  rental?.isAvailable == true ? 'Réserver' : 'Indisponible',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey[300],
+                  disabledForegroundColor: Colors.grey[500],
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
             ),
-            minimumSize: const Size(double.infinity, 0),
-          ),
+          ],
         ),
       ),
     );
   }
 
-  void _shareHouse() {
+  void _shareRental() {
     String message =
-        'Découvrez ce logement: ${house?.offerType["label"]?.toString() ?? 'Type inconnu'} '
-        'situé à ${house?.address?.commune['label']?.toString()}/${house?.address?.zone}\n'
-        'Superficie: ${house?.area} m²\n'
-        'Prix: ${house?.price} GNF\n'
-        'Pour plus de détails, contactez le ${house?.phoneNumber}.';
+        'Découvrez cette location journalière: ${rental?.houseType?.label ?? 'Logement'} '
+        'situé à ${rental?.address?.commune.label}/${rental?.address?.zone}\n'
+        'Superficie: ${rental?.area} m²\n'
+        'Prix: ${NumberFormat('#,###').format(rental?.pricePerNight ?? 0)} GNF/nuit\n'
+        'Capacité: ${rental?.maxGuests} personnes\n'
+        'Pour plus de détails, contactez le ${rental?.phoneNumber}.';
 
     Share.share(message);
   }
 
-  void _navigateToMap(House house) {
+  void _navigateToMap(DailyRental rental) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => LocationMapScreen(
-          latitude: house.address!.lat,
-          longitude: house.address!.long,
-          address: '${house.address?.commune['label']}/${house.address?.zone}',
-          houseType: house.houseType! ,
+          latitude: rental.address!.lat,
+          longitude: rental.address!.long,
+          address:
+              '${rental.address?.commune.label}/${rental.address?.zone}',
+          houseType: rental.houseType!,
         ),
       ),
     );

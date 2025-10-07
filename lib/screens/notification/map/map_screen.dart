@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:habitatgn/models/house_result_model.dart';
+import 'package:habitatgn/models/dailyRental/daily_rental.dart';
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:location/location.dart';
 import 'package:geolocator/geolocator.dart';

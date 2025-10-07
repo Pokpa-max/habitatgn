@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habitatgn/models/house_result_model.dart';
-import 'package:habitatgn/screens/reservation/reservationl_list_screen.dart';
+import 'package:habitatgn/screens/daily_rental/daily_rental_screen.dart';
 import 'package:habitatgn/utils/ui_element.dart';
 import 'package:habitatgn/viewmodels/dashbord/dashbord_view_model.dart';
 import 'package:habitatgn/screens/adversting/adversting.dart';
@@ -134,12 +134,10 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen>
                 ],
               ),
               TextButton(
-                onPressed: () => 
-
-                 Navigator.push(
+                onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const HouseReservationListScreen()),
+                      builder: (context) => const DailyRentalListScreen()),
                 ),
                 style: TextButton.styleFrom(
                   padding:
@@ -180,8 +178,7 @@ class _DashbordScreenState extends ConsumerState<DashbordScreen>
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) =>
-                            const HouseReservationListScreen()),
+                        builder: (context) => const DailyRentalListScreen()),
                   );
                 },
                 borderRadius: BorderRadius.circular(10),

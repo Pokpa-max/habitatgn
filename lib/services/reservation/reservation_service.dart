@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:habitatgn/models/dailyRental/daily_rental.dart' hide Address;
 import 'package:habitatgn/models/house_result_model.dart';
 import 'package:habitatgn/models/reservation/reservation.dart';
 import 'package:url_launcher/url_launcher.dart';
