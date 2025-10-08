@@ -601,18 +601,6 @@ class DailyRentalViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Trier par superficie
-  void sortByArea({bool ascending = true}) {
-    if (_isSearchActive) {
-      _searchResults.sort((a, b) =>
-          ascending ? a.area.compareTo(b.area) : b.area.compareTo(a.area));
-    } else {
-      _rentals.sort((a, b) =>
-          ascending ? a.area.compareTo(b.area) : b.area.compareTo(a.area));
-    }
-    notifyListeners();
-  }
-
   /// Filtrer par commune
   List<DailyRental> filterByCommune(String commune) {
     final source = _isSearchActive ? _searchResults : _rentals;

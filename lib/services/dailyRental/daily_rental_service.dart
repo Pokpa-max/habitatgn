@@ -321,15 +321,16 @@ class DailyRentalService {
   }
 
   // ==================== BOOKINGS ====================
-
-  /// Créer une nouvelle réservation
   Future<String?> createBooking({
     required String houseId,
     required DateTime checkIn,
     required DateTime checkOut,
     required int guests,
     required double totalPrice,
+    required String guestName,
+    required String guestPhone,
     String? notes,
+    String? houseImageUrl,
   }) async {
     try {
       if (_currentUserId == null) {
@@ -351,11 +352,14 @@ class DailyRentalService {
       final bookingData = {
         'houseId': houseId,
         'userId': _currentUserId,
+        'guestName': guestName.trim(),
+        'guestPhone': guestPhone.trim(),
         'checkIn': Timestamp.fromDate(checkIn),
         'checkOut': Timestamp.fromDate(checkOut),
         'guests': guests,
         'totalPrice': totalPrice,
         'notes': notes ?? '',
+        'houseImageUrl': houseImageUrl ?? '',
         'status': 'pending',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),

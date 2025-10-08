@@ -1512,17 +1512,7 @@ class _DailyRentalListScreenState extends ConsumerState<DailyRentalListScreen> {
                                       color: Colors.grey[600],
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Icon(Icons.straighten_outlined,
-                                      color: Colors.grey[600], size: 14),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${rental.area} m²',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
+                                 
                                 ],
                               ),
                             ],
@@ -1725,6 +1715,7 @@ class _DailyRentalListScreenState extends ConsumerState<DailyRentalListScreen> {
         maxStay: rental.maxStay,
         checkInHour: rental.checkInHour,
         checkOutHour: rental.checkOutHour,
+        houseImageUrl: rental.imageUrl,
         onBookingSuccess: () {
           ref.read(dailyRentalViewModelProvider.notifier).refreshAll();
         },

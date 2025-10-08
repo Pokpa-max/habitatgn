@@ -175,6 +175,7 @@ class _DailyRentalDetailScreenState
         maxStay: rental!.maxStay,
         checkInHour: rental!.checkInHour,
         checkOutHour: rental!.checkOutHour,
+        houseImageUrl: rental!.imageUrl,
         onBookingSuccess: () {
           // Rafraîchir les détails après une réservation réussie
           _fetchRentalDetails();
@@ -466,6 +467,8 @@ class _DailyRentalDetailScreenState
           const SizedBox(height: 10),
           _buildFeaturesCard(rental),
           const SizedBox(height: 10),
+          _buildAmenitiesCard(rental),
+          const SizedBox(height: 10),
           _buildLocationCard(rental),
           const SizedBox(height: 10),
           _buildDescriptionCard(rental),
@@ -603,16 +606,6 @@ class _DailyRentalDetailScreenState
             label: 'Chambres',
             value: '${rental.bedrooms}',
           ),
-          Container(
-            height: 40,
-            width: 1,
-            color: Colors.grey[300],
-          ),
-          _buildQuickInfoItem(
-            icon: Icons.straighten_outlined,
-            label: 'Superficie',
-            value: '${rental.area} m²',
-          ),
         ],
       ),
     );
@@ -749,6 +742,63 @@ class _DailyRentalDetailScreenState
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // buid amenities card
+  Widget _buildAmenitiesCard(DailyRental rental) {
+    if (rental.amenities == null || rental.amenities!.isEmpty) {
+      return Container();
+    }
+
+    return _buildCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.home_repair_service,
+                  color: primaryColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Équipements',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: rental.amenities!.map((amenity) {
+              return Chip(
+                label: Text(
+                  amenity,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                backgroundColor: Colors.grey[200],
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -1072,7 +1122,6 @@ class _DailyRentalDetailScreenState
     String message =
         'Découvrez cette location journalière: ${rental?.houseType?.label ?? 'Logement'} '
         'situé à ${rental?.address?.commune.label}/${rental?.address?.zone}\n'
-        'Superficie: ${rental?.area} m²\n'
         'Prix: ${NumberFormat('#,###').format(rental?.pricePerNight ?? 0)} GNF/nuit\n'
         'Capacité: ${rental?.maxGuests} personnes\n'
         'Pour plus de détails, contactez le ${rental?.phoneNumber}.';
@@ -1087,8 +1136,7 @@ class _DailyRentalDetailScreenState
         builder: (context) => LocationMapScreen(
           latitude: rental.address!.lat,
           longitude: rental.address!.long,
-          address:
-              '${rental.address?.commune.label}/${rental.address?.zone}',
+          address: '${rental.address?.commune.label}/${rental.address?.zone}',
           houseType: rental.houseType!,
         ),
       ),
