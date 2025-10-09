@@ -1,4 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+
+class PropertyType {
+  final String label;
+  final IconData icon;
+
+  const PropertyType(this.label, this.icon);
+}
 
 class DailyRental {
   final String id;

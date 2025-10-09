@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habitatgn/utils/appcolors.dart';
+import 'package:habitatgn/utils/widgets.dart';
 import 'package:intl/intl.dart';
 
 class DailyRentalFilterModal extends StatefulWidget {
@@ -465,57 +466,13 @@ class _DailyRentalFilterModalState extends State<DailyRentalFilterModal> {
       runSpacing: 8,
       children: types.map((type) {
         final isSelected = _propertyType == type['label'];
-        return _buildPropertyTypeChip(
+        return buildPropertyTypeChip(
           label: type['label'] as String,
           icon: type['icon'] as IconData,
           isSelected: isSelected,
           onTap: () => setState(() => _propertyType = type['label'] as String),
         );
       }).toList(),
-    );
-  }
-
-  Widget _buildPropertyTypeChip({
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? primaryColor.withOpacity(0.1) : Colors.grey[50],
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected ? primaryColor : Colors.grey[200]!,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 18,
-                color: isSelected ? primaryColor : Colors.grey[600],
-              ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  color: isSelected ? primaryColor : Colors.grey[700],
-                  fontWeight: FontWeight.w500,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 

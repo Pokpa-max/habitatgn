@@ -11,10 +11,15 @@ class DailyRentalService {
       _firestore.collection('daily_rentals');
   CollectionReference get _bookingsCollection =>
       _firestore.collection('daily_bookings');
-  CollectionReference get _favoritesCollection =>
-      _firestore.collection('favorites');
+  CollectionReference get _usersCollection => _firestore.collection('users');
 
   String? get _currentUserId => _auth.currentUser?.uid;
+
+  // Référence dynamique aux favoris de l'utilisateur courant
+  CollectionReference? get _userFavoritesCollection {
+    if (_currentUserId == null) return null;
+    return _usersCollection.doc(_currentUserId).collection('rental_favorites');
+  }
 
   // ==================== RENTALS (basique) ====================
 
@@ -167,7 +172,9 @@ class DailyRentalService {
           snapshot.docs.map((doc) => DailyRental.fromFirestore(doc)).toList();
 
       // Filtrer par type de propriété
-      if (propertyType != null && propertyType.isNotEmpty) {
+      if (propertyType != null &&
+          propertyType.isNotEmpty &&
+          propertyType != 'Tous') {
         rentals = rentals.where((rental) {
           return rental.houseType?.label.toLowerCase() ==
               propertyType.toLowerCase();
@@ -321,6 +328,7 @@ class DailyRentalService {
   }
 
   // ==================== BOOKINGS ====================
+
   Future<String?> createBooking({
     required String houseId,
     required DateTime checkIn,
@@ -329,8 +337,8 @@ class DailyRentalService {
     required double totalPrice,
     required String guestName,
     required String guestPhone,
+    required String houseImageUrl,
     String? notes,
-    String? houseImageUrl,
   }) async {
     try {
       if (_currentUserId == null) {
@@ -354,12 +362,12 @@ class DailyRentalService {
         'userId': _currentUserId,
         'guestName': guestName.trim(),
         'guestPhone': guestPhone.trim(),
+        'houseImageUrl': houseImageUrl,
         'checkIn': Timestamp.fromDate(checkIn),
         'checkOut': Timestamp.fromDate(checkOut),
         'guests': guests,
         'totalPrice': totalPrice,
         'notes': notes ?? '',
-        'houseImageUrl': houseImageUrl ?? '',
         'status': 'pending',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -436,8 +444,11 @@ class DailyRentalService {
     try {
       if (_currentUserId == null) return false;
 
-      final doc =
-          await _favoritesCollection.doc('${_currentUserId}_$rentalId').get();
+      final doc = await _usersCollection
+          .doc(_currentUserId)
+          .collection('rental_favorites')
+          .doc(rentalId)
+          .get();
 
       return doc.exists;
     } catch (e) {
@@ -452,14 +463,19 @@ class DailyRentalService {
         throw Exception('Utilisateur non connecté');
       }
 
-      final docId = '${_currentUserId}_$rentalId';
-      final doc = await _favoritesCollection.doc(docId).get();
+      final favoriteRef = _usersCollection
+          .doc(_currentUserId)
+          .collection('rental_favorites')
+          .doc(rentalId);
+
+      final doc = await favoriteRef.get();
 
       if (doc.exists) {
-        await _favoritesCollection.doc(docId).delete();
+        // Retirer des favoris
+        await favoriteRef.delete();
       } else {
-        await _favoritesCollection.doc(docId).set({
-          'userId': _currentUserId,
+        // Ajouter aux favoris
+        await favoriteRef.set({
           'rentalId': rentalId,
           'createdAt': FieldValue.serverTimestamp(),
         });
@@ -476,22 +492,24 @@ class DailyRentalService {
         throw Exception('Utilisateur non connecté');
       }
 
-      final favSnapshot = await _favoritesCollection
-          .where('userId', isEqualTo: _currentUserId)
+      final favSnapshot = await _usersCollection
+          .doc(_currentUserId)
+          .collection('rental_favorites')
+          .orderBy('createdAt', descending: true)
           .get();
 
       List<DailyRental> favorites = [];
 
       for (var doc in favSnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-        final rentalId = data['rentalId'] as String;
+        final rentalId = doc.id;
 
         try {
           final rental = await getRentalById(rentalId);
-          if (rental != null) {
+          if (rental != null && rental.isAvailable) {
             favorites.add(rental);
           }
         } catch (e) {
+          // Ignorer les locations supprimées ou non disponibles
           continue;
         }
       }
@@ -499,6 +517,22 @@ class DailyRentalService {
       return favorites;
     } catch (e) {
       throw Exception('Erreur lors de la récupération des favoris: $e');
+    }
+  }
+
+  /// Compter le nombre de favoris
+  Future<int> getFavoritesCount() async {
+    try {
+      if (_currentUserId == null) return 0;
+
+      final snapshot = await _usersCollection
+          .doc(_currentUserId)
+          .collection('rental_favorites')
+          .get();
+
+      return snapshot.docs.length;
+    } catch (e) {
+      return 0;
     }
   }
 

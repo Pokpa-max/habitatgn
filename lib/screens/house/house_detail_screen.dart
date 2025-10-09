@@ -116,15 +116,6 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
     }
   }
 
-  // Future<bool> _checkConnectivity() async {
-  //   final connectivityResult = await Connectivity().checkConnectivity();
-  //   if (connectivityResult == ConnectivityResult.none) {
-  //     showError('Connexion Internet indisponible', context);
-  //     return false;
-  //   }
-  //   return true;
-  // }
-
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -897,7 +888,7 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
           latitude: house.address!.lat,
           longitude: house.address!.long,
           address: '${house.address?.commune['label']}/${house.address?.zone}',
-          houseType: house.houseType! ,
+          houseType: house.houseType!,
         ),
       ),
     );
