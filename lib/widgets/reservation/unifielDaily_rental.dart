@@ -18,8 +18,6 @@ class UnifiedDailyRentalModal extends StatefulWidget {
   final int checkInHour;
   final int checkOutHour;
   final VoidCallback? onBookingSuccess;
-
-  // ✨ NOUVEAU: Type de tarification
   final PriceType? priceType;
 
   const UnifiedDailyRentalModal({
@@ -35,7 +33,7 @@ class UnifiedDailyRentalModal extends StatefulWidget {
     this.checkInHour = 14,
     this.checkOutHour = 12,
     this.onBookingSuccess,
-    this.priceType, // ✨ NOUVEAU
+    this.priceType,
   });
 
   @override
@@ -44,8 +42,7 @@ class UnifiedDailyRentalModal extends StatefulWidget {
 }
 
 class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
-  final DailyRentalService _service = DailyRentalService();
-
+  late final DailyRentalService _service;
   late final TextEditingController _notesController;
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
@@ -58,13 +55,17 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
   bool _isAvailable = true;
   String? _errorMessage;
 
-  // Formatters en cache
   static final _priceFormatter = NumberFormat('#,###');
   static final _dateFormatter = DateFormat('dd/MM/yyyy');
 
   @override
   void initState() {
     super.initState();
+    _service = DailyRentalService();
+    _initializeControllers();
+  }
+
+  void _initializeControllers() {
     _notesController = TextEditingController();
     _nameController = TextEditingController();
     _phoneController = TextEditingController();
@@ -78,7 +79,19 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     super.dispose();
   }
 
-  // ✨ NOUVEAU: Calculer la durée selon le type de tarification
+  // ============ CALCULS DE DURÉE ============
+
+  /// Obtient le nombre de jours entre check-in et check-out
+  int get _daysDifference {
+    if (_checkIn == null || _checkOut == null) return 0;
+    return _checkOut!.difference(_checkIn!).inDays;
+  }
+
+  /// Calcule la durée selon le type de tarification
+  /// - Hourly: nombre d'heures
+  /// - Daily: nombre de jours
+  /// - Weekly: arrondir au nombre de semaines (ceil) - 1 semaine = 7 jours
+  /// - Monthly: arrondir au nombre de mois (ceil) - 1 mois = 30 jours
   int get _duration {
     if (_checkIn == null || _checkOut == null) return 0;
 
@@ -86,25 +99,68 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
 
     switch (widget.priceType) {
       case PriceType.hourly:
-        // Nombre d'heures
         final hours = difference.inHours;
-        return hours > 0 ? hours : 1; // Minimum 1 heure
+        return hours > 0 ? hours : 1;
+
       case PriceType.weekly:
-        // Nombre de semaines (arrondi à la semaine supérieure)
+        // Arrondir à la semaine supérieure (ceil)
         final weeks = (difference.inDays / 7).ceil();
-        return weeks > 0 ? weeks : 1; // Minimum 1 semaine
+        return weeks > 0 ? weeks : 1;
+
       case PriceType.monthly:
-        // Nombre de mois (approximatif: divisé par 30)
+        // Arrondir au mois supérieur (ceil)
         final months = (difference.inDays / 30).ceil();
-        return months > 0 ? months : 1; // Minimum 1 mois
+        return months > 0 ? months : 1;
+
       case PriceType.daily:
       default:
-        // Nombre de jours
         return difference.inDays;
     }
   }
 
-  // ✨ NOUVEAU: Label pour l'unité de durée
+  /// Obtient le nombre réel de jours facturés
+  /// Utilisé pour l'affichage détaillé du calcul de prix
+  /// Ex: 1 semaine = 7 jours facturés, même si vous n'en utilisez que 5
+  int get _daysCharged {
+    if (_duration <= 0) return 0;
+
+    switch (widget.priceType) {
+      case PriceType.weekly:
+        return _duration * 7;
+      case PriceType.monthly:
+        return _duration * 30;
+      case PriceType.daily:
+      case PriceType.hourly:
+      default:
+        return _duration;
+    }
+  }
+
+  /// Obtient le message de remplissage (jours bonus inclus)
+  /// Ex: "3 jours inclus" pour une semaine utilisée sur 4 jours
+  String? get _durationFillMessage {
+    if (_duration <= 0 || _daysDifference <= 0) return null;
+
+    final bonus = _daysCharged - _daysDifference;
+    if (bonus <= 0) return null;
+
+    switch (widget.priceType) {
+      case PriceType.weekly:
+        return bonus > 0
+            ? '+$bonus jour${bonus > 1 ? 's' : ''} inclus au tarif'
+            : null;
+
+      case PriceType.monthly:
+        return bonus > 0
+            ? '+$bonus jour${bonus > 1 ? 's' : ''} inclus au tarif'
+            : null;
+
+      default:
+        return null;
+    }
+  }
+
+  /// Retourne le label de l'unité de durée (pluralisé si nécessaire)
   String get _durationLabel {
     switch (widget.priceType) {
       case PriceType.hourly:
@@ -119,32 +175,28 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     }
   }
 
-  // ✨ NOUVEAU: Suffixe pour l'affichage du prix
-  String get _priceSuffix {
-    return widget.priceType?.priceSuffix ?? '/jour';
-  }
+  /// Retourne le suffixe du prix (ex: "/jour", "/heure")
+  String get _priceSuffix => widget.priceType?.priceSuffix ?? '/jour';
 
-  // ✨ NOUVEAU: Label du type de tarification
-  String get _priceTypeLabel {
-    return widget.priceType?.label ?? 'Par jour';
-  }
+  /// Retourne le label du type de tarification
+  String get _priceTypeLabel => widget.priceType?.label ?? 'Par jour';
 
-  // ✨ NOUVEAU: Vérifier si la validation minStay/maxStay s'applique
-  bool get _shouldValidateDuration {
-    // La validation s'applique uniquement pour "daily"
-    return widget.priceType == PriceType.daily ||
-        widget.priceType == null; // Par défaut = daily
-  }
+  /// Détermine si la validation minStay/maxStay doit être appliquée
+  /// (seulement pour la tarification journalière)
+  bool get _shouldValidateDuration =>
+      widget.priceType == PriceType.daily || widget.priceType == null;
 
+  /// Calcule le prix total
   double get _totalPrice => widget.pricePerNight * _duration;
 
-  // ✨ MODIFIÉ: Validation conditionnelle pour minStay/maxStay
+  // ============ VALIDATIONS ============
+
+  /// Vérifie si la réservation peut être confirmée
   bool get _canBook =>
       _checkIn != null &&
       _checkOut != null &&
       _guests > 0 &&
       _guests <= widget.maxGuests &&
-      // Vérifier minStay/maxStay SEULEMENT pour tarification journalière
       (_shouldValidateDuration
           ? (_duration >= widget.minStay && _duration <= widget.maxStay)
           : true) &&
@@ -153,6 +205,9 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
       _nameController.text.trim().isNotEmpty &&
       _phoneController.text.trim().isNotEmpty;
 
+  // ============ FONCTIONS ASYNC ============
+
+  /// Vérifie la disponibilité du logement pour les dates sélectionnées
   Future<void> _checkAvailability() async {
     if (_checkIn == null || _checkOut == null) return;
 
@@ -186,6 +241,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     }
   }
 
+  /// Affiche le sélecteur de date
   Future<void> _selectDate(BuildContext context, bool isCheckIn) async {
     if (!isCheckIn && _checkIn == null) {
       _showSnackBar(
@@ -212,30 +268,36 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     );
 
     if (picked != null) {
-      setState(() {
-        if (isCheckIn) {
-          _checkIn = DateTime(
-            picked.year,
-            picked.month,
-            picked.day,
-            widget.checkInHour,
-          );
-          if (_checkOut != null && _checkOut!.isBefore(_checkIn!)) {
-            _checkOut = null;
-          }
-        } else {
-          _checkOut = DateTime(
-            picked.year,
-            picked.month,
-            picked.day,
-            widget.checkOutHour,
-          );
-        }
-      });
-      _checkAvailability();
+      _updateDate(isCheckIn, picked);
     }
   }
 
+  /// Met à jour la date et recalcule la disponibilité
+  void _updateDate(bool isCheckIn, DateTime picked) {
+    setState(() {
+      if (isCheckIn) {
+        _checkIn = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          widget.checkInHour,
+        );
+        if (_checkOut != null && _checkOut!.isBefore(_checkIn!)) {
+          _checkOut = null;
+        }
+      } else {
+        _checkOut = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          widget.checkOutHour,
+        );
+      }
+    });
+    _checkAvailability();
+  }
+
+  /// Confirme la réservation et l'envoie au service
   Future<void> _confirmBooking() async {
     if (!_canBook) return;
 
@@ -252,9 +314,9 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
         guests: _guests,
         totalPrice: _totalPrice,
         notes: _notesController.text,
+        bookingTpe: widget.priceType!,
         guestName: _nameController.text.trim(),
         guestPhone: _phoneController.text.trim(),
-        bookingTpe: widget.priceType!,
         houseImageUrl: widget.houseImageUrl,
       );
 
@@ -275,6 +337,9 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     }
   }
 
+  // ============ ACTIONS UI ============
+
+  /// Affiche un snack bar avec un message
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -284,6 +349,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     );
   }
 
+  /// Ajuste le nombre d'invités
   void _adjustGuests(int delta) {
     final newGuests = _guests + delta;
     if (newGuests >= 1 && newGuests <= widget.maxGuests) {
@@ -291,13 +357,14 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     }
   }
 
-  // ✨ NOUVEAU: Obtenir l'icône selon le type de tarification
+  // ============ HELPERS UI ============
+
+  /// Retourne l'icône correspondant au type de tarification
   IconData _getPriceTypeIcon() {
     switch (widget.priceType) {
       case PriceType.hourly:
         return Icons.schedule;
       case PriceType.weekly:
-        return Icons.calendar_today;
       case PriceType.monthly:
         return Icons.calendar_month;
       case PriceType.daily:
@@ -305,6 +372,8 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
         return Icons.calendar_today;
     }
   }
+
+  // ============ BUILD METHODS ============
 
   @override
   Widget build(BuildContext context) {
@@ -328,10 +397,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
                 children: [
                   _buildHeader(),
                   const Divider(height: 32),
-
-                  // ✨ NOUVEAU: Afficher le type de tarification sélectionné
                   if (widget.priceType != null) _buildPriceTypeIndicator(),
-
                   _buildGuestInfoSection(),
                   const Divider(height: 32),
                   _buildDatesSection(),
@@ -430,7 +496,6 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     );
   }
 
-  // ✨ NOUVEAU: Afficher le type de tarification sélectionné
   Widget _buildPriceTypeIndicator() {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -479,14 +544,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Vos informations',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey[800],
-          ),
-        ),
+        _buildSectionTitle('Vos informations'),
         const SizedBox(height: 12),
         _buildTextField(
           controller: _nameController,
@@ -502,6 +560,17 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
           keyboardType: TextInputType.phone,
         ),
       ],
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: GoogleFonts.poppins(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: Colors.grey[800],
+      ),
     );
   }
 
@@ -537,14 +606,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Dates du séjour',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey[800],
-          ),
-        ),
+        _buildSectionTitle('Dates du séjour'),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
@@ -578,31 +640,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
                   ),
                 ],
               ),
-              if (_duration > 0) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(_getPriceTypeIcon(), color: primaryColor, size: 16),
-                      const SizedBox(width: 8),
-                      Text(
-                        '$_duration $_durationLabel',
-                        style: GoogleFonts.poppins(
-                          color: primaryColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              if (_duration > 0) _buildDurationIndicator(),
             ],
           ),
         ),
@@ -610,11 +648,81 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     );
   }
 
-  // ✨ MODIFIÉ: Validation messages - affiche minStay/maxStay SEULEMENT pour daily
+  Widget _buildDurationIndicator() {
+    final hasBonus =
+        _durationFillMessage != null && _durationFillMessage!.isNotEmpty;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        children: [
+          // Durée calculée
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(_getPriceTypeIcon(), color: primaryColor, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  '$_duration $_durationLabel',
+                  style: GoogleFonts.poppins(
+                    color: primaryColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '($_daysDifference jours)',
+                  style: GoogleFonts.poppins(
+                    color: primaryColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Info bonus pour semaine/mois
+          if (hasBonus) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info, size: 14, color: Colors.blue[700]),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _durationFillMessage!,
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.blue[700],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildValidationMessages() {
     return Column(
       children: [
-        // ✨ MODIFIÉ: Affiche minStay SEULEMENT si tarification = daily
         if (_shouldValidateDuration &&
             _duration > 0 &&
             _duration < widget.minStay) ...[
@@ -625,7 +733,6 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
             Icons.info_outline,
           ),
         ],
-        // ✨ MODIFIÉ: Affiche maxStay SEULEMENT si tarification = daily
         if (_shouldValidateDuration && _duration > widget.maxStay) ...[
           const SizedBox(height: 8),
           _buildInfoBox(
@@ -650,14 +757,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Nombre d\'invités',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey[800],
-          ),
-        ),
+        _buildSectionTitle('Nombre d\'invités'),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
@@ -707,14 +807,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Commentaires (optionnel)',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey[800],
-          ),
-        ),
+        _buildSectionTitle('Commentaires (optionnel)'),
         const SizedBox(height: 12),
         TextField(
           controller: _notesController,
@@ -739,8 +832,10 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     );
   }
 
-  // ✨ MODIFIÉ: Affichage du prix selon le type de tarification
   Widget _buildPriceSummary() {
+    final hasBonusDays =
+        _durationFillMessage != null && _durationFillMessage!.isNotEmpty;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -749,7 +844,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
       ),
       child: Column(
         children: [
-          // ✨ NOUVEAU: Afficher le calcul avec l'unité correcte
+          // Ligne de calcul principal
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -770,7 +865,39 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
               ),
             ],
           ),
+
+          // Message des jours bonus si applicable
+          if (hasBonusDays) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.green[50],
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.green[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle, size: 16, color: Colors.green[700]),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _durationFillMessage!,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.green[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           const Divider(height: 16),
+
+          // Total final
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -852,6 +979,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     required String time,
     required VoidCallback onTap,
   }) {
+    final isSelected = date != null;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -863,7 +991,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: date != null ? primaryColor : Colors.grey[300]!,
+              color: isSelected ? primaryColor : Colors.grey[300]!,
             ),
           ),
           child: Column(
@@ -878,14 +1006,14 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
               ),
               const SizedBox(height: 4),
               Text(
-                date != null ? _dateFormatter.format(date) : 'Choisir',
+                isSelected ? _dateFormatter.format(date) : 'Choisir',
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: date != null ? Colors.grey[800] : Colors.grey[500],
+                  color: isSelected ? Colors.grey[800] : Colors.grey[500],
                 ),
               ),
-              if (date != null)
+              if (isSelected)
                 Text(
                   time,
                   style: GoogleFonts.poppins(
@@ -904,6 +1032,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     required IconData icon,
     VoidCallback? onPressed,
   }) {
+    final isEnabled = onPressed != null;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -912,12 +1041,12 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: onPressed != null ? primaryColor : Colors.grey[300],
+            color: isEnabled ? primaryColor : Colors.grey[300],
             shape: BoxShape.circle,
           ),
           child: Icon(
             icon,
-            color: onPressed != null ? Colors.white : Colors.grey[500],
+            color: isEnabled ? Colors.white : Colors.grey[500],
             size: 20,
           ),
         ),
