@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:habitatgn/models/dailyRental/daily_rental.dart';
 import 'package:habitatgn/services/dailyRental/daily_rental_service.dart';
 import 'package:habitatgn/utils/appcolors.dart';
+import 'package:habitatgn/utils/ui_element.dart';
 import 'package:intl/intl.dart';
 
 class UnifiedDailyRentalModal extends StatefulWidget {
@@ -17,6 +19,9 @@ class UnifiedDailyRentalModal extends StatefulWidget {
   final int checkOutHour;
   final VoidCallback? onBookingSuccess;
 
+  // ✨ NOUVEAU: Type de tarification
+  final PriceType? priceType;
+
   const UnifiedDailyRentalModal({
     super.key,
     required this.houseId,
@@ -30,6 +35,7 @@ class UnifiedDailyRentalModal extends StatefulWidget {
     this.checkInHour = 14,
     this.checkOutHour = 12,
     this.onBookingSuccess,
+    this.priceType, // ✨ NOUVEAU
   });
 
   @override
@@ -72,19 +78,76 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     super.dispose();
   }
 
-  int get _nights => _checkIn != null && _checkOut != null
-      ? _checkOut!.difference(_checkIn!).inDays
-      : 0;
+  // ✨ NOUVEAU: Calculer la durée selon le type de tarification
+  int get _duration {
+    if (_checkIn == null || _checkOut == null) return 0;
 
-  double get _totalPrice => widget.pricePerNight * _nights;
+    final difference = _checkOut!.difference(_checkIn!);
 
+    switch (widget.priceType) {
+      case PriceType.hourly:
+        // Nombre d'heures
+        final hours = difference.inHours;
+        return hours > 0 ? hours : 1; // Minimum 1 heure
+      case PriceType.weekly:
+        // Nombre de semaines (arrondi à la semaine supérieure)
+        final weeks = (difference.inDays / 7).ceil();
+        return weeks > 0 ? weeks : 1; // Minimum 1 semaine
+      case PriceType.monthly:
+        // Nombre de mois (approximatif: divisé par 30)
+        final months = (difference.inDays / 30).ceil();
+        return months > 0 ? months : 1; // Minimum 1 mois
+      case PriceType.daily:
+      default:
+        // Nombre de jours
+        return difference.inDays;
+    }
+  }
+
+  // ✨ NOUVEAU: Label pour l'unité de durée
+  String get _durationLabel {
+    switch (widget.priceType) {
+      case PriceType.hourly:
+        return _duration == 1 ? 'heure' : 'heures';
+      case PriceType.weekly:
+        return _duration == 1 ? 'semaine' : 'semaines';
+      case PriceType.monthly:
+        return _duration == 1 ? 'mois' : 'mois';
+      case PriceType.daily:
+      default:
+        return _duration == 1 ? 'jour' : 'jours';
+    }
+  }
+
+  // ✨ NOUVEAU: Suffixe pour l'affichage du prix
+  String get _priceSuffix {
+    return widget.priceType?.priceSuffix ?? '/jour';
+  }
+
+  // ✨ NOUVEAU: Label du type de tarification
+  String get _priceTypeLabel {
+    return widget.priceType?.label ?? 'Par jour';
+  }
+
+  // ✨ NOUVEAU: Vérifier si la validation minStay/maxStay s'applique
+  bool get _shouldValidateDuration {
+    // La validation s'applique uniquement pour "daily"
+    return widget.priceType == PriceType.daily ||
+        widget.priceType == null; // Par défaut = daily
+  }
+
+  double get _totalPrice => widget.pricePerNight * _duration;
+
+  // ✨ MODIFIÉ: Validation conditionnelle pour minStay/maxStay
   bool get _canBook =>
       _checkIn != null &&
       _checkOut != null &&
       _guests > 0 &&
       _guests <= widget.maxGuests &&
-      _nights >= widget.minStay &&
-      _nights <= widget.maxStay &&
+      // Vérifier minStay/maxStay SEULEMENT pour tarification journalière
+      (_shouldValidateDuration
+          ? (_duration >= widget.minStay && _duration <= widget.maxStay)
+          : true) &&
       _isAvailable &&
       !_isLoading &&
       _nameController.text.trim().isNotEmpty &&
@@ -191,6 +254,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
         notes: _notesController.text,
         guestName: _nameController.text.trim(),
         guestPhone: _phoneController.text.trim(),
+        bookingTpe: widget.priceType!,
         houseImageUrl: widget.houseImageUrl,
       );
 
@@ -198,7 +262,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
 
       if (bookingId != null) {
         Navigator.pop(context);
-        _showSnackBar('Réservation effectuée avec succès !', Colors.green);
+        showToast(context, 'Réservation effectuée avec succès !', primaryColor);
         widget.onBookingSuccess?.call();
       } else {
         setState(() => _errorMessage = 'Erreur lors de la réservation');
@@ -227,6 +291,21 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     }
   }
 
+  // ✨ NOUVEAU: Obtenir l'icône selon le type de tarification
+  IconData _getPriceTypeIcon() {
+    switch (widget.priceType) {
+      case PriceType.hourly:
+        return Icons.schedule;
+      case PriceType.weekly:
+        return Icons.calendar_today;
+      case PriceType.monthly:
+        return Icons.calendar_month;
+      case PriceType.daily:
+      default:
+        return Icons.calendar_today;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -249,6 +328,10 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
                 children: [
                   _buildHeader(),
                   const Divider(height: 32),
+
+                  // ✨ NOUVEAU: Afficher le type de tarification sélectionné
+                  if (widget.priceType != null) _buildPriceTypeIndicator(),
+
                   _buildGuestInfoSection(),
                   const Divider(height: 32),
                   _buildDatesSection(),
@@ -257,7 +340,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
                   _buildGuestsSection(),
                   const SizedBox(height: 24),
                   _buildNotesSection(),
-                  if (_nights > 0) ...[
+                  if (_duration > 0) ...[
                     const Divider(height: 32),
                     _buildPriceSummary(),
                   ],
@@ -344,6 +427,51 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
           ],
         ),
       ],
+    );
+  }
+
+  // ✨ NOUVEAU: Afficher le type de tarification sélectionné
+  Widget _buildPriceTypeIndicator() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.blue[200]!),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            _getPriceTypeIcon(),
+            color: Colors.blue[700],
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tarification: $_priceTypeLabel',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blue[700],
+                  ),
+                ),
+                Text(
+                  '${_priceFormatter.format(widget.pricePerNight)} GNF$_priceSuffix',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: Colors.blue[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -450,7 +578,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
                   ),
                 ],
               ),
-              if (_nights > 0) ...[
+              if (_duration > 0) ...[
                 const SizedBox(height: 12),
                 Container(
                   padding:
@@ -462,10 +590,10 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.nights_stay, color: primaryColor, size: 16),
+                      Icon(_getPriceTypeIcon(), color: primaryColor, size: 16),
                       const SizedBox(width: 8),
                       Text(
-                        '$_nights nuit${_nights > 1 ? 's' : ''}',
+                        '$_duration $_durationLabel',
                         style: GoogleFonts.poppins(
                           color: primaryColor,
                           fontWeight: FontWeight.w600,
@@ -482,21 +610,26 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     );
   }
 
+  // ✨ MODIFIÉ: Validation messages - affiche minStay/maxStay SEULEMENT pour daily
   Widget _buildValidationMessages() {
     return Column(
       children: [
-        if (_nights > 0 && _nights < widget.minStay) ...[
+        // ✨ MODIFIÉ: Affiche minStay SEULEMENT si tarification = daily
+        if (_shouldValidateDuration &&
+            _duration > 0 &&
+            _duration < widget.minStay) ...[
           const SizedBox(height: 8),
           _buildInfoBox(
-            'Séjour minimum : ${widget.minStay} nuit${widget.minStay > 1 ? 's' : ''}',
+            'Minimum: ${widget.minStay} ${_durationLabel}',
             Colors.orange,
             Icons.info_outline,
           ),
         ],
-        if (_nights > widget.maxStay) ...[
+        // ✨ MODIFIÉ: Affiche maxStay SEULEMENT si tarification = daily
+        if (_shouldValidateDuration && _duration > widget.maxStay) ...[
           const SizedBox(height: 8),
           _buildInfoBox(
-            'Séjour maximum : ${widget.maxStay} nuits',
+            'Maximum: ${widget.maxStay} ${_durationLabel}',
             Colors.orange,
             Icons.info_outline,
           ),
@@ -606,6 +739,7 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
     );
   }
 
+  // ✨ MODIFIÉ: Affichage du prix selon le type de tarification
   Widget _buildPriceSummary() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -615,11 +749,12 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
       ),
       child: Column(
         children: [
+          // ✨ NOUVEAU: Afficher le calcul avec l'unité correcte
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${_priceFormatter.format(widget.pricePerNight)} GNF x $_nights nuit${_nights > 1 ? 's' : ''}',
+                '${_priceFormatter.format(widget.pricePerNight)} GNF × $_duration $_durationLabel',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   color: Colors.grey[700],
@@ -639,13 +774,26 @@ class _UnifiedDailyRentalModalState extends State<UnifiedDailyRentalModal> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Total',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Total',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                  if (widget.priceType != null)
+                    Text(
+                      _priceTypeLabel,
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                ],
               ),
               Text(
                 '${_priceFormatter.format(_totalPrice)} GNF',

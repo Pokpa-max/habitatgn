@@ -338,6 +338,7 @@ class DailyRentalService {
     required String guestName,
     required String guestPhone,
     required String houseImageUrl,
+    required PriceType bookingTpe,
     String? notes,
   }) async {
     try {
@@ -369,6 +370,7 @@ class DailyRentalService {
         'totalPrice': totalPrice,
         'notes': notes ?? '',
         'status': 'pending',
+        'bookingType': bookingTpe,
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       };

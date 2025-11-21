@@ -1,5 +1,3 @@
-
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -206,11 +204,11 @@ class _DailyRentalListScreenState extends ConsumerState<DailyRentalListScreen> {
   AppBar _buildAppBar() {
     return AppBar(
       elevation: 0,
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
+      backgroundColor: primaryColor,
+      surfaceTintColor: primaryColor,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_outlined),
-        color: Colors.grey[700],
+        color: Colors.white,
         onPressed: () => Navigator.pop(context),
       ),
       title: Column(
@@ -219,12 +217,12 @@ class _DailyRentalListScreenState extends ConsumerState<DailyRentalListScreen> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.calendar_today, color: primaryColor, size: 20),
+              const Icon(Icons.calendar_today, color: Colors.white, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Locations journalières',
                 style: GoogleFonts.poppins(
-                  color: Colors.grey[800],
+                  color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -234,7 +232,7 @@ class _DailyRentalListScreenState extends ConsumerState<DailyRentalListScreen> {
           Text(
             'Séjours flexibles et confortables',
             style: GoogleFonts.poppins(
-              color: Colors.grey[600],
+              color: Colors.white70,
               fontSize: 12,
               fontWeight: FontWeight.w400,
             ),
@@ -242,9 +240,10 @@ class _DailyRentalListScreenState extends ConsumerState<DailyRentalListScreen> {
         ],
       ),
       centerTitle: true,
+      iconTheme: const IconThemeData(color: Colors.white),
       actions: [
         IconButton(
-          icon: Icon(Icons.book_online, color: primaryColor),
+          icon: const Icon(Icons.book_online, color: Colors.white),
           onPressed: () {
             Navigator.push(
               context,
@@ -256,7 +255,7 @@ class _DailyRentalListScreenState extends ConsumerState<DailyRentalListScreen> {
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(height: 1, color: Colors.grey[200]),
+        child: Container(height: 1, color: Colors.white24),
       ),
     );
   }

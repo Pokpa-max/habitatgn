@@ -202,20 +202,24 @@ class CustomCachedNetworkImage extends StatelessWidget {
     this.height,
   });
 
+  // Gestionnaire de cache partagé pour toute l'application
+  static final customCacheManager = CacheManager(
+    Config(
+      'customImageCache',
+      stalePeriod: const Duration(days: 30), // Augmenté à 30 jours
+      maxNrOfCacheObjects: 200, // Plus d'objets en cache
+      repo: JsonCacheInfoRepository(databaseName: 'customImageCache'),
+      fileService: HttpFileService(),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
-    // Définir les valeurs par défaut
     const double defaultWidth = 150;
     const double defaultHeight = 140;
 
-    final customCacheManager = CacheManager(Config(
-      'customCacheKey',
-      stalePeriod: const Duration(days: 15),
-      maxNrOfCacheObjects: 100,
-    ));
-    // add flutter_cache_manager:
-
     return ClipRRect(
+      borderRadius: BorderRadius.circular(8), // Ajout de coins arrondis
       child: CachedNetworkImage(
         cacheManager: customCacheManager,
         imageUrl: imageUrl,
@@ -235,19 +239,37 @@ class CustomCachedNetworkImage extends StatelessWidget {
           width: width ?? defaultWidth,
           height: height ?? defaultHeight,
           color: Colors.grey.shade200,
+          child: Icon(
+            Icons.image_not_supported,
+            color: Colors.grey.shade400,
+            size: 40,
+          ),
         ),
       ),
     );
   }
 }
 
-void showToast(String message, Color backgroundColor) {
-  Fluttertoast.showToast(
-    msg: message,
-    backgroundColor: backgroundColor,
-    textColor: Colors.white,
-    toastLength: Toast.LENGTH_SHORT,
-    gravity: ToastGravity.TOP,
+void showToast(context, String message, Color backgroundColor) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Row(
+        children: [
+          const SizedBox(width: 8),
+          Text(
+            message,
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+      backgroundColor: backgroundColor,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+    ),
   );
 }
 

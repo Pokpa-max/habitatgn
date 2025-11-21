@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:habitatgn/models/adversting.dart';
 import 'package:habitatgn/models/house_result_model.dart';
+import 'package:habitatgn/models/dailyRental/daily_rental.dart';
 import 'package:habitatgn/screens/home/dashbord/call/call_screen.dart';
 import 'package:habitatgn/screens/house/houseList.dart';
 import 'package:habitatgn/screens/house/house_detail_screen.dart';
@@ -14,12 +15,15 @@ import 'package:habitatgn/screens/servicies/repair.dart';
 import 'package:habitatgn/screens/settings/contact_page.dart';
 import 'package:habitatgn/screens/settings/helpsupport_page.dart';
 import 'package:habitatgn/services/advertisement/advertisement_service.dart';
+import 'package:habitatgn/services/dailyRental/daily_rental_service.dart';
 import 'package:habitatgn/services/houses/house_service.dart';
 import 'package:habitatgn/services/reservation/reservation_service.dart';
+
 import 'package:habitatgn/viewmodels/notification/notification.dart';
 
 final houseServiceProvider = Provider((ref) => HouseService());
 final advertisementServiceProvider = Provider((ref) => AdvertisementService());
+final dailyRentalServiceProvider = Provider((ref) => DailyRentalService());
 
 final dashbordViewModelProvider =
     ChangeNotifierProvider((ref) => DashbordViewModel(ref));
@@ -31,6 +35,7 @@ class DashbordViewModel extends ChangeNotifier {
 
   final Ref _read;
   final HouseService _houseService = HouseService();
+  final DailyRentalService _dailyRentalService = DailyRentalService();
   final NotificationViewModel notificationViewModel = NotificationViewModel();
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -47,11 +52,13 @@ class DashbordViewModel extends ChangeNotifier {
   // Getters publics
   List<AdvertisementData> get advertisementData => _advertisementData;
   List<House> get recentHouses => _recentHouses;
+  List<DailyRental> get dailyRentals => _dailyRentals;
   List<House> get houses => _houses;
   List<House> get searchResults => _searchResults;
 
   bool get isAdverstingLoading => _isAdverstingLoading;
   bool get isRecentLoading => _isRecentLoading;
+  bool get isDailyRentalsLoading => _isDailyRentalsLoading;
   bool get isLoading => _isLoading;
   bool get hasMore => _hasMore;
   bool get hasMoreSearch => _hasMoreSearch;
@@ -62,6 +69,7 @@ class DashbordViewModel extends ChangeNotifier {
   // Listes privées
   List<AdvertisementData> _advertisementData = [];
   List<House> _recentHouses = [];
+  List<DailyRental> _dailyRentals = [];
   final List<House> _houses = [];
   final List<House> _searchResults = [];
 
@@ -74,6 +82,7 @@ class DashbordViewModel extends ChangeNotifier {
   // États de chargement
   bool _isAdverstingLoading = true;
   bool _isRecentLoading = false;
+  bool _isDailyRentalsLoading = false;
   bool _isLoading = false;
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -89,6 +98,7 @@ class DashbordViewModel extends ChangeNotifier {
       }
       await fetchAdvertisementData();
       await fetchRecentHouses();
+      await fetchDailyRentals();
     } catch (e) {
       print('Error during init: $e');
     }
@@ -164,6 +174,30 @@ class DashbordViewModel extends ChangeNotifier {
       print('Error fetching recent houses: $e');
     } finally {
       _isRecentLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // 🆕 Locations journalières
+  // ────────────────────────────────────────────────────────────────────────────
+  Future<void> fetchDailyRentals({int limit = 10}) async {
+    _isDailyRentalsLoading = true;
+    lastError = null;
+    notifyListeners();
+
+    try {
+      _dailyRentals = await _dailyRentalService.getAllRentals();
+      // Limiter à 'limit' premiers si vous voulez
+      if (_dailyRentals.length > limit) {
+        _dailyRentals = _dailyRentals.take(limit).toList();
+      }
+    } catch (e) {
+      lastError = 'Erreur chargement locations journalières: $e';
+      print('Error fetching daily rentals: $e');
+      _dailyRentals = [];
+    } finally {
+      _isDailyRentalsLoading = false;
       notifyListeners();
     }
   }
@@ -421,6 +455,7 @@ class DashbordViewModel extends ChangeNotifier {
     await Future.wait([
       fetchAdvertisementData(),
       fetchRecentHouses(),
+      fetchDailyRentals(),
     ]);
 
     if (!_isSearchActive) {

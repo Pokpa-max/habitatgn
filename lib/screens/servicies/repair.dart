@@ -613,27 +613,18 @@ class UnifiedServicesScreen extends ConsumerWidget {
                                       .uid,
                                 );
                                 await ref
-                                    .read(serviceRequestViewModelProvider
-                                        .notifier)
+                                    .read(serviceRequestActionsProvider)
                                     .submitRequest(request)
                                     .then((_) {
                                   Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content:
-                                          Text('Demande envoyée avec succès !'),
-                                      backgroundColor: Colors.green,
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
+                                  showToast(
+                                      context,
+                                      'Demande envoyée avec succès !',
+                                      primaryColor);
                                 }).catchError((error) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Erreur: $error'),
-                                      backgroundColor: Colors.red,
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
+                                 
+                                  showToast(
+                                      context, 'Erreur: $error', Colors.red);
                                 });
                               }
                             },

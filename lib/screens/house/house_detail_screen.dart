@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:habitatgn/models/house_result_model.dart';
 import 'package:habitatgn/screens/notification/map/map_screen.dart';
 import 'package:habitatgn/utils/appcolors.dart';
+import 'package:habitatgn/utils/skleton/house_list_skleton.dart';
 import 'package:habitatgn/utils/ui_element.dart';
 import 'package:habitatgn/widgets/dashbord/dashbord.dart';
 import 'package:habitatgn/viewmodels/housings/house_list.dart';
@@ -160,45 +161,12 @@ class _HouseDetailScreenState extends ConsumerState<HouseDetailScreen>
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: isLoading
-          ? _buildLoadingState()
+          ? buildLoadingDetailState()
           : AnimatedBuilder(
               animation: _fadeAnimation,
               builder: (context, child) => _buildMainContent(),
             ),
       bottomNavigationBar: house != null ? _buildBottomBar() : null,
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              height: 300,
-              color: Colors.white,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: List.generate(
-                  8,
-                  (index) => Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

@@ -38,11 +38,11 @@ class _ContactPageState extends ConsumerState<ContactPage> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: primaryColor,
+        surfaceTintColor: primaryColor,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_outlined),
-          color: Colors.grey[700],
+          color: Colors.white,
           onPressed: () {
             Navigator.pop(context);
           },
@@ -50,17 +50,18 @@ class _ContactPageState extends ConsumerState<ContactPage> {
         title: Text(
           'Nous contacter',
           style: GoogleFonts.poppins(
-            color: Colors.grey[800],
+            color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(
             height: 1,
-            color: Colors.grey[200],
+            color: Colors.white24,
           ),
         ),
       ),
@@ -69,7 +70,6 @@ class _ContactPageState extends ConsumerState<ContactPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // En-tête avec information
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(

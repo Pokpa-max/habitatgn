@@ -1,33 +1,28 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:habitatgn/models/reservation/reservation.dart';
-import 'package:habitatgn/services/reservation/reservation_service.dart';
+import 'package:habitatgn/screens/daily_rental/daily_rental_detail_screen.dart';
+import 'package:habitatgn/screens/reservation/reservation_viewmodel.dart';
+
 import 'package:habitatgn/utils/appcolors.dart';
 import 'package:habitatgn/utils/ui_element.dart';
 import 'package:habitatgn/screens/house/house_detail_screen.dart';
 
-class ReservationsPage extends StatefulWidget {
+class ReservationsPage extends ConsumerStatefulWidget {
   const ReservationsPage({super.key});
 
   @override
-  State<ReservationsPage> createState() => _ReservationsPageState();
+  ConsumerState<ReservationsPage> createState() => _ReservationsPageState();
 }
 
-class _ReservationsPageState extends State<ReservationsPage>
+class _ReservationsPageState extends ConsumerState<ReservationsPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final ReservationService _reservationService = ReservationService();
-
-  List<Map<String, dynamic>> _activeReservations = [];
-  List<Map<String, dynamic>> _historyReservations = [];
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadReservations();
   }
 
   @override
@@ -36,48 +31,21 @@ class _ReservationsPageState extends State<ReservationsPage>
     super.dispose();
   }
 
-  Future<void> _loadReservations() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final allReservations = await _reservationService.getUserReservations();
-
-      // Séparer les réservations actives et l'historique
-      _activeReservations = allReservations.where((reservation) {
-        final details = reservation['details'] as ReservationDetails;
-        return details.status == ReservationStatus.pending;
-      }).toList();
-
-      _historyReservations = allReservations.where((reservation) {
-        final details = reservation['details'] as ReservationDetails;
-        return details.status == ReservationStatus.cancelled ||
-            details.status == ReservationStatus.completed;
-      }).toList();
-
-      setState(() {
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('Erreur lors du chargement: $e');
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final activeReservations = ref.watch(activeReservationsProvider);
+    final historyReservations = ref.watch(historyReservationsProvider);
+    final dateFormatter = ref.watch(dateFormatterProvider);
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: primaryColor,
+        surfaceTintColor: primaryColor,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_outlined),
-          color: Colors.grey[700],
+          color: Colors.white,
           onPressed: () => Navigator.pop(context),
         ),
         title: Column(
@@ -85,7 +53,7 @@ class _ReservationsPageState extends State<ReservationsPage>
             Text(
               'Mes Réservations',
               style: GoogleFonts.poppins(
-                color: Colors.grey[800],
+                color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -93,7 +61,7 @@ class _ReservationsPageState extends State<ReservationsPage>
             Text(
               'Suivez vos demandes de visite',
               style: GoogleFonts.poppins(
-                color: Colors.grey[600],
+                color: Colors.white70,
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
               ),
@@ -101,15 +69,16 @@ class _ReservationsPageState extends State<ReservationsPage>
           ],
         ),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: Container(
-            color: Colors.white,
+            color: primaryColor,
             child: TabBar(
               controller: _tabController,
-              labelColor: primaryColor,
-              unselectedLabelColor: Colors.grey[600],
-              indicatorColor: primaryColor,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              indicatorColor: Colors.white,
               indicatorWeight: 2,
               labelStyle: GoogleFonts.poppins(
                 fontSize: 14,
@@ -127,24 +96,31 @@ class _ReservationsPageState extends State<ReservationsPage>
                       const Icon(Icons.pending_actions, size: 18),
                       const SizedBox(width: 8),
                       const Text('Mes Demandes'),
-                      if (_activeReservations.isNotEmpty) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: primaryColor,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            '${_activeReservations.length}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ]
+                      activeReservations.whenData((data) {
+                            return data.isNotEmpty
+                                ? Row(
+                                    children: [
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Text(
+                                          '${data.length}',
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : const SizedBox.shrink();
+                          }).value ??
+                          const SizedBox.shrink(),
                     ],
                   ),
                 ),
@@ -155,24 +131,31 @@ class _ReservationsPageState extends State<ReservationsPage>
                       const Icon(Icons.history, size: 18),
                       const SizedBox(width: 8),
                       const Text('Historique'),
-                      if (_historyReservations.isNotEmpty) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[400],
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            '${_historyReservations.length}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ]
+                      historyReservations.whenData((data) {
+                            return data.isNotEmpty
+                                ? Row(
+                                    children: [
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Text(
+                                          '${data.length}',
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : const SizedBox.shrink();
+                          }).value ??
+                          const SizedBox.shrink(),
                     ],
                   ),
                 ),
@@ -182,71 +165,99 @@ class _ReservationsPageState extends State<ReservationsPage>
         ),
       ),
       body: RefreshIndicator(
-        onRefresh: _loadReservations,
+        onRefresh: () async {
+          ref.refresh(allReservationsProvider);
+        },
         child: TabBarView(
           controller: _tabController,
           children: [
-            _buildActiveReservationsTab(),
-            _buildHistoryTab(),
+            _buildActiveReservationsTab(activeReservations, dateFormatter),
+            _buildHistoryTab(historyReservations, dateFormatter),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActiveReservationsTab() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  Widget _buildActiveReservationsTab(
+    AsyncValue<List<Map<String, dynamic>>> activeReservations,
+    DateFormatter dateFormatter,
+  ) {
+    return activeReservations.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(
+        child: Text('Erreur: $err'),
+      ),
+      data: (bookings) {
+        if (bookings.isEmpty) {
+          return _buildEmptyState(
+            icon: Icons.event_note_outlined,
+            title: 'Aucune demande active',
+            message:
+                'Vous n\'avez pas de demande de réservation en cours.\nCommencez par rechercher un logement qui vous intéresse.',
+          );
+        }
 
-    if (_activeReservations.isEmpty) {
-      return _buildEmptyState(
-        icon: Icons.event_note_outlined,
-        title: 'Aucune demande active',
-        message:
-            'Vous n\'avez pas de demande de réservation en cours.\nCommencez par rechercher un logement qui vous intéresse.',
-        actionLabel: 'Rechercher des logements',
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _activeReservations.length,
-      itemBuilder: (context, index) {
-        final reservation = _activeReservations[index];
-        return _buildReservationCard(reservation, isActive: true);
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: bookings.length,
+          itemBuilder: (context, index) {
+            final booking = bookings[index];
+            return _buildReservationCard(
+              booking,
+              dateFormatter,
+              isActive: true,
+            );
+          },
+        );
       },
     );
   }
 
-  Widget _buildHistoryTab() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  Widget _buildHistoryTab(
+    AsyncValue<List<Map<String, dynamic>>> historyReservations,
+    DateFormatter dateFormatter,
+  ) {
+    return historyReservations.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(
+        child: Text('Erreur: $err'),
+      ),
+      data: (bookings) {
+        if (bookings.isEmpty) {
+          return _buildEmptyState(
+            icon: Icons.history_outlined,
+            title: 'Historique vide',
+            message:
+                'Votre historique de réservations apparaîtra ici une fois que vous aurez fait des demandes.',
+          );
+        }
 
-    if (_historyReservations.isEmpty) {
-      return _buildEmptyState(
-        icon: Icons.history_outlined,
-        title: 'Historique vide',
-        message:
-            'Votre historique de réservations apparaîtra ici une fois que vous aurez fait des demandes.',
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _historyReservations.length,
-      itemBuilder: (context, index) {
-        final reservation = _historyReservations[index];
-        return _buildReservationCard(reservation, isActive: false);
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: bookings.length,
+          itemBuilder: (context, index) {
+            final booking = bookings[index];
+            return _buildReservationCard(
+              booking,
+              dateFormatter,
+              isActive: false,
+            );
+          },
+        );
       },
     );
   }
 
-  Widget _buildReservationCard(Map<String, dynamic> reservation,
-      {required bool isActive}) {
-    final houseData = reservation['houseData'] as Map<String, dynamic>;
-    final details = reservation['details'] as ReservationDetails;
+  Widget _buildReservationCard(
+    Map<String, dynamic> booking,
+    DateFormatter dateFormatter, {
+    required bool isActive,
+  }) {
+    final bookingData = booking['bookingData'] as Map<String, dynamic>;
+    final bookingId = booking['bookingId'] as String;
+    final houseId = bookingData['houseId'] as String;
+    final status = bookingData['status'] as String;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -272,7 +283,7 @@ class _ReservationsPageState extends State<ReservationsPage>
               context,
               MaterialPageRoute(
                 builder: (context) =>
-                    HouseDetailScreen(houseId: details.houseId),
+                    DailyRentalDetailScreen(rentalId: houseId),
               ),
             );
           },
@@ -285,14 +296,13 @@ class _ReservationsPageState extends State<ReservationsPage>
                 // Header avec titre et statut
                 Row(
                   children: [
-                    // Image miniature du logement
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: SizedBox(
                         width: 60,
                         height: 60,
                         child: CustomCachedNetworkImage(
-                          imageUrl: details.imageUrl!,
+                          imageUrl: bookingData['houseImageUrl'] ?? '',
                           width: 60,
                           height: 60,
                         ),
@@ -304,8 +314,7 @@ class _ReservationsPageState extends State<ReservationsPage>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            details.houseType?.label.toUpperCase() ??
-                                'Logement',
+                            'Réservation de logement',
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -314,7 +323,7 @@ class _ReservationsPageState extends State<ReservationsPage>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${details.address?.town['label'] ?? ''} / ${details.address?.commune['label'] ?? ''}',
+                            'Référence: ${bookingId.substring(0, 8)}...',
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               color: Colors.grey[600],
@@ -325,7 +334,7 @@ class _ReservationsPageState extends State<ReservationsPage>
                         ],
                       ),
                     ),
-                    _buildStatusBadge(details.status),
+                    _buildStatusBadge(status),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -339,59 +348,39 @@ class _ReservationsPageState extends State<ReservationsPage>
                   ),
                   child: Column(
                     children: [
-                      Row(
-                        children: [
-                          Icon(Icons.calendar_today_outlined,
-                              size: 16, color: Colors.grey[600]),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Demandé le ${_formatDate(details.requestDate)}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
+                      _buildInfoRow(
+                        icon: Icons.calendar_today_outlined,
+                        color: Colors.grey[600],
+                        text:
+                            'Demandé le ${dateFormatter.formatDate((bookingData['createdAt'] as dynamic).toDate())}',
                       ),
-                      if (details.checkInDate != null) ...[
+                      const SizedBox(height: 8),
+                      _buildInfoRow(
+                        icon: Icons.event_outlined,
+                        color: primaryColor,
+                        text:
+                            'Arrivée: ${dateFormatter.formatDate((bookingData['checkIn'] as dynamic).toDate())}',
+                        highlight: true,
+                      ),
+                      const SizedBox(height: 8),
+                      _buildInfoRow(
+                        icon: Icons.event_busy_outlined,
+                        color: Colors.grey[600],
+                        text:
+                            'Départ: ${dateFormatter.formatDate((bookingData['checkOut'] as dynamic).toDate())}',
+                      ),
+                      const SizedBox(height: 8),
+                      _buildInfoRow(
+                        icon: Icons.people_outline,
+                        color: Colors.grey[600],
+                        text: 'Clients: ${bookingData['guests']} personne(s)',
+                      ),
+                      if (bookingData['notes']?.isNotEmpty == true) ...[
                         const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(Icons.event_outlined,
-                                size: 16, color: primaryColor),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Visite prévue le ${_formatDate(details.checkInDate!)}',
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                color: primaryColor,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      if (details.message?.isNotEmpty == true) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(Icons.message_outlined,
-                                size: 16, color: Colors.grey[600]),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                details.message!,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  color: Colors.grey[600],
-                                  fontStyle: FontStyle.italic,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
+                        _buildInfoRow(
+                          icon: Icons.message_outlined,
+                          color: Colors.grey[600],
+                          text: bookingData['notes'],
                         ),
                       ],
                     ],
@@ -399,16 +388,13 @@ class _ReservationsPageState extends State<ReservationsPage>
                 ),
 
                 // Actions pour les demandes actives
-                if (isActive &&
-                    details.status == ReservationStatus.pending) ...[
+                if (isActive && status == 'pending') ...[
                   const SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () => {
-                            _cancelReservation(reservation['houseId']),
-                          },
+                          onPressed: () => _showCancelDialog(bookingId),
                           icon: const Icon(Icons.close, size: 16),
                           label: const Text('Annuler'),
                           style: OutlinedButton.styleFrom(
@@ -425,8 +411,12 @@ class _ReservationsPageState extends State<ReservationsPage>
                       Expanded(
                         flex: 2,
                         child: ElevatedButton.icon(
-                          onPressed: () => makePhoneCall(
-                              details.contactPhone ?? '', context),
+                          onPressed: () {
+                            ref
+                                .read(reservationServiceProvider)
+                                .launchPhoneCall(
+                                    'tel:${bookingData['guestPhone']}');
+                          },
                           icon: const Icon(Icons.phone, size: 16),
                           label: const Text('Appeler'),
                           style: ElevatedButton.styleFrom(
@@ -445,8 +435,7 @@ class _ReservationsPageState extends State<ReservationsPage>
                 ],
 
                 // Statut des demandes confirmées
-                if (isActive &&
-                    details.status == ReservationStatus.confirmed) ...[
+                if (isActive && status == 'confirmed') ...[
                   const SizedBox(height: 16),
                   Container(
                     width: double.infinity,
@@ -474,7 +463,7 @@ class _ReservationsPageState extends State<ReservationsPage>
                                 ),
                               ),
                               Text(
-                                'Le propriétaire va vous contacter bientôt.',
+                                "L'agence va vous contacter bientôt.",
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   color: Colors.green[600],
@@ -495,50 +484,77 @@ class _ReservationsPageState extends State<ReservationsPage>
     );
   }
 
-  Widget _buildStatusBadge(ReservationStatus status) {
-    Color color;
-    IconData icon;
+  Widget _buildInfoRow({
+    required IconData icon,
+    required Color? color,
+    required String text,
+    bool highlight = false,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: color),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: highlight ? primaryColor : Colors.grey[600],
+              fontWeight: highlight ? FontWeight.w500 : FontWeight.normal,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusBadge(String status) {
+    Color statusColor;
+    IconData statusIcon;
 
     switch (status) {
-      case ReservationStatus.pending:
-        color = Colors.orange;
-        icon = Icons.hourglass_empty;
+      case 'pending':
+        statusColor = Colors.orange;
+        statusIcon = Icons.hourglass_empty;
         break;
-      case ReservationStatus.confirmed:
-        color = Colors.green;
-        icon = Icons.check_circle;
+      case 'confirmed':
+        statusColor = Colors.green;
+        statusIcon = Icons.check_circle;
         break;
-      case ReservationStatus.cancelled:
-        color = Colors.red;
-        icon = Icons.cancel;
+      case 'cancelled':
+        statusColor = Colors.red;
+        statusIcon = Icons.cancel;
         break;
-      case ReservationStatus.completed:
-        color = Colors.blue;
-        icon = Icons.task_alt;
+      case 'completed':
+        statusColor = Colors.blue;
+        statusIcon = Icons.task_alt;
         break;
       default:
-        color = Colors.grey;
-        icon = Icons.info;
+        statusColor = Colors.grey;
+        statusIcon = Icons.info;
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: statusColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: statusColor.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: color),
+          Icon(statusIcon, size: 12, color: statusColor),
           const SizedBox(width: 4),
           Text(
-            status.label,
+            _getStatusLabel(status),
             style: GoogleFonts.poppins(
               fontSize: 11,
               fontWeight: FontWeight.w500,
-              color: color,
+              color: statusColor,
             ),
           ),
         ],
@@ -546,12 +562,23 @@ class _ReservationsPageState extends State<ReservationsPage>
     );
   }
 
+  String _getStatusLabel(String status) {
+    switch (status) {
+      case 'pending':
+        return 'En attente';
+      case 'cancelled':
+        return 'Annulée';
+      case 'completed':
+        return 'Complétée';
+      default:
+        return status;
+    }
+  }
+
   Widget _buildEmptyState({
     required IconData icon,
     required String title,
     required String message,
-    String? actionLabel,
-    VoidCallback? onAction,
   }) {
     return Center(
       child: Padding(
@@ -586,92 +613,50 @@ class _ReservationsPageState extends State<ReservationsPage>
                 height: 1.5,
               ),
             ),
-            if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: onAction,
-                icon: const Icon(Icons.search, size: 20),
-                label: Text(
-                  actionLabel,
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ],
           ],
         ),
       ),
     );
   }
 
-  String _formatDate(DateTime date) {
-    const months = [
-      '',
-      'janv.',
-      'févr.',
-      'mars',
-      'avr.',
-      'mai',
-      'juin',
-      'juil.',
-      'août',
-      'sept.',
-      'oct.',
-      'nov.',
-      'déc.'
-    ];
-    return '${date.day} ${months[date.month]} ${date.year}';
-  }
-
-  Future<void> _cancelReservation(String houseId) async {
-    final cancelled = await showDialog<bool>(
+  Future<void> _showCancelDialog(String bookingId) async {
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'Annuler la demande',
+          'Annuler la réservation',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
         content: Text(
-          'Voulez-vous vraiment annuler cette demande de réservation ?',
+          'Êtes-vous sûr de vouloir annuler cette réservation ?',
           style: GoogleFonts.poppins(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Non',
-                style: GoogleFonts.poppins(
-                    textStyle: TextStyle(color: Colors.grey[700]))),
+            child: Text(
+              'Non',
+              style: GoogleFonts.poppins(color: Colors.grey[700]),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red[500]),
-            child: Text('Oui, annuler',
-                style: GoogleFonts.poppins(
-                    textStyle: const TextStyle(color: Colors.white))),
+            child: Text(
+              'Oui, annuler',
+              style: GoogleFonts.poppins(color: Colors.white),
+            ),
           ),
         ],
       ),
     );
 
-    if (cancelled == true) {
-      final success = await _reservationService.cancelReservation(houseId);
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Demande annulée !', style: GoogleFonts.poppins()),
-            backgroundColor: Colors.orange[600],
-          ),
-        );
-        _loadReservations();
+    if (confirmed == true) {
+      final reservationService = ref.read(reservationServiceProvider);
+      final success = await reservationService.cancelReservation(bookingId);
+      if (success && mounted) {
+        showToast(context, "Réservation annulée avec succès !", primaryColor);
+        ref.refresh(allReservationsProvider);
       }
     }
   }

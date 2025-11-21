@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,20 +6,34 @@ import 'package:habitatgn/utils/appColors.dart';
 import 'package:habitatgn/utils/ui_element.dart';
 import 'package:habitatgn/viewmodels/repairService/repair_service.dart';
 
-// Provider pour les demandes de réparation
-final repairRequestsProvider =
-    FutureProvider.autoDispose<List<ServiceRequestModel>>((ref) async {
-  final viewModel = ref.watch(serviceRequestViewModelProvider.notifier);
-  final requests = await viewModel.getUserRepairRequest();
-  return requests ?? [];
-});
-
-class RepairRequestsScreen extends ConsumerWidget {
+class RepairRequestsScreen extends ConsumerStatefulWidget {
   const RepairRequestsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final requestsAsync = ref.watch(repairRequestsProvider);
+  ConsumerState<RepairRequestsScreen> createState() =>
+      _RepairRequestsScreenState();
+}
+
+class _RepairRequestsScreenState extends ConsumerState<RepairRequestsScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final inProgressAsync = ref.watch(inProgressRequestsProvider);
+    final completedAsync = ref.watch(completedRequestsProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -32,90 +44,250 @@ class RepairRequestsScreen extends ConsumerWidget {
             Navigator.pop(context);
           },
         ),
-        centerTitle: true,
         backgroundColor: primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const CustomTitle(
             text: 'Mes demandes de service', textColor: Colors.white),
-      ),
-      body: RefreshIndicator(
-        onRefresh: () => ref.refresh(repairRequestsProvider.future),
-        child: requestsAsync.when(
-          data: (requests) {
-            if (requests.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.engineering_outlined,
-                      size: 40,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Aucune demande de service',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Tirez vers le bas pour actualiser',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: requests.length,
-              itemBuilder: (context, index) {
-                final request = requests[index];
-                return _RequestCard(request: request);
-              },
-            );
-          },
-          loading: () => const Center(
-            child: CircularProgressIndicator(
-              color: primaryColor,
-            ),
-          ),
-          error: (error, stack) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.error_outline,
-                  color: Colors.red,
-                  size: 48,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Une erreur est survenue',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    color: Colors.red,
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(50),
+          child: Container(
+            color: primaryColor,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              indicatorColor: Colors.white,
+              indicatorWeight: 3,
+              labelStyle: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+              unselectedLabelStyle: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              tabs: [
+                Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.hourglass_bottom, size: 18),
+                      const SizedBox(width: 8),
+                      const Text('En cours'),
+                      inProgressAsync.whenData((data) {
+                            return data.isNotEmpty
+                                ? Row(
+                                    children: [
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Text(
+                                          '${data.length}',
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : const SizedBox.shrink();
+                          }).value ??
+                          const SizedBox.shrink(),
+                    ],
                   ),
                 ),
-                TextButton(
-                  onPressed: () => ref.refresh(repairRequestsProvider),
-                  child: Text(
-                    'Réessayer',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                    ),
+                Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.check_circle, size: 18),
+                      const SizedBox(width: 8),
+                      const Text('Terminé'),
+                      completedAsync.whenData((data) {
+                            return data.isNotEmpty
+                                ? Row(
+                                    children: [
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Text(
+                                          '${data.length}',
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : const SizedBox.shrink();
+                          }).value ??
+                          const SizedBox.shrink(),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
+        ),
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.refresh(inProgressRequestsProvider);
+          ref.refresh(completedRequestsProvider);
+        },
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            _buildInProgressTab(inProgressAsync),
+            _buildCompletedTab(completedAsync),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInProgressTab(
+    AsyncValue<List<ServiceRequestModel>> inProgressAsync,
+  ) {
+    return inProgressAsync.when(
+      data: (requests) {
+        if (requests.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.engineering_outlined,
+                  size: 40,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Aucune demande en cours',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Tirez vers le bas pour actualiser',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: requests.length,
+          itemBuilder: (context, index) {
+            final request = requests[index];
+            return _RequestCard(request: request);
+          },
+        );
+      },
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: primaryColor),
+      ),
+      error: (error, stack) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              color: Colors.red,
+              size: 48,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Une erreur est survenue',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                color: Colors.red,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompletedTab(
+    AsyncValue<List<ServiceRequestModel>> completedAsync,
+  ) {
+    return completedAsync.when(
+      data: (requests) {
+        if (requests.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.check_circle_outline,
+                  size: 40,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Aucune demande terminée',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: requests.length,
+          itemBuilder: (context, index) {
+            final request = requests[index];
+            return _RequestCard(request: request);
+          },
+        );
+      },
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: primaryColor),
+      ),
+      error: (error, stack) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              color: Colors.red,
+              size: 48,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Une erreur est survenue',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                color: Colors.red,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -154,7 +326,7 @@ class _RequestCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
-                      Icons.engineering_outlined,
+                      _getServiceIcon(request.serviceType),
                       color: primaryColor,
                     ),
                   ),
@@ -180,7 +352,7 @@ class _RequestCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  _StatusChip(status: 'En attente'),
+                  _StatusChip(status: request.status ?? 'pending'),
                 ],
               ),
               const Padding(
@@ -218,6 +390,21 @@ class _RequestCard extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (context) => _RequestDetailsModal(request: request),
     );
+  }
+
+  IconData _getServiceIcon(String serviceType) {
+    switch (serviceType.toLowerCase()) {
+      case 'plomberie':
+        return Icons.plumbing;
+      case 'électricité':
+        return Icons.electric_bolt;
+      case 'menuiserie':
+        return Icons.handyman;
+      case 'climatisation':
+        return Icons.ac_unit;
+      default:
+        return Icons.build;
+    }
   }
 }
 
@@ -270,31 +457,18 @@ class _StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: _getStatusColor(status).withOpacity(0.1),
+        color: getStatusColor(status).withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        status,
+        getStatusLabel(status),
         style: GoogleFonts.poppins(
-          color: _getStatusColor(status),
+          color: getStatusColor(status),
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
       ),
     );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'en attente':
-        return Colors.orange;
-      case 'en cours':
-        return Colors.blue;
-      case 'terminé':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
   }
 }
 
@@ -340,7 +514,7 @@ class _RequestDetailsModal extends StatelessWidget {
                           ),
                         ),
                       ),
-                      _StatusChip(status: 'En attente'),
+                      _StatusChip(status: request.status ?? 'pending'),
                     ],
                   ),
                   const SizedBox(height: 24),

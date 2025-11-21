@@ -234,25 +234,26 @@ class _HouseListScreenState extends ConsumerState<HouseListScreen> {
   AppBar _buildAppBar() {
     return AppBar(
       elevation: 0,
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
+      backgroundColor: primaryColor,
+      surfaceTintColor: primaryColor,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_outlined),
-        color: Colors.grey[700],
+        color: Colors.white,
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
         'Tous les logements',
         style: GoogleFonts.poppins(
-          color: Colors.grey[800],
+          color: Colors.white,
           fontSize: 18,
           fontWeight: FontWeight.w600,
         ),
       ),
       centerTitle: true,
+      iconTheme: const IconThemeData(color: Colors.white),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(height: 1, color: Colors.grey[200]),
+        child: Container(height: 1, color: Colors.white24),
       ),
     );
   }
